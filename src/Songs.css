@@ -1,18 +1,20 @@
 /* Base styles and CSS reset */
 :root {
-  --primary-color: #1DB954;  /* Spotify green */
   --primary-dark: #1aa34a;
-  --text-primary: #121212;
-  --text-secondary: #727272;
   --background-primary: #ffffff;
   --background-secondary: #f8f8f8;
-  --border-color: #e5e7eb;
-  --hover-color: #f3f4f6;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --border-color: #1aa34a;
+  --hover-color: #b3b3b3;
+  --shadow-sm: 0 1px 2px 0 #1aa34a;
+  --shadow-md: 0px 0px 8px 0px #1aa34a;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --transition: all 0.2s ease-in-out;
+}
+
+.songs {
+  color: var(--text-bold);
+  line-height: 1.5;
 }
 
 /* Main container styles */
@@ -27,15 +29,6 @@
   margin: 0 auto;
 }
 
-/* Header styles */
-.text-3xl {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-  color: var(--text-primary);
-  margin-bottom: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-}
 
 /* Search input styles */
 input[type="text"] {
@@ -84,7 +77,7 @@ thead {
 th {
   padding: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-bold);
   text-align: left;
   cursor: pointer;
   transition: var(--transition);
@@ -114,11 +107,10 @@ tbody tr:hover {
 
 td {
   padding: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-bold);
   font-size: 0.938rem;
 }
 
-/* Truncate long text */
 .truncate {
   max-width: 0;
   overflow: hidden;
@@ -126,7 +118,6 @@ td {
   white-space: nowrap;
 }
 
-/* Pagination controls */
 .pagination-controls {
   display: flex;
   align-items: center;
@@ -141,7 +132,7 @@ td {
   border: none;
   background: var(--background-primary);
   border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  color: var(--text-bold);
   cursor: pointer;
   transition: var(--transition);
   min-width: 2.5rem;
@@ -151,15 +142,12 @@ td {
 
 .pagination-controls button:hover {
   background: var(--primary-color);
-  color: white;
 }
 
 .pagination-controls button[style*="bold"] {
   background: var(--primary-color);
-  color: white;
 }
 
-/* Page size select styles */
 select {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border-color);
@@ -204,8 +192,7 @@ input[type="number"]:focus {
 
 button[type="submit"] {
   padding: 0.75rem 1.5rem;
-  background: var(--primary-color);
-  color: white;
+  background: var(--spotify-green);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -215,14 +202,6 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   background: var(--primary-dark);
-}
-
-/* Results counter */
-.text-center {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin-top: 1rem;
 }
 
 /* Responsive styles */

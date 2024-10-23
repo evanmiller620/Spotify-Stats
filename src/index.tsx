@@ -21,7 +21,6 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, children }) => (
   </button>
 );
 
-
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
 
@@ -42,7 +41,7 @@ const App = () => {
     <div className="app-container">
       <div className="side-navigation">
         <div className="logo">
-          <h1>Spotify Stats</h1>
+          <h1>S</h1>
         </div>
         <nav className="nav-buttons">
           <NavButton
@@ -66,9 +65,7 @@ const App = () => {
         </nav>
       </div>
       <main className="main-content">
-        <div className="page-content">
-          {renderPage()}
-        </div>
+        {renderPage()}
       </main>
     </div>
   );

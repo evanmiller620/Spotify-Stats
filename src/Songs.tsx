@@ -35,7 +35,6 @@ const Songs: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [inputPage, setInputPage] = useState('');
 
-  // Derived values
   const totalPages = Math.ceil(filteredTracks.length / tracksPerPage);
   const indexOfLastTrack = currentPage * tracksPerPage;
   const indexOfFirstTrack = indexOfLastTrack - tracksPerPage;
@@ -69,19 +68,17 @@ const Songs: React.FC = () => {
     fetchData();
   }, []);
 
-  // Update current tracks when filtered tracks or pagination changes
   useEffect(() => {
     setCurrentTracks(filteredTracks.slice(indexOfFirstTrack, indexOfLastTrack));
   }, [filteredTracks, indexOfFirstTrack, indexOfLastTrack]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT') {
         if (event.key === 'Escape') {
           (target as HTMLInputElement).blur();
-          return; // Exit the function
+          return;
         }
         return; // Exit if focused on an input element
       }
@@ -96,7 +93,6 @@ const Songs: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPage, totalPages]);
 
-  // Filter and sort tracks
   useEffect(() => {
     const searchTermLower = searchTerm.toLowerCase();
     const filtered = tracks.filter(track =>
@@ -122,7 +118,6 @@ const Songs: React.FC = () => {
     setCurrentPage(1);
   }, [searchTerm, sort, tracks]);
 
-  // Utility functions
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -143,7 +138,6 @@ const Songs: React.FC = () => {
     }));
   };
 
-  // Pagination UI components
   const renderPaginationButton = (pageNum: number): JSX.Element => (
     <button
       key={pageNum}
@@ -162,18 +156,15 @@ const Songs: React.FC = () => {
       return Array.from({ length: totalPages }, (_, i) => renderPaginationButton(i + 1));
     }
 
-    // Always show first page
     if (currentPage > 6) {
       pageNumbers.push(renderPaginationButton(1));
       pageNumbers.push(<span key="dots1" className="mx-2">...</span>);
     }
 
-    // Show pages around current page
     for (let i = Math.max(1, currentPage - 5); i <= Math.min(totalPages, currentPage + 5); i++) {
       pageNumbers.push(renderPaginationButton(i));
     }
 
-    // Always show last page
     if (currentPage < totalPages - 5) {
       pageNumbers.push(<span key="dots2" className="mx-2">...</span>);
       pageNumbers.push(renderPaginationButton(totalPages));
@@ -226,40 +217,48 @@ const Songs: React.FC = () => {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <span>Total Results: {filteredTracks.length}</span>
+      <div className="container mt-4 flex items-center justify-between gap-4">
+        <span>Total Songs: {filteredTracks.length}</span>
+
+        <select
+          value={tracksPerPage}
+          onChange={(e) => {
+            const currentTrack = (currentPage-1) * tracksPerPage;
+            setTracksPerPage(Number(e.target.value));
+            goToPage(Math.ceil(currentTrack / Number(e.target.value)));
+            e.target.blur();
+          }}
+          className="p-2 border rounded"
+        >
+          {TRACKS_PER_PAGE_OPTIONS.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+
         <div className="flex items-center">
-          <select
-            value={tracksPerPage}
-            onChange={(e) => setTracksPerPage(Number(e.target.value))}
-            className="ml-4 p-2 border rounded"
-          >
-            {TRACKS_PER_PAGE_OPTIONS.map(option => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
           <div className="pagination-controls">{renderPagination()}</div>
         </div>
-      </div>
 
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        const pageNum = parseInt(inputPage);
-        if (!isNaN(pageNum)) goToPage(pageNum);
-      }} className="mt-4 flex gap-2">
-        <input
-          type="number"
-          className="flex-1 border p-2 rounded"
-          placeholder="Go to page..."
-          value={inputPage}
-          onChange={(e) => setInputPage(e.target.value)}
-          min="1"
-          max={totalPages}
-        />
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-          Go
-        </button>
-      </form>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const pageNum = parseInt(inputPage);
+          if (!isNaN(pageNum)) goToPage(pageNum);
+        }} className="flex items-center gap-2">
+          <input
+            type="number"
+            className="border p-2 rounded w-24"
+            placeholder="Go to page..."
+            value={inputPage}
+            onChange={(e) => setInputPage(e.target.value)}
+            min="1"
+            max={totalPages}
+          />
+          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
+            Go
+          </button>
+        </form>
+      </div>
+      
     </div>
   );
 };

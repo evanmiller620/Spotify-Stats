@@ -160,6 +160,7 @@ select {
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   padding-right: 2.5rem;
+  margin-left: 0.5rem;
 }
 
 select:focus {
@@ -170,18 +171,26 @@ select:focus {
 
 /* Go to page form styles */
 form {
-  display: flex;
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
 
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px; /* Space between each item */
+  margin-top: 16px;
+}
+
 input[type="number"] {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--background-primary);
   transition: var(--transition);
+  margin-right: 0.5rem;
+  padding-right: 0;
 }
 
 input[type="number"]:focus {
@@ -191,20 +200,20 @@ input[type="number"]:focus {
 }
 
 button[type="submit"] {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: var(--spotify-green);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: var(--transition);
   font-weight: 600;
+  max-width: 50px;
 }
 
 button[type="submit"]:hover {
   background: var(--primary-dark);
 }
 
-/* Responsive styles */
 @media (max-width: 768px) {
   .p-6 {
     padding: 1rem;
@@ -233,13 +242,11 @@ button[type="submit"]:hover {
   }
 }
 
-/* Loading state styles */
 .loading {
   opacity: 0.7;
   pointer-events: none;
 }
 
-/* Error state styles */
 .error {
   color: #dc2626;
   padding: 1rem;
@@ -249,14 +256,12 @@ button[type="submit"]:hover {
   text-align: center;
 }
 
-/* Empty state styles */
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--text-secondary);
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -272,7 +277,6 @@ button[type="submit"]:hover {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

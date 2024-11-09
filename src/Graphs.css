@@ -1,0 +1,44 @@
+/* Graphs component specific styles */
+.recharts-default-tooltip {
+    background-color: #ffffff !important;
+    border: 1px solid #1aa34a !important;
+    border-radius: 0.375rem;
+    padding: 0.5rem !important;
+  }
+  
+  .recharts-tooltip-label {
+    color: #000000 !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .recharts-tooltip-item {
+    color: #1aa34a !important;
+  }
+  
+  .recharts-legend-item {
+    color: #000000 !important;
+  }
+  
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: #e5e7eb !important;
+  }
+  
+  .recharts-text {
+    fill: #000000 !important;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .p-6 {
+      padding: 1rem;
+    }
+  
+    .flex {
+      flex-direction: column;
+    }
+  
+    .recharts-text {
+      font-size: 0.75rem;
+    }
+  }

@@ -33,7 +33,7 @@ const App = () => {
       case 'about':
         return <About />;
       default:
-        return <Home />;
+        return <Songs />;
     }
   };
 

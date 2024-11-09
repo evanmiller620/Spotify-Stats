@@ -107,7 +107,7 @@ const Songs: React.FC = () => {
       
       if (typeof a[field] === 'number' && typeof b[field] === 'number') {
         const primarySort = ((a[field] as number) - (b[field] as number)) * factor;
-        return primarySort !== 0 ? primarySort : (a.duration - b.duration);
+        return primarySort !== 0 ? primarySort : (b.duration - a.duration);
       }
       
       const primarySort = (a[field] as string).localeCompare(b[field] as string) * factor;

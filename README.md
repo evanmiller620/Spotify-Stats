@@ -1,3 +1,13 @@
+# Spotify Stats App
+
+Run the python script analyze.py with the spotify streaming history to generate your listening profile
+
+My streaming history is currently included as an example
+
+Run the React app normally with: npm start or npm run build
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

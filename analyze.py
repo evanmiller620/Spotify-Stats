@@ -148,17 +148,21 @@ def process_months(month_data, year_data, all_time_data):
     print("Total duration: ", total_playtime)
     print("Total playCount: ", total_plays)
     print("Total skipCount: ", total_skips)
+    print("total hours: " + str(total_playtime/3600))
             
         
 if __name__ == "__main__":
     month_data = defaultdict(Month) # all data is save in month blocks
-    directory_path = "History"
+    # directory_path = "../oodrey_spoot"
+    directory_path = "../evan_data_2025"
+    # directory_path = "../History"
     file_names = process_directory(directory_path)
     
     # process_json(os.path.join(directory_path, file_names[0]), month_data)
     # process_json(os.path.join(directory_path, file_names[1]), month_data)
     # process_json(os.path.join(directory_path, file_names[2]), month_data)
     for file in file_names:
+        print("Processing file: ", file)
         process_json(os.path.join(directory_path, file), month_data)
 
     year_data = {}

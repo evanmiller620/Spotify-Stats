@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import Home from './Home';
 import About from './About';
 import Songs from './Songs';
+import Graphs from './Graphs';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
@@ -22,16 +22,16 @@ const NavButton: React.FC<NavButtonProps> = ({ active, onClick, children }) => (
 );
 
 const App = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState('songs');
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'home':
-        return <Home />;
       case 'songs':
         return <Songs />;
       case 'about':
         return <About />;
+      case 'graphs':
+        return <Graphs />;
       default:
         return <Songs />;
     }
@@ -45,16 +45,16 @@ const App = () => {
         </div>
         <nav className="nav-buttons">
           <NavButton
-            active={currentPage === 'home'}
-            onClick={() => setCurrentPage('home')}
-          >
-            Home
-          </NavButton>
-          <NavButton
             active={currentPage === 'songs'}
             onClick={() => setCurrentPage('songs')}
           >
             Songs
+          </NavButton>
+          <NavButton
+            active={currentPage === 'graphs'}
+            onClick={() => setCurrentPage('graphs')}
+          >
+            Graphs
           </NavButton>
           <NavButton
             active={currentPage === 'about'}

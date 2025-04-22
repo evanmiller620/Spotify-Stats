@@ -9,13 +9,18 @@ class Time_Data:
     def add_playtime(cls, duration, skipped):
         cls.duration += duration
         cls.skipCount += 1 if skipped else 0
-
+    
     @classmethod
     def get_playtime(cls):
         return cls.duration
     @classmethod
     def get_skips(cls):
         return cls.skipCount
+    
+class Year(Time_Data):
+    def __init__(self):
+        self.song_log = defaultdict(Song)
+        
 
 class Month(Time_Data):
     def __init__(self):
@@ -24,8 +29,8 @@ class Month(Time_Data):
     def month_set(self, song, duration, skipped):
         self.song_log[song].add_playtime(duration, skipped)
         self.add_playtime(duration, skipped)
-
-
+    def __str__(self):
+        return f"{self.year}-{self.month}"
 
 class Data:
     def __init__(self):
@@ -56,7 +61,7 @@ class Song(Data):
         self.album = ""
         self.artist = ""
 
-def save_to_json(data: dict, filename, already_loaded):
+def song_log_to_json(data: dict):
     json_data = []
     for song in data:
         song_name, album, artist = song.split("|:|")
@@ -73,15 +78,37 @@ def save_to_json(data: dict, filename, already_loaded):
                             "skipCount": skipCount,
                             "avgSkipTime": skippedTime}
         json_data.append(song_log)
+    return json_data
 
-    data = {"already_loaded": already_loaded, "data": json_data}
+def save_to_json(data: dict, year_data: dict, month_data: dict, filename):
+    json_data = song_log_to_json(data)
+    year_data_json = {}
+    for year in year_data:
+        year_data_json[year] = song_log_to_json(year_data[year].song_log)
+    month_data_json = {}
+    for month in month_data:
+        month_data_json[month] = song_log_to_json(month_data[month].song_log)
+
+    data = {"data": json_data}
+
     with open(filename, 'w') as json_file:
         json.dump(data, json_file, indent=4)
-
+    dates_directory = "spotify_data_dated"
+    os.makedirs(dates_directory, exist_ok=True)
+    year_data_directory = os.path.join(dates_directory, "year_data")
+    month_data_directory = os.path.join(dates_directory, "month_data")
+    os.makedirs(year_data_directory, exist_ok=True)
+    os.makedirs(month_data_directory, exist_ok=True)
+    for year in year_data:
+        with open(os.path.join(year_data_directory, f"{year}.json"), 'w') as json_file:
+            json.dump(year_data_json[year], json_file, indent=4)
+    for month in month_data:
+        with open(os.path.join(month_data_directory, f"{month}.json"), 'w') as json_file:
+            json.dump(month_data_json[month], json_file, indent=4)
+            
 def load_from_json(filename):
     with open(filename, 'r') as json_file:
         loaded_data =  json.load(json_file) 
-        already_loaded = loaded_data['already_loaded']
         data = loaded_data['data']
         month_data = defaultdict(Month)
         for key in data:
@@ -131,8 +158,9 @@ def process_months(month_data, year_data, all_time_data):
     total_skips = 0
 
     for month in month_data:
+        year_date = month.split("-")[0]
         for song in month_data[month].song_log:
-            song_name, album_name, artist_name = song.split("|:|")
+            # song_name, album_name, artist_name = song.split("|:|")
             duration = month_data[month].song_log[song].duration
             playCount = month_data[month].song_log[song].playCount
             skipCount = month_data[month].song_log[song].skipCount
@@ -141,6 +169,7 @@ def process_months(month_data, year_data, all_time_data):
             total_plays += playCount
             total_skips += skipCount
             all_time_data.song_log[song].add_plays(playCount, duration, skipCount, skipTime)
+            year_data[year_date].song_log[song].add_plays(playCount, duration, skipCount, skipTime)
     
     all_time_data.duration = total_playtime
     all_time_data.playCount = total_plays
@@ -153,9 +182,8 @@ def process_months(month_data, year_data, all_time_data):
         
 if __name__ == "__main__":
     month_data = defaultdict(Month) # all data is save in month blocks
-    # directory_path = "../oodrey_spoot"
+    year_data = defaultdict(Year)
     directory_path = "../evan_data_2025"
-    # directory_path = "../History"
     file_names = process_directory(directory_path)
     
     # process_json(os.path.join(directory_path, file_names[0]), month_data)
@@ -165,10 +193,9 @@ if __name__ == "__main__":
         print("Processing file: ", file)
         process_json(os.path.join(directory_path, file), month_data)
 
-    year_data = {}
     all_time_data = All_Time()
     process_months(month_data, year_data, all_time_data)
     # print(all_time_data.song_log)
 
-    save_to_json(all_time_data.song_log, "public/spotify_stats.json", file_names[0])
+    save_to_json(all_time_data.song_log, year_data, month_data, "public/spotify_stats_test.json")
 

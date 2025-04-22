@@ -1,0 +1,1226 @@
+[
+    {
+        "song": "Man's Not Hot",
+        "album": "Man's Not Hot",
+        "artist": "Big Shaq",
+        "duration": 372,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Lose Yourself",
+        "album": "Curtain Call: The Hits",
+        "artist": "Eminem",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Despacito - Remix",
+        "album": "Despacito Feat. Justin Bieber",
+        "artist": "Luis Fonsi",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Look At Me!",
+        "album": "Look At Me!",
+        "artist": "XXXTENTACION",
+        "duration": 252,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Soldier",
+        "album": "The Eminem Show",
+        "artist": "Eminem",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Not Afraid",
+        "album": "Recovery",
+        "artist": "Eminem",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Untouched",
+        "album": "Hook Me Up",
+        "artist": "The Veronicas",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Glorious (feat. Skylar Grey)",
+        "album": "GEMINI",
+        "artist": "Macklemore",
+        "duration": 143,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Me Reh\u00faso",
+        "album": "Me Reh\u00faso",
+        "artist": "Danny Ocean",
+        "duration": 110,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Know",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 966,
+        "playCount": 9,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A 1000 Times",
+        "album": "I Had A Dream That You Were Mine",
+        "artist": "Hamilton Leithauser + Rostam",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Your Obedient Servant",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 608,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Washington on Your Side",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 955,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "One Last Time",
+        "album": "Hamilton",
+        "artist": "Christopher Jackson",
+        "duration": 1064,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Know Him",
+        "album": "Hamilton",
+        "artist": "Jonathan Groff",
+        "duration": 582,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Adams Administration",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 378,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hurricane",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 861,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Reynolds Pamphlet",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 768,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Burn",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 908,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Stay Alive - Reprise",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 456,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It's Quiet Uptown",
+        "album": "Hamilton",
+        "artist": "Ren\u00e9e Elise Goldsberry",
+        "duration": 1365,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The World Was Wide Enough",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 910,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Alexander Hamilton",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 818,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Candy Paint",
+        "album": "Candy Paint",
+        "artist": "Post Malone",
+        "duration": 138,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shut Up",
+        "album": "Gang Signs & Prayer",
+        "artist": "Stormzy",
+        "duration": 66,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Know Me From",
+        "album": "Know Me From",
+        "artist": "Stormzy",
+        "duration": 102,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Yorktown (The World Turned Upside Down)",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 1511,
+        "playCount": 8,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "What'd I Miss",
+        "album": "Hamilton",
+        "artist": "Daveed Diggs",
+        "duration": 1188,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "What Comes Next?",
+        "album": "Hamilton",
+        "artist": "Jonathan Groff",
+        "duration": 297,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Take a Break",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 870,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Non-Stop",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 2256,
+        "playCount": 8,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Battlefield 1 vs. Call of Duty Infinite Warfare Rap Battle",
+        "album": "Generation Gaming XI",
+        "artist": "Dan Bull",
+        "duration": 142,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bohemian Rhapsody Meets Metal",
+        "album": "The 80s Meet Metal",
+        "artist": "ERock",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I'm a Bird Motha' f***** Remix",
+        "album": "I'm a Bird Motha' f***** Remix",
+        "artist": "Toby Turner",
+        "duration": 31,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "My Shot",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 1151,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Till I Collapse",
+        "album": "The Eminem Show",
+        "artist": "Eminem",
+        "duration": 400,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Schuyler Sisters",
+        "album": "Hamilton",
+        "artist": "Ren\u00e9e Elise Goldsberry",
+        "duration": 560,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "For Forever",
+        "album": "Dear Evan Hansen (Original Broadway Cast Recording)",
+        "artist": "Ben Platt",
+        "duration": 64,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Story of Tonight",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 280,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You'll Be Back",
+        "album": "Hamilton",
+        "artist": "Jonathan Groff",
+        "duration": 832,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Hillary Shimmy Song",
+        "album": "Summer, 2016",
+        "artist": "Song a Day",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "My Shot - Instrumental",
+        "album": "The Hamilton Instrumentals",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 282,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Writing's On The Wall",
+        "album": "RISE",
+        "artist": "The Nor'easters",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Waving Through A Window",
+        "album": "Waving Through A Window (from Dear Evan Hansen [Original Broadway Cast Recording])",
+        "artist": "Ben Platt",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Settle For Me",
+        "album": "Crazy Ex-Girlfriend: Season 1, Vol. 1 (Original Television Soundtrack)",
+        "artist": "Crazy Ex-Girlfriend Cast",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "When He Sees Me",
+        "album": "Waitress (Original Broadway Cast Recording)",
+        "artist": "Kimiko Glenn",
+        "duration": 10,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shiny",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Jemaine Clement",
+        "duration": 185,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Kakamora",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 41,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Frick Da Police",
+        "album": "Frick Da Police",
+        "artist": "Ricegum",
+        "duration": 127,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Ting Goes Beat",
+        "album": "July Blooms",
+        "artist": "Drill beats",
+        "duration": 54,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Black Beatles",
+        "album": "SremmLife 2 - Deluxe",
+        "artist": "Rae Sremmurd",
+        "duration": 13,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mockingbird",
+        "album": "Encore",
+        "artist": "Eminem",
+        "duration": 250,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "My Name Is",
+        "album": "The Slim Shady LP",
+        "artist": "Eminem",
+        "duration": 268,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dead Wrong (feat. Eminem) - 2005 Remaster",
+        "album": "Born Again",
+        "artist": "The Notorious B.I.G.",
+        "duration": 297,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Beautiful",
+        "album": "Relapse: Refill",
+        "artist": "Eminem",
+        "duration": 392,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Like Toy Soldiers",
+        "album": "Encore",
+        "artist": "Eminem",
+        "duration": 260,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dear Theodosia",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 553,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "History Has Its Eyes on You",
+        "album": "Hamilton",
+        "artist": "Christopher Jackson",
+        "duration": 296,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "That Would Be Enough",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 535,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Say No to This",
+        "album": "Hamilton",
+        "artist": "Jasmine Cephas-Jones",
+        "duration": 728,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Room Where It Happens",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 1908,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Schuyler Defeated",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 315,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cabinet Battle #2",
+        "album": "Hamilton",
+        "artist": "Christopher Jackson",
+        "duration": 851,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "This Song Doesn't Have Any Words but These Ones (And These Ones) [feat. Terabrite]",
+        "album": "This Song Doesn't Have Any Words but These Ones (And These Ones) [feat. Terabrite]",
+        "artist": "Tobuscus",
+        "duration": 30,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Fax (What Does the Fax Say?) [feat. Terabrite]",
+        "album": "The Fax (What Does the Fax Say?) [feat. Terabrite]",
+        "artist": "Toby Turner",
+        "duration": 206,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "\"Get Bloody,\"Daft Punk Get Lucky Happy Wheels Parody",
+        "album": "\"Get Bloody,\"Daft Punk Get Lucky Happy Wheels Parody",
+        "artist": "Tobuscus",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Viral Song",
+        "album": "Viral Song",
+        "artist": "Toby Turner",
+        "duration": 152,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mine the Diamond (A Minecraft Song) [feat. Terabrite]",
+        "album": "Mine the Diamond (A Minecraft Song) [feat. Terabrite]",
+        "artist": "Tobuscus",
+        "duration": 145,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Twenty One Hydrants (Stressed out Parody)",
+        "album": "Twenty One Hydrants (Stressed out Parody)",
+        "artist": "Tobuscus",
+        "duration": 22,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Serious Nonsense (Mouth Music)",
+        "album": "Serious Nonsense (Mouth Music)",
+        "artist": "Tobuscus",
+        "duration": 23,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "2016",
+        "album": "2016",
+        "artist": "Logan Paul",
+        "duration": 204,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Logan Paul Vine Remix (feat. Sickick Music)",
+        "album": "Logan Paul Vine Remix (feat. Sickick Music)",
+        "artist": "Logan Paul",
+        "duration": 205,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Outta My Hair",
+        "album": "Outta My Hair",
+        "artist": "Logan Paul",
+        "duration": 168,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Help Me Help You (feat. Why Don't We)",
+        "album": "Help Me Help You (feat. Why Don't We)",
+        "artist": "Logan Paul",
+        "duration": 87,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Guess Who's Back",
+        "album": "The 18th Letter / The Book Of Life",
+        "artist": "Rakim",
+        "duration": 10,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Boat Dog",
+        "album": "Boat Dog",
+        "artist": "Dj Cutman",
+        "duration": 110,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Markiplier Rap",
+        "album": "The Markiplier Rap",
+        "artist": "J.T. Machinima",
+        "duration": 180,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Too Good At Goodbyes",
+        "album": "The Thrill Of It All",
+        "artist": "Sam Smith",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gucci Gang",
+        "album": "Lil Pump",
+        "artist": "Lil Pump",
+        "duration": 124,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Feels (feat. Pharrell Williams, Katy Perry & Big Sean)",
+        "album": "Funk Wav Bounces Vol.1",
+        "artist": "Calvin Harris",
+        "duration": 7,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cabinet Battle #1",
+        "album": "Hamilton",
+        "artist": "Christopher Jackson",
+        "duration": 859,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Stay Alive",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 343,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Meet Me Inside",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 415,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ten Duel Commandments",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 429,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Skrt",
+        "album": "Skrt",
+        "artist": "Kodak Black",
+        "duration": 4,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Panda",
+        "album": "Panda",
+        "artist": "Desiigner",
+        "duration": 1054,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bad Business",
+        "album": "Issa Album",
+        "artist": "21 Savage",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Push",
+        "album": "Push",
+        "artist": "Toby Turner",
+        "duration": 246,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "rockstar",
+        "album": "rockstar",
+        "artist": "Post Malone",
+        "duration": 220,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Havana (feat. Young Thug)",
+        "album": "Havana (feat. Young Thug)",
+        "artist": "Camila Cabello",
+        "duration": 216,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "4 Chords",
+        "album": "Animal Vehicle",
+        "artist": "The Axis of Awesome",
+        "duration": 83,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Election of 1800",
+        "album": "Hamilton",
+        "artist": "Daveed Diggs",
+        "duration": 948,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Story of Tonight - Reprise",
+        "album": "Hamilton",
+        "artist": "Okieriete Onaodowan",
+        "duration": 488,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Farmer Refuted",
+        "album": "Hamilton",
+        "artist": "Thayne Jasperson",
+        "duration": 470,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Right Hand Man",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 1605,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A Winter's Ball",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 288,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Helpless",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 939,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Satisfied",
+        "album": "Hamilton",
+        "artist": "Ren\u00e9e Elise Goldsberry",
+        "duration": 1316,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wait for It",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 418,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Still D.R.E.",
+        "album": "2001",
+        "artist": "Dr. Dre",
+        "duration": 541,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Guns and Ships",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 728,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Best of Wives and Best of Women",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 106,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Aaron Burr, Sir",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 468,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Who Lives, Who Dies, Who Tells Your Story",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 862,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "If I Were a Bell",
+        "album": "Guys and Dolls (New Broadway Cast Recording (1992))",
+        "artist": "Josie de Guzman",
+        "duration": 87,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Everyday We Lit (feat. PnB Rock, Lil Yachty & Wiz Khalifa) - Remix",
+        "album": "Everyday We Lit (feat. PnB Rock, Lil Yachty & Wiz Khalifa)",
+        "artist": "YFN Lucci",
+        "duration": 236,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close My Eyes",
+        "album": "Issa Album",
+        "artist": "21 Savage",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sucker for Pain (with Wiz Khalifa, Imagine Dragons, Logic & Ty Dolla $ign feat. X Ambassadors)",
+        "album": "Sucker for Pain (with Logic & Ty Dolla $ign feat. X Ambassadors)",
+        "artist": "Lil Wayne",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bad and Boujee (feat. Lil Uzi Vert)",
+        "album": "Culture",
+        "artist": "Migos",
+        "duration": 347,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "XO TOUR Llif3",
+        "album": "XO TOUR Llif3",
+        "artist": "Lil Uzi Vert",
+        "duration": 182,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "No Hands (feat. Roscoe Dash & Wale)",
+        "album": "No Hands (feat. Roscoe Dash & Wale)",
+        "artist": "Waka Flocka Flame",
+        "duration": 217,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mask Off",
+        "album": "FUTURE",
+        "artist": "Future",
+        "duration": 63,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Can\u0092't Stop Me",
+        "album": "Never Land",
+        "artist": "Andy Mineo",
+        "duration": 59,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Through the Fire and Flames",
+        "album": "Inhuman Rampage",
+        "artist": "DragonForce",
+        "duration": 372,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "GOAT",
+        "album": "GOAT - Single",
+        "artist": "Noah North",
+        "duration": 1603,
+        "playCount": 10,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Grenade",
+        "album": "Grenade",
+        "artist": "GOAT",
+        "duration": 476,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "GOAT",
+        "album": "PHO EP",
+        "artist": "Ari Lennox",
+        "duration": 247,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Pursuit Of Happiness - Extended Steve Aoki Remix",
+        "album": "Pursuit Of Happiness",
+        "artist": "Kid Cudi",
+        "duration": 7,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Goat",
+        "album": "Goat",
+        "artist": "Hopp",
+        "duration": 239,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sail",
+        "album": "Megalithic Symphony Deluxe",
+        "artist": "AWOLNATION",
+        "duration": 950,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sails to Te Fiti",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 86,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Guns And Roses",
+        "album": "Ultraviolence",
+        "artist": "Lana Del Rey",
+        "duration": 43,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "New Rules",
+        "album": "Dua Lipa",
+        "artist": "Dua Lipa",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wolves",
+        "album": "Wolves",
+        "artist": "Selena Gomez",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Walk On Water (feat. Beyonc\u00e9)",
+        "album": "Walk On Water (feat. Beyonc\u00e9)",
+        "artist": "Eminem",
+        "duration": 303,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bodak Yellow",
+        "album": "Bodak Yellow",
+        "artist": "Cardi B",
+        "duration": 223,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thunder",
+        "album": "Evolve",
+        "artist": "Imagine Dragons",
+        "duration": 19,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Perro Fiel (feat. Nicky Jam)",
+        "album": "El Dorado",
+        "artist": "Shakira",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Blow Us All Away",
+        "album": "Hamilton",
+        "artist": "Ariana DeBose",
+        "duration": 519,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Stronger - Original Broadway Cast Recording",
+        "album": "Finding Neverland",
+        "artist": "Matthew Morrison",
+        "duration": 36,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Pop Style",
+        "album": "Views",
+        "artist": "Drake",
+        "duration": 22,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Why You Always Hatin?",
+        "album": "Still Brazy",
+        "artist": "YG",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "679 (feat. Remy Boyz)",
+        "album": "679 (feat. Remy Boyz)",
+        "artist": "Fetty Wap",
+        "duration": 12,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "First Car",
+        "album": "First Car",
+        "artist": "GOAT",
+        "duration": 188,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Girls",
+        "album": "Girls",
+        "artist": "Dylan Matthew",
+        "duration": 197,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Used to Be",
+        "album": "Used to Be",
+        "artist": "AJ Mitchell",
+        "duration": 32,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    }
+]

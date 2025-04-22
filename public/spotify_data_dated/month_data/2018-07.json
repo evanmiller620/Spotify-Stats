@@ -1,0 +1,3386 @@
+[
+    {
+        "song": "The Greatest Show",
+        "album": "The Greatest Showman (Original Motion Picture Soundtrack)",
+        "artist": "Hugh Jackman",
+        "duration": 65,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A Million Dreams",
+        "album": "The Greatest Showman (Original Motion Picture Soundtrack)",
+        "artist": "Ziv Zaifman",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "APESHIT",
+        "album": "EVERYTHING IS LOVE",
+        "artist": "The Carters",
+        "duration": 22,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Still D.R.E.",
+        "album": "2001",
+        "artist": "Dr. Dre",
+        "duration": 521,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Powerglide (feat. Juicy J) - From SR3MM",
+        "album": "SR3MM",
+        "artist": "Rae Sremmurd",
+        "duration": 623,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Like It - Dillon Francis Remix",
+        "album": "I Like It",
+        "artist": "Cardi B",
+        "duration": 219,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "HUMBLE. - SKRILLEX REMIX",
+        "album": "HUMBLE.",
+        "artist": "Skrillex",
+        "duration": 156,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "DJ Turn It Up",
+        "album": "Amsterdam Twerk Music",
+        "artist": "Yellow Claw",
+        "duration": 211,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wake Up",
+        "album": "Wake Up",
+        "artist": "Kayzo",
+        "duration": 316,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Savage Mode",
+        "album": "Savage Mode",
+        "artist": "KAZZANOVA",
+        "duration": 182,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ain't That Why - Skytech Remix",
+        "album": "Ain't That Why",
+        "artist": "R3HAB",
+        "duration": 164,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Chun-Li",
+        "album": "Chun-Li",
+        "artist": "Nicki Minaj",
+        "duration": 230,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Stir Fry",
+        "album": "Culture II",
+        "artist": "Migos",
+        "duration": 195,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hard in Da Paint",
+        "album": "Flockaveli",
+        "artist": "Waka Flocka Flame",
+        "duration": 246,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Yikes",
+        "album": "ye",
+        "artist": "Kanye West",
+        "duration": 19,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ambitionz Az A Ridah",
+        "album": "All Eyez On Me",
+        "artist": "2Pac",
+        "duration": 81,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shook Ones, Pt. II",
+        "album": "The Infamous",
+        "artist": "Mobb Deep",
+        "duration": 11,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "F**kin' Problems (feat. Drake, 2 Chainz & Kendrick Lamar)",
+        "album": "LONG.LIVE.A$AP (Deluxe Version)",
+        "artist": "A$AP Rocky",
+        "duration": 7,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Tip Pon It",
+        "album": "Tip Pon It",
+        "artist": "Sean Paul",
+        "duration": 9,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Alive (with Offset & 2 Chainz)",
+        "album": "Alive (with Offset & 2 Chainz)",
+        "artist": "Lil Jon",
+        "duration": 8,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "2 Sides Of The Game",
+        "album": "Let the Trap Say Amen",
+        "artist": "Lecrae",
+        "duration": 65,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Anarchy Acres",
+        "album": "Anarchy Acres",
+        "artist": "Josh A",
+        "duration": 198,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Can't Be Touched (feat. Mr. Magic & Trouble)",
+        "album": "Body Head Bangerz, Vol. 1",
+        "artist": "Roy Jones Jr.",
+        "duration": 647,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "White America",
+        "album": "The Eminem Show",
+        "artist": "Eminem",
+        "duration": 648,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Lighters",
+        "album": "Hell: The Sequel",
+        "artist": "Bad Meets Evil",
+        "duration": 309,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sing For The Moment",
+        "album": "The Eminem Show",
+        "artist": "Eminem",
+        "duration": 678,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Till I Collapse",
+        "album": "The Eminem Show",
+        "artist": "Eminem",
+        "duration": 300,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "X (with 2 Chainz & Saudi)",
+        "album": "Black Panther The Album Music From And Inspired By",
+        "artist": "ScHoolboy Q",
+        "duration": 393,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Race",
+        "album": "#SantanaWorld (+)",
+        "artist": "Tay-K",
+        "duration": 208,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Flexicution",
+        "album": "Bobby Tarantino",
+        "artist": "Logic",
+        "duration": 437,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Lose Yourself",
+        "album": "Curtain Call: The Hits",
+        "artist": "Eminem",
+        "duration": 556,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Young Folks",
+        "album": "Writer's Block",
+        "artist": "Peter Bjorn and John",
+        "duration": 282,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mr. Clean",
+        "album": "Mr. Clean - EP",
+        "artist": "Yung Gravy",
+        "duration": 472,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "44 More",
+        "album": "Bobby Tarantino II",
+        "artist": "Logic",
+        "duration": 165,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gucci Coffin",
+        "album": "Better off Dead",
+        "artist": "Josh A",
+        "duration": 402,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "GOAT",
+        "album": "GOAT - Single",
+        "artist": "Noah North",
+        "duration": 255,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Above The Law",
+        "album": "Hell: The Sequel",
+        "artist": "Bad Meets Evil",
+        "duration": 367,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Water",
+        "album": "The Booty Tape",
+        "artist": "Ugly God",
+        "duration": 26,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Chicken Fried",
+        "album": "The Foundation",
+        "artist": "Zac Brown Band",
+        "duration": 246,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Any Ol' Barstool",
+        "album": "They Don't Know",
+        "artist": "Jason Aldean",
+        "duration": 208,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Flatliner (feat. Dierks Bentley)",
+        "album": "You Should Be Here",
+        "artist": "Cole Swindell",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Huntin', Fishin' And Lovin' Every Day",
+        "album": "Kill The Lights - Deluxe",
+        "artist": "Luke Bryan",
+        "duration": 278,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Drinkin' Problem",
+        "album": "On The Rocks",
+        "artist": "Midland",
+        "duration": 42,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Give Love A Bad Name",
+        "album": "Slippery When Wet",
+        "artist": "Bon Jovi",
+        "duration": 444,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "When It Rains It Pours",
+        "album": "This One's for You",
+        "artist": "Luke Combs",
+        "duration": 263,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Somewhere On A Beach",
+        "album": "Black",
+        "artist": "Dierks Bentley",
+        "duration": 197,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Country Girl (Shake It For Me)",
+        "album": "Tailgates & Tanlines",
+        "artist": "Luke Bryan",
+        "duration": 225,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Heartache On The Dance Floor",
+        "album": "California Sunrise",
+        "artist": "Jon Pardi",
+        "duration": 205,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "No Such Thing as a Broken Heart",
+        "album": "Happy Endings",
+        "artist": "Old Dominion",
+        "duration": 16,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Night Shift",
+        "album": "California Sunrise",
+        "artist": "Jon Pardi",
+        "duration": 172,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Small Town Boy",
+        "album": "Current Mood",
+        "artist": "Dustin Lynch",
+        "duration": 205,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "In Case You Didn't Know",
+        "album": "Brett Young",
+        "artist": "Brett Young",
+        "duration": 224,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Black",
+        "album": "Black",
+        "artist": "Dierks Bentley",
+        "duration": 69,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Codeine Dreaming (feat. Lil Wayne)",
+        "album": "Project Baby 2: All Grown Up",
+        "artist": "Kodak Black",
+        "duration": 268,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ultimate",
+        "album": "Ultimate",
+        "artist": "Denzel Curry",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Rubbin off the Paint",
+        "album": "Rubbin off the Paint",
+        "artist": "YBN Nahmir",
+        "duration": 158,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Everyday We Lit (feat. PnB Rock, Lil Yachty & Wiz Khalifa) - Remix",
+        "album": "Everyday We Lit (feat. PnB Rock, Lil Yachty & Wiz Khalifa)",
+        "artist": "YFN Lucci",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Lady In Yellow",
+        "album": "Teenage Emotions",
+        "artist": "Lil Yachty",
+        "duration": 13,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "2 Phones",
+        "album": "Islah",
+        "artist": "Kevin Gates",
+        "duration": 240,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Glock In My Benz",
+        "album": "Glock In My Benz",
+        "artist": "Smokepurpp",
+        "duration": 201,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Understand Me",
+        "album": "Finally Rich",
+        "artist": "Chief Keef",
+        "duration": 244,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bring It Back (with Mike WiLL Made-It feat. Drake)",
+        "album": "Edgewood",
+        "artist": "Trouble",
+        "duration": 255,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Like A Soccer Mom",
+        "album": "Like A Soccer Mom",
+        "artist": "Ski Mask The Slump God",
+        "duration": 109,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "pick up the phone",
+        "album": "pick up the phone",
+        "artist": "Young Thug",
+        "duration": 525,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Modern Slavery",
+        "album": "Huncho Jack, Jack Huncho",
+        "artist": "Huncho Jack",
+        "duration": 148,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Luv It",
+        "album": "The Inspiration",
+        "artist": "Jeezy",
+        "duration": 240,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Megaman",
+        "album": "#SantanaWorld (+)",
+        "artist": "Tay-K",
+        "duration": 133,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Unforgettable",
+        "album": "Jungle Rules",
+        "artist": "French Montana",
+        "duration": 39,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "My Dawg",
+        "album": "Quality Control: Control The Streets Volume 1",
+        "artist": "Quality Control",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Plain Jane",
+        "album": "Still Striving",
+        "artist": "A$AP Ferg",
+        "duration": 175,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Tiimmy Turner",
+        "album": "Tiimmy Turner",
+        "artist": "Desiigner",
+        "duration": 239,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Booty",
+        "album": "223",
+        "artist": "Blac Youngsta",
+        "duration": 200,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bank Account",
+        "album": "Issa Album",
+        "artist": "21 Savage",
+        "duration": 219,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Envy Me",
+        "album": "32 Zel",
+        "artist": "Denzel Curry",
+        "duration": 235,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Aarti",
+        "album": "Aarti",
+        "artist": "ShiShi",
+        "duration": 12,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Fix You",
+        "album": "X&Y",
+        "artist": "Coldplay",
+        "duration": 300,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Home",
+        "album": "The World From The Side Of The Moon",
+        "artist": "Phillip Phillips",
+        "duration": 420,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Us",
+        "album": "Soviet Kitsch",
+        "artist": "Regina Spektor",
+        "duration": 297,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "When I'm Small",
+        "album": "Eyelid Movies",
+        "artist": "Phantogram",
+        "duration": 403,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Every Night",
+        "album": "Night Visions",
+        "artist": "Imagine Dragons",
+        "duration": 272,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shiny",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Jemaine Clement",
+        "duration": 178,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Diggy Diggy Hole",
+        "album": "Diggy Diggy Hole",
+        "artist": "The Yogscast",
+        "duration": 8,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Roots",
+        "album": "Roots",
+        "artist": "Imagine Dragons",
+        "duration": 11,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You're Welcome",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Dwayne Johnson",
+        "duration": 163,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Maui Leaves - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 24,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sails to Te Fiti - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Know The Way",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Opetaia Foa'i",
+        "duration": 141,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Voyager Tagaloa",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 57,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Tala's Deathbed",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 75,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "If I Were the Ocean",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 20,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Where You Are - Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 181,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Where You Are",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Christopher Jackson",
+        "duration": 210,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It's Called Wayfinding - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 51,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Warrior Face - Outtake",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 67,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "He Was You",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Village Crazy Lady",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 14,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Te Fiti Restored",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You're Welcome - Jordan Fisher/Lin-Manuel Miranda Version",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Jordan Fisher",
+        "duration": 137,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shiny Heart",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 36,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "More - Reprise - Outtake",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Marcy Harriell",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Village Crazy Lady - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Tamatoa's Lair",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Prologue - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Know Who You Are",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Auli'i Cravalho",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You're Welcome - Instrumental",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Moana Karaoke",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Heartache",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Know The Way - Finale",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 69,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cavern - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 125,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Tala Returns",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 61,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "How Far I'll Go - Instrumental",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Moana Karaoke",
+        "duration": 21,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "How Far I'll Go - Reprise",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Auli'i Cravalho",
+        "duration": 87,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Ocean Chose You",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 77,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wayfinding",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 32,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "An Innocent Warrior",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Vai Mahina",
+        "duration": 97,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Battle of Wills",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 190,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Maui Battles - Score Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 117,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shiny - Demo",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 15,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "More - Outtake",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Marcy Harriell",
+        "duration": 196,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Prologue",
+        "album": "Moana - Original Motion Picture Soundtrack/Deluxe Edition",
+        "artist": "Mark Mancina",
+        "duration": 8,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Say No to This",
+        "album": "Hamilton",
+        "artist": "Jasmine Cephas-Jones",
+        "duration": 9,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The World Was Wide Enough",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 302,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A Winter's Ball",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 69,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Know",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 142,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Adams Administration",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 54,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It's Quiet Uptown",
+        "album": "Hamilton",
+        "artist": "Ren\u00e9e Elise Goldsberry",
+        "duration": 270,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Stay Alive",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 159,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Reynolds Pamphlet",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 128,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "My Shot",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 333,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "What Comes Next?",
+        "album": "Hamilton",
+        "artist": "Jonathan Groff",
+        "duration": 99,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cabinet Battle #2",
+        "album": "Hamilton",
+        "artist": "Christopher Jackson",
+        "duration": 142,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Satisfied",
+        "album": "Hamilton",
+        "artist": "Ren\u00e9e Elise Goldsberry",
+        "duration": 329,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Your Obedient Servant",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 150,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dear Theodosia",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 184,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Yorktown (The World Turned Upside Down)",
+        "album": "Hamilton",
+        "artist": "Original Broadway Cast of Hamilton",
+        "duration": 242,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Alexander Hamilton",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 236,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "That Would Be Enough",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 178,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Schuyler Defeated",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 63,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Room Where It Happens",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 318,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Farmer Refuted",
+        "album": "Hamilton",
+        "artist": "Thayne Jasperson",
+        "duration": 112,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Best of Wives and Best of Women",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 47,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Story of Tonight - Reprise",
+        "album": "Hamilton",
+        "artist": "Okieriete Onaodowan",
+        "duration": 121,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hurricane",
+        "album": "Hamilton",
+        "artist": "Lin-Manuel Miranda",
+        "duration": 143,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Guns and Ships",
+        "album": "Hamilton",
+        "artist": "Leslie Odom Jr.",
+        "duration": 127,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Schuyler Sisters",
+        "album": "Hamilton",
+        "artist": "Ren\u00e9e Elise Goldsberry",
+        "duration": 186,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Burn",
+        "album": "Hamilton",
+        "artist": "Phillipa Soo",
+        "duration": 55,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Drug Dealer",
+        "album": "Drug Dealer",
+        "artist": "Cuban Doll",
+        "duration": 72,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Drop (feat. Blac Youngsta & BlocBoy JB)",
+        "album": "Drop (feat. Blac Youngsta & BlocBoy JB)",
+        "artist": "G-Eazy",
+        "duration": 22,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "How I Feel",
+        "album": "How I Feel",
+        "artist": "Good Gas",
+        "duration": 212,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Champion (feat. Travis Scott)",
+        "album": "RECKLESS",
+        "artist": "NAV",
+        "duration": 42,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gang Up (with Young Thug, 2 Chainz & Wiz Khalifa feat. PnB Rock)",
+        "album": "Gang Up (with Young Thug, 2 Chainz & Wiz Khalifa feat. PnB Rock)",
+        "artist": "Young Thug",
+        "duration": 22,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thousand Ways",
+        "album": "Thousand Ways",
+        "artist": "Jay Critch",
+        "duration": 166,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Talk About",
+        "album": "Talk About",
+        "artist": "Jay Critch",
+        "duration": 72,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Walk It Talk It",
+        "album": "Culture II",
+        "artist": "Migos",
+        "duration": 275,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Walk It Out",
+        "album": "Beat'n Down Yo Block",
+        "artist": "Unk",
+        "duration": 173,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Walk It out!",
+        "album": "Walk It out!",
+        "artist": "Roy Purdy",
+        "duration": 15,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bonfire",
+        "album": "Sorry",
+        "artist": "emune",
+        "duration": 78,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Revell",
+        "album": "KO-OP 1",
+        "artist": "Smoke Trees",
+        "duration": 24,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Together / Your Hand in Mine (Radio Edit)",
+        "album": "Together / Your Hand in Mine (Radio Edit)",
+        "artist": "Tracey Chattaway",
+        "duration": 296,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Stars In Spring",
+        "album": "May Your Heart Be The Map",
+        "artist": "Epic45",
+        "duration": 256,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "RD 1",
+        "album": "Days Drift By",
+        "artist": "Blithe Field",
+        "duration": 265,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Last Stage of Consumption",
+        "album": "The Swiss Illness",
+        "artist": "Lowercase Noises",
+        "duration": 486,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Halving the Compass (Rhian Sheehan Remix)",
+        "album": "Helios Remixed",
+        "artist": "Helios",
+        "duration": 282,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Slippery (feat. Gucci Mane)",
+        "album": "Culture",
+        "artist": "Migos",
+        "duration": 335,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Drip (feat. Migos)",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 584,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Get the Bag (feat. Migos)",
+        "album": "Mr. Davis",
+        "artist": "Gucci Mane",
+        "duration": 233,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "MotorSport",
+        "album": "Culture II",
+        "artist": "Migos",
+        "duration": 303,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Too Playa",
+        "album": "Culture II",
+        "artist": "Migos",
+        "duration": 312,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Higher We Go - Intro",
+        "album": "Culture II",
+        "artist": "Migos",
+        "duration": 255,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "CC",
+        "album": "Culture II",
+        "artist": "Migos",
+        "duration": 142,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gotta Go (Remix)",
+        "album": "Gotta Go (Remix)",
+        "artist": "Nicky&Jojo",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Rich Forever Way Outro",
+        "album": "Rich Forever 3",
+        "artist": "Jay Critch",
+        "duration": 15,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Red And Blue",
+        "album": "Red And Blue",
+        "artist": "Jay Critch",
+        "duration": 46,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "do re mi",
+        "album": "digital druglord",
+        "artist": "blackbear",
+        "duration": 40,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dance (Instrumental)",
+        "album": "Hot Soup - Instrumentals",
+        "artist": "Danny Brown",
+        "duration": 150,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A Sky Full of Stars",
+        "album": "Ghost Stories",
+        "artist": "Coldplay",
+        "duration": 353,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "WHORU?",
+        "album": "8",
+        "artist": "Awich",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Babylon",
+        "album": "VSQ Performs David Gray",
+        "artist": "Vitamin String Quartet",
+        "duration": 424,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wildflowers",
+        "album": "Wildflowers",
+        "artist": "Tom Petty",
+        "duration": 190,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Young And Beautiful",
+        "album": "Young And Beautiful",
+        "artist": "Lana Del Rey",
+        "duration": 236,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Float On",
+        "album": "Good News For People Who Love Bad News",
+        "artist": "Modest Mouse",
+        "duration": 208,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Night We Met",
+        "album": "Strange Trails",
+        "artist": "Lord Huron",
+        "duration": 208,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Fidelity",
+        "album": "Begin to Hope",
+        "artist": "Regina Spektor",
+        "duration": 226,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cool Kids",
+        "album": "Talking Dreams - Deluxe Edition",
+        "artist": "Echosmith",
+        "duration": 237,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Standing Outside a Broken Phone Booth with Money in My Hand",
+        "album": "Rocket",
+        "artist": "Primitive Radio Gods",
+        "duration": 336,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "New Slang",
+        "album": "Oh, Inverted World",
+        "artist": "The Shins",
+        "duration": 231,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "On Hold",
+        "album": "I See You",
+        "artist": "The xx",
+        "duration": 224,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Yellow",
+        "album": "Parachutes",
+        "artist": "Coldplay",
+        "duration": 266,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Us Against the World",
+        "album": "Mylo Xyloto",
+        "artist": "Coldplay",
+        "duration": 239,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Across the Universe",
+        "album": "Pleasantville -Music From The Motion Picture",
+        "artist": "Fiona Apple",
+        "duration": 307,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ho Hey",
+        "album": "The Lumineers",
+        "artist": "The Lumineers",
+        "duration": 163,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Simple Song",
+        "album": "Port Of Morrow",
+        "artist": "The Shins",
+        "duration": 255,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Graceland",
+        "album": "Graceland (25th Anniversary Deluxe Edition)",
+        "artist": "Paul Simon",
+        "duration": 291,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Dare You",
+        "album": "I See You",
+        "artist": "The xx",
+        "duration": 233,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Satellite",
+        "album": "Under the Table and Dreaming (Expanded Edition)",
+        "artist": "Dave Matthews Band",
+        "duration": 291,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Stubborn Love",
+        "album": "The Lumineers",
+        "artist": "The Lumineers",
+        "duration": 279,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Pink Moon",
+        "album": "Pink Moon",
+        "artist": "Nick Drake",
+        "duration": 123,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "7 Years",
+        "album": "Lukas Graham",
+        "artist": "Lukas Graham",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Don't Stop 'Til You Get Enough",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 405,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Billionaire (feat. Bruno Mars)",
+        "album": "Billionaire (feat. Bruno Mars)",
+        "artist": "Travie McCoy",
+        "duration": 211,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mirrors",
+        "album": "The 20/20 Experience",
+        "artist": "Justin Timberlake",
+        "duration": 246,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sail",
+        "album": "Megalithic Symphony Deluxe",
+        "artist": "AWOLNATION",
+        "duration": 264,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sailing",
+        "album": "Christopher Cross",
+        "artist": "Christopher Cross",
+        "duration": 70,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sail - Unlimited Gravity Remix",
+        "album": "RE/Sail",
+        "artist": "AWOLNATION",
+        "duration": 39,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Man's Not Hot",
+        "album": "Man's Not Hot",
+        "artist": "Big Shaq",
+        "duration": 362,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "My House",
+        "album": "My House",
+        "artist": "Flo Rida",
+        "duration": 192,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Billie Jean",
+        "album": "Thriller 25 Super Deluxe Edition",
+        "artist": "Michael Jackson",
+        "duration": 231,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wanna Be Startin' Somethin'",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 412,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thriller",
+        "album": "Thriller",
+        "artist": "Michael Jackson",
+        "duration": 357,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Beat It",
+        "album": "Thriller",
+        "artist": "Michael Jackson",
+        "duration": 177,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ben - Single Version",
+        "album": "Ben",
+        "artist": "Michael Jackson",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Are Not Alone",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - BOOK I",
+        "artist": "Michael Jackson",
+        "duration": 17,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Man in the Mirror - 2012 Remaster",
+        "album": "Bad 25th Anniversary",
+        "artist": "Michael Jackson",
+        "duration": 89,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "God's Plan",
+        "album": "Scary Hours",
+        "artist": "Drake",
+        "duration": 13,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Earth Song",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 9,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Location",
+        "album": "American Teen",
+        "artist": "Khalid",
+        "duration": 25,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Lean on Me",
+        "album": "Still Bill",
+        "artist": "Bill Withers",
+        "duration": 299,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Invincible",
+        "album": "Invincible",
+        "artist": "Michael Jackson",
+        "duration": 10,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Texas Longhorn",
+        "album": "Texas Longhorn - Single",
+        "artist": "Django Walker",
+        "duration": 375,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Okie From Muskogee",
+        "album": "Greatest Hits - Finest Performances",
+        "artist": "Merle Haggard",
+        "duration": 10,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Walk the Line",
+        "album": "I Walk the Line (Original Soundtrack Recording)",
+        "artist": "Johnny Cash",
+        "duration": 495,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ring of Fire",
+        "album": "Ring Of Fire: The Best Of Johnny Cash",
+        "artist": "Johnny Cash",
+        "duration": 327,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Can't Fight This Feeling",
+        "album": "Wheels Are Turnin'",
+        "artist": "REO Speedwagon",
+        "duration": 359,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Black or White",
+        "album": "Dangerous",
+        "artist": "Michael Jackson",
+        "duration": 508,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Purple Rain",
+        "album": "Purple Rain",
+        "artist": "Prince",
+        "duration": 468,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Are The World",
+        "album": "We Are The World",
+        "artist": "U.S.A. For Africa",
+        "duration": 31,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sleepyface",
+        "album": "Beets 4",
+        "artist": "Birocratic",
+        "duration": 195,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Detroit Madness - Instrumental",
+        "album": "Rebirth of Detroit Instrumentals",
+        "artist": "J Dilla",
+        "duration": 201,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wen Uuu",
+        "album": "Vacation - Single",
+        "artist": "Shlohmo",
+        "duration": 233,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "french inhale",
+        "album": "Lighter",
+        "artist": "[bsd.u]",
+        "duration": 108,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Passin' Me By - Instrumental",
+        "album": "Bizarre Ride II The Pharcyde",
+        "artist": "The Pharcyde",
+        "duration": 302,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Best Secret - Instrumental",
+        "album": "NY's Finest (Instrumentals)",
+        "artist": "Pete Rock",
+        "duration": 270,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Distant Land",
+        "album": "Shades Of Blue: Madlib Invades Blue Note",
+        "artist": "Madlib",
+        "duration": 238,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Climax (Girl Shit) - Instrumental",
+        "album": "Fantastic, Vol.2: Vinyl Instrumentals",
+        "artist": "Slum Village",
+        "duration": 63,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Who's Gonna Fill Their Shoes",
+        "album": "George Jones - 16 Biggest Hits",
+        "artist": "George Jones",
+        "duration": 13,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "ABC",
+        "album": "ABC",
+        "artist": "The Jackson 5",
+        "duration": 247,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Little Susie / Pie Jesu",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Didn't Start the Fire",
+        "album": "Storm Front",
+        "artist": "Billy Joel",
+        "duration": 313,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Summer Of '69",
+        "album": "Reckless",
+        "artist": "Bryan Adams",
+        "duration": 206,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Come Together",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 242,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Love You Save",
+        "album": "ABC",
+        "artist": "The Jackson 5",
+        "duration": 181,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Rock My World",
+        "album": "Invincible",
+        "artist": "Michael Jackson",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Are Not Alone",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "2 Bad",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "No Problem (feat. Lil Wayne & 2 Chainz)",
+        "album": "Coloring Book",
+        "artist": "Chance the Rapper",
+        "duration": 225,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bad - 2012 Remaster",
+        "album": "Bad 25th Anniversary",
+        "artist": "Michael Jackson",
+        "duration": 16,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Luckenbach, Texas (Back to the Basics of Love) (feat. Willie Nelson)",
+        "album": "Nashville Rebel",
+        "artist": "Waylon Jennings",
+        "duration": 200,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hard to Say I'm Sorry / Get Away - 2006 Remaster",
+        "album": "Chicago 16",
+        "artist": "Chicago",
+        "duration": 304,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Don't Want to Miss a Thing - From the Touchstone film, \"Armageddon\"",
+        "album": "I Don't Want To Miss A Thing",
+        "artist": "Aerosmith",
+        "duration": 299,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Heaven",
+        "album": "Reckless",
+        "artist": "Bryan Adams",
+        "duration": 243,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "(Everything I Do) I Do It For You",
+        "album": "Waking Up The Neighbours",
+        "artist": "Bryan Adams",
+        "duration": 394,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "In My Feelings",
+        "album": "Scorpion",
+        "artist": "Drake",
+        "duration": 231,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Can't Hold Us (feat. Ray Dalton)",
+        "album": "The Heist",
+        "artist": "Macklemore & Ryan Lewis",
+        "duration": 258,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Emotionless",
+        "album": "Scorpion",
+        "artist": "Drake",
+        "duration": 106,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Take Me Home, Country Roads - Rerecorded",
+        "album": "The John Denver Collection, Vol. 1: Take Me Home Country Roads",
+        "artist": "John Denver",
+        "duration": 355,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Who Is It",
+        "album": "Dangerous",
+        "artist": "Michael Jackson",
+        "duration": 393,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gone Too Soon",
+        "album": "Dangerous",
+        "artist": "Michael Jackson",
+        "duration": 68,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Rip X",
+        "album": "Rip X",
+        "artist": "iamjakehill",
+        "duration": 38,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "KB & Prisca - Kamikaze",
+        "album": "100",
+        "artist": "KB",
+        "duration": 200,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Come And Get It",
+        "album": "Revolve",
+        "artist": "John Newman",
+        "duration": 184,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shut Up and Dance",
+        "album": "TALKING IS HARD",
+        "artist": "WALK THE MOON",
+        "duration": 199,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Nobody Love",
+        "album": "Unbreakable Smile",
+        "artist": "Tori Kelly",
+        "duration": 200,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "goosebumps",
+        "album": "Birds In The Trap Sing McKnight",
+        "artist": "Travis Scott",
+        "duration": 243,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Billie Jean",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 51,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "He Stopped Loving Her Today",
+        "album": "Super Hits",
+        "artist": "George Jones",
+        "duration": 6,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thriller",
+        "album": "Thriller 25 Super Deluxe Edition",
+        "artist": "Michael Jackson",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Always On My Mind",
+        "album": "Always On My Mind",
+        "artist": "Willie Nelson",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Uptown Girl",
+        "album": "An Innocent Man",
+        "artist": "Billy Joel",
+        "duration": 94,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Let's Go Crazy - 2015 Paisley Park Remaster",
+        "album": "Purple Rain",
+        "artist": "Prince",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Way You Make Me Feel - 2012 Remaster",
+        "album": "Bad 25th Anniversary",
+        "artist": "Michael Jackson",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "D.S.",
+        "album": "HIStory - PAST, PRESENT AND FUTURE - Book I",
+        "artist": "Michael Jackson",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sweet Home Alabama",
+        "album": "Second Helping",
+        "artist": "Lynyrd Skynyrd",
+        "duration": 64,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Fall N Luv",
+        "album": "RNB3",
+        "artist": "PnB Rock",
+        "duration": 62,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Can\u0092t Stop Me",
+        "album": "Never Land",
+        "artist": "Andy Mineo",
+        "duration": 208,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hustlin'",
+        "album": "Port Of Miami",
+        "artist": "Rick Ross",
+        "duration": 23,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Aiwa",
+        "album": "Aiwa",
+        "artist": "RIOT",
+        "duration": 278,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Turn Me Down - Dark Heart Remix",
+        "album": "Turn Me Down",
+        "artist": "GASHI",
+        "duration": 46,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Last Resort - The Rework",
+        "album": "Last Resort",
+        "artist": "Papa Roach",
+        "duration": 73,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "i Shyne",
+        "album": "i Shyne",
+        "artist": "Carnage",
+        "duration": 16,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Life Is but a Dream (feat. Ruebx Qube)",
+        "album": "Life Is but a Dream (feat. Ruebx Qube)",
+        "artist": "F4ST",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Antidote",
+        "album": "Rodeo",
+        "artist": "Travis Scott",
+        "duration": 109,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Fake Chanel",
+        "album": "New Blood",
+        "artist": "Yellow Claw",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Ain't Done",
+        "album": "I: The Arrow",
+        "artist": "Andy Mineo",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Take Me Higher",
+        "album": "Take Me Higher",
+        "artist": "T\u00fcrk\u00fcm",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "6 Foot 7 Foot",
+        "album": "Tha Carter IV",
+        "artist": "Lil Wayne",
+        "duration": 105,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "OVERLOAD (feat. Micah Martin)",
+        "album": "OVERLOAD",
+        "artist": "Kayzo",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Underground",
+        "album": "The Underground",
+        "artist": "Hardwell",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Taste (feat. Offset)",
+        "album": "Taste (feat. Offset)",
+        "artist": "Tyga",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Till It's Gone",
+        "album": "Love Story",
+        "artist": "Yelawolf",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Nonstop",
+        "album": "Scorpion",
+        "artist": "Drake",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "RAMPAGE",
+        "album": "Rampage",
+        "artist": "GRAVEDGR",
+        "duration": 10,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Fresh Prince Of Belaire",
+        "album": "Fresh Prince Of Belaire",
+        "artist": "Dave East",
+        "duration": 20,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "SAY LESS",
+        "album": "Andy Mineo and Wordsplayed Present Magic & Bird",
+        "artist": "Magic & Bird",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Everyday",
+        "album": "Bobby Tarantino II",
+        "artist": "Logic",
+        "duration": 84,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mi Gente - Aazar Remix",
+        "album": "Mi Gente",
+        "artist": "J Balvin",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Millidelphia (feat. Swizz Beatz)",
+        "album": "Legends of the Summer",
+        "artist": "Meek Mill",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Co\u00f1o",
+        "album": "Co\u00f1o",
+        "artist": "Puri",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Panda",
+        "album": "New English",
+        "artist": "Desiigner",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "WDYW (feat. Lil Uzi Vert, A$AP Ferg & Rich The Kid)",
+        "album": "Papi Gordo",
+        "artist": "Carnage",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Magenta Riddim",
+        "album": "Magenta Riddim",
+        "artist": "DJ Snake",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bubblin (feat. Busta Rhymes) - Remix",
+        "album": "Bubblin (feat. Busta Rhymes)",
+        "artist": "Anderson .Paak",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mayhem",
+        "album": "Mayhem",
+        "artist": "Steve Aoki",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "B.T.M.F. - Bounce to My Face",
+        "album": "B.T.M.F.",
+        "artist": "Gian Varela",
+        "duration": 17,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bien de t\u00f3",
+        "album": "Bien De T\u00f3",
+        "artist": "Messiah",
+        "duration": 19,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "WHY",
+        "album": "WHY",
+        "artist": "NF",
+        "duration": 19,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Talk Up",
+        "album": "Scorpion",
+        "artist": "Drake",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Public Enemy",
+        "album": "New Blood",
+        "artist": "Yellow Claw",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "In the End",
+        "album": "Hybrid Theory",
+        "artist": "Linkin Park",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A Milli",
+        "album": "Tha Carter III",
+        "artist": "Lil Wayne",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Put It On (feat. Craigy T)",
+        "album": "Put It On (feat. Craigy T)",
+        "artist": "dEVOLVE",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Off Guard",
+        "album": "Off Guard",
+        "artist": "Lookas",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Numb / Encore",
+        "album": "Numb / Encore: MTV Ultimate Mash-Ups Presents Collision Course",
+        "artist": "JAY-Z",
+        "duration": 410,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Drowning (feat. Kodak Black)",
+        "album": "The Bigger Artist",
+        "artist": "A Boogie Wit da Hoodie",
+        "duration": 520,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "8 Mile",
+        "album": "8 Mile",
+        "artist": "Eminem",
+        "duration": 361,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Beast - Southpaw Remix",
+        "album": "Southpaw",
+        "artist": "Rob Bailey & The Hustle Standard",
+        "duration": 279,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Suicidal Thoughts",
+        "album": "Better off Dead",
+        "artist": "Josh A",
+        "duration": 181,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "U Mad Bro",
+        "album": "U Mad Bro",
+        "artist": "Kevin Flum",
+        "duration": 229,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Fast Lane",
+        "album": "Hell: The Sequel",
+        "artist": "Bad Meets Evil",
+        "duration": 378,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Kings Never Die",
+        "album": "Southpaw",
+        "artist": "Eminem",
+        "duration": 420,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dead Or Alive (feat. Snoop Dogg)",
+        "album": "Nu Mixx Klazzics Vol. 2 (Evolution: Duets And Remixes)",
+        "artist": "2Pac",
+        "duration": 366,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Take From Me",
+        "album": "Hell: The Sequel",
+        "artist": "Bad Meets Evil",
+        "duration": 205,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dead Or Alive",
+        "album": "Dead Or Alive",
+        "artist": "Jazz Cartier",
+        "duration": 194,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Welcome 2 Hell",
+        "album": "Hell: The Sequel",
+        "artist": "Bad Meets Evil",
+        "duration": 177,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Remember the Name (feat. Styles of Beyond)",
+        "album": "The Rising Tied",
+        "artist": "Fort Minor",
+        "duration": 230,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Rap God",
+        "album": "The Marshall Mathers LP2",
+        "artist": "Eminem",
+        "duration": 364,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Under Pressure",
+        "album": "Under Pressure",
+        "artist": "Logic",
+        "duration": 205,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dora The Explorer",
+        "album": "Tv Themes For Kids",
+        "artist": "Aron Apping",
+        "duration": 82,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dora The Explorer Theme",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 74,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cleanup Song",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 20,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "B-I-N-G-O",
+        "album": "Dora The Explorer Party Favorites",
+        "artist": "Dora The Explorer",
+        "duration": 180,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dora The Explorer Party Mix (including \"Dora The Explorer Theme\" & \"Travel Song\")",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 130,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mansion",
+        "album": "Mansion",
+        "artist": "NF",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Everybody",
+        "album": "Everybody",
+        "artist": "Logic",
+        "duration": 162,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Truffle Butter",
+        "album": "The Pinkprint - Deluxe Edition",
+        "artist": "Nicki Minaj",
+        "duration": 40,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Finesse - Remix; feat. Cardi B",
+        "album": "Finesse (Remix) [feat. Cardi B]",
+        "artist": "Bruno Mars",
+        "duration": 217,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bronx Season",
+        "album": "Bronx Season",
+        "artist": "Cardi B",
+        "duration": 14,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Cute - Remix",
+        "album": "Cute (Remix) [feat. Cardi B]",
+        "artist": "DRAM",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "What a Girl Likes",
+        "album": "What a Girl Likes",
+        "artist": "Cardi B",
+        "duration": 8,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bodak Yellow",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 224,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Be Careful",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 49,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Like It",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 511,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ring (feat. Kehlani)",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 9,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bartier Cardi (feat. 21 Savage)",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 224,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "She Bad",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 230,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thru Your Phone",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 150,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Chicken Dance",
+        "album": "Dora The Explorer Party Favorites",
+        "artist": "Dora The Explorer",
+        "duration": 147,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wheels On The Bus",
+        "album": "Dora The Explorer Party Favorites",
+        "artist": "Dora The Explorer",
+        "duration": 170,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Did It!",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "ABC (The Alphabet Song)",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 30,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Travel Song Medley",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 94,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dorado",
+        "album": "Dorado",
+        "artist": "The Last Bison",
+        "duration": 198,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "De Colores",
+        "album": "Dora The Explorer World Adventure",
+        "artist": "Dora The Explorer",
+        "duration": 209,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I'm The Map!",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 60,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Feliz Cumpleanos",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 62,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Happy Birthday/Cumplea\u00f1os Feliz",
+        "album": "Dora The Explorer Party Favorites",
+        "artist": "Dora The Explorer",
+        "duration": 147,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Greedy King Share Song",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 69,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Motto",
+        "album": "Take Care",
+        "artist": "Drake",
+        "duration": 181,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dora The Explorer Theme",
+        "album": "!Vamos a bailar! Let's Dance! The Dora the Explorer Music Collection",
+        "artist": "Dora The Explorer",
+        "duration": 42,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dora The Explorer Party Mix (including \"Dora The Explorer Theme\" & \"Travel Song\")",
+        "album": "Dora The Explorer Party Favorites",
+        "artist": "Dora The Explorer",
+        "duration": 26,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mary Had a Little Lamb",
+        "album": "100 Songs for Happy Kids",
+        "artist": "The Countdown Kids",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Backpack, Backpack!",
+        "album": "We Did It! Dora's Greatest Hits",
+        "artist": "Dora The Explorer",
+        "duration": 7,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dirt On My Boots",
+        "album": "California Sunrise",
+        "artist": "Jon Pardi",
+        "duration": 882,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wanted Dead Or Alive",
+        "album": "Slippery When Wet",
+        "artist": "Bon Jovi",
+        "duration": 1232,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Best Life (feat. Chance The Rapper)",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Bickenhead",
+        "album": "Invasion of Privacy",
+        "artist": "Cardi B",
+        "duration": 53,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sunshine Feel Good (feat. Kim Burrell)",
+        "album": "Snoop Dogg Presents Bible of Love",
+        "artist": "Snoop Dogg",
+        "duration": 183,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Intro",
+        "album": "220",
+        "artist": "Snoop Dogg",
+        "duration": 7,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "On The Double",
+        "album": "220",
+        "artist": "Snoop Dogg",
+        "duration": 134,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gin And Juice (feat. Dat Nigga Daz)",
+        "album": "Doggystyle",
+        "artist": "Snoop Dogg",
+        "duration": 211,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Penthouse (feat. Snoop Dogg)",
+        "album": "Rolling Papers 2",
+        "artist": "Wiz Khalifa",
+        "duration": 20,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Who Am I (What's My Name)?",
+        "album": "Doggystyle",
+        "artist": "Snoop Dogg",
+        "duration": 245,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Drop It Like It's Hot",
+        "album": "R&G (Rhythm & Gangsta): The Masterpiece",
+        "artist": "Snoop Dogg",
+        "duration": 266,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Beautiful",
+        "album": "Paid Tha Cost To Be Da Bo$$",
+        "artist": "Snoop Dogg",
+        "duration": 298,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sweat - Remix",
+        "album": "Sweat (Snoop Dogg Vs. David Guetta)",
+        "artist": "Snoop Dogg",
+        "duration": 195,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ain't No Fun (If the Homies Cant Have None) (feat. Nate Dogg, Warren G & Kurupt)",
+        "album": "Doggystyle",
+        "artist": "Snoop Dogg",
+        "duration": 246,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "French Inhale (feat. Mike Posner)",
+        "album": "Mac and Devin Go to High School (Music from and Inspired by the Movie)",
+        "artist": "Snoop Dogg",
+        "duration": 159,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Finesse - James Hype Remix; feat. Cardi B",
+        "album": "Finesse (Remix) [feat. Cardi B]",
+        "artist": "Bruno Mars",
+        "duration": 399,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    }
+]

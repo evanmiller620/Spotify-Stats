@@ -1,0 +1,992 @@
+[
+    {
+        "song": "Star Wars Theme/Cantina Band",
+        "album": "The Best Of Meco",
+        "artist": "Meco",
+        "duration": 67,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Flight of the Bumblebee",
+        "album": "Humoresque - Favorite Violin Encores [Expanded Edition]",
+        "artist": "Nikolai Rimsky-Korsakov",
+        "duration": 128,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wii Turn Up (Wii Menu Remix)",
+        "album": "Wii Turn Up (Wii Menu Remix)",
+        "artist": "Murcy",
+        "duration": 121,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Jabba Flow - From \"Star Wars: The Force Awakens\"",
+        "album": "Jabba Flow",
+        "artist": "Shag Kava",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Staying Alive",
+        "album": "Saturday Night Fever",
+        "artist": "C&C Productions",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Entertainer",
+        "album": "Fingerbreaker: Classics Of Ragtime And Early Jazz Piano",
+        "artist": "Scott Joplin",
+        "duration": 219,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ain't No Mountain High Enough",
+        "album": "United",
+        "artist": "Marvin Gaye",
+        "duration": 642,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Kung Fu Fighting",
+        "album": "The Soul of the Kung Fu Fighter",
+        "artist": "Carl Douglas",
+        "duration": 930,
+        "playCount": 8,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hooked On A Feeling",
+        "album": "Hooked On A Feeling",
+        "artist": "Blue Swede",
+        "duration": 844,
+        "playCount": 8,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Want You Back",
+        "album": "20th Century Masters: The Millennium Collection: Best Of The Jackson 5",
+        "artist": "The Jackson 5",
+        "duration": 720,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Word Up",
+        "album": "Word Up",
+        "artist": "Cameo",
+        "duration": 877,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Whip It",
+        "album": "Freedom of Choice",
+        "artist": "DEVO",
+        "duration": 801,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Who\u2019s the (Bat)Man",
+        "album": "The Lego Batman Movie: Original Motion Picture Soundtrack",
+        "artist": "Patrick Stump",
+        "duration": 773,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Y.M.C.A.",
+        "album": "Cruisin'",
+        "artist": "Village People",
+        "duration": 772,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Never Gonna Give You Up",
+        "album": "Whenever You Need Somebody",
+        "artist": "Rick Astley",
+        "duration": 467,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "September",
+        "album": "The Best Of Earth, Wind & Fire Vol. 1",
+        "artist": "Earth, Wind & Fire",
+        "duration": 430,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Footloose - From \"Footloose\" Soundtrack",
+        "album": "The Essential Kenny Loggins",
+        "artist": "Kenny Loggins",
+        "duration": 368,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Escape",
+        "album": "Escape",
+        "artist": "Enrique Iglesias",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Escape (The Pina Colada Song)",
+        "album": "Partners In Crime",
+        "artist": "Rupert Holmes",
+        "duration": 276,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Escape",
+        "album": "SweetSexySavage",
+        "artist": "Kehlani",
+        "duration": 33,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Devil Went Down to Georgia",
+        "album": "Million Mile Reflections",
+        "artist": "The Charlie Daniels Band",
+        "duration": 215,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Mississippi",
+        "album": "Million Mile Reflections",
+        "artist": "The Charlie Daniels Band",
+        "duration": 45,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close To You",
+        "album": "Blonde",
+        "artist": "Frank Ocean",
+        "duration": 4,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close To You",
+        "album": "ANTI",
+        "artist": "Rihanna",
+        "duration": 16,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close To You",
+        "album": "No Hard Feelings",
+        "artist": "Dreezy",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close to You",
+        "album": "Close to You",
+        "artist": "MIA GLADSTONE",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close To You",
+        "album": "Best Of Maxi Priest",
+        "artist": "Maxi Priest",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close to You",
+        "album": "Phase II",
+        "artist": "Prince Royce",
+        "duration": 11,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close To You",
+        "album": "Close To You",
+        "artist": "Jacob Collier",
+        "duration": 3,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Close to You",
+        "album": "Still",
+        "artist": "Bebe & Cece Winans",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "#BeaMillersTeenParty",
+        "album": "#BeaMillersTeenParty",
+        "artist": "Various Artists",
+        "duration": 12,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "buy me diamonds",
+        "album": "chapter two: red",
+        "artist": "Bea Miller",
+        "duration": 17,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Human",
+        "album": "Human (Deluxe)",
+        "artist": "Rag'n'Bone Man",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Kung Fu Fighting",
+        "album": "The Soul of the Kung Fu Fighter",
+        "artist": "Bus Stop",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Freedom of Choice",
+        "album": "Freedom of Choice",
+        "artist": "DEVO",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Final Countdown",
+        "album": "80s 100 Hits",
+        "artist": "Europe",
+        "duration": 2166,
+        "playCount": 12,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "ABC",
+        "album": "ABC",
+        "artist": "The Jackson 5",
+        "duration": 177,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Don't Go Breaking My Heart",
+        "album": "To Be Continued...",
+        "artist": "Elton John",
+        "duration": 5,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Believer",
+        "album": "Believer",
+        "artist": "Imagine Dragons",
+        "duration": 771,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "On Top Of The World",
+        "album": "Night Visions",
+        "artist": "Imagine Dragons",
+        "duration": 1264,
+        "playCount": 11,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Radioactive",
+        "album": "Night Visions",
+        "artist": "Imagine Dragons",
+        "duration": 1364,
+        "playCount": 11,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Another One Bites The Dust - Remastered 2011",
+        "album": "The Game",
+        "artist": "Queen",
+        "duration": 932,
+        "playCount": 10,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Ghostbusters",
+        "album": "Arista Heritage Series: Ray Parker",
+        "artist": "Ray Parker Jr.",
+        "duration": 2,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Under Pressure - Remastered 2011",
+        "album": "Hot Space",
+        "artist": "Queen",
+        "duration": 942,
+        "playCount": 14,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Video Killed The Radio Star",
+        "album": "The Age Of Plastic",
+        "artist": "The Buggles",
+        "duration": 22,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Here Comes The Sun - Remastered 2009",
+        "album": "Abbey Road",
+        "artist": "The Beatles",
+        "duration": 523,
+        "playCount": 6,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Will Rock You - Remastered 2011",
+        "album": "News Of The World",
+        "artist": "Queen",
+        "duration": 31,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "We Are The Champions - Remastered 2011",
+        "album": "News Of The World",
+        "artist": "Queen",
+        "duration": 28,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Walk Like an Egyptian",
+        "album": "Different Light (Expanded Edition)",
+        "artist": "The Bangles",
+        "duration": 652,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sail",
+        "album": "Megalithic Symphony Deluxe",
+        "artist": "AWOLNATION",
+        "duration": 259,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Wake Up",
+        "album": "Megalithic Symphony Deluxe",
+        "artist": "AWOLNATION",
+        "duration": 25,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Paper Planes",
+        "album": "Kala",
+        "artist": "M.I.A.",
+        "duration": 203,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Come Around",
+        "album": "Kala",
+        "artist": "Timbaland",
+        "duration": 226,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hard Time Killing Floor Blues - From \u201cO Brother, Where Art Thou\u201d Soundtrack",
+        "album": "O Brother, Where Art Thou?",
+        "artist": "Chris Thomas King",
+        "duration": 326,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hard Time Killing Floor Blues",
+        "album": "O Brother, Where Art Thou?",
+        "artist": "Colin Linden",
+        "duration": 75,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hard Time Killing Floor Blues",
+        "album": "Blues From The Delta",
+        "artist": "Skip James",
+        "duration": 203,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hard Time Killing Floor",
+        "album": "Blues Singer",
+        "artist": "Buddy Guy",
+        "duration": 167,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Killing Floor",
+        "album": "The Real Folk Blues",
+        "artist": "Howlin' Wolf",
+        "duration": 60,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Boogie Woogie Bugle Boy",
+        "album": "PTX Vol. IV - Classics",
+        "artist": "Pentatonix",
+        "duration": 138,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Over The Rainbow",
+        "album": "PTX Vol. IV - Classics",
+        "artist": "Pentatonix",
+        "duration": 233,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Take On Me",
+        "album": "PTX Vol. IV - Classics",
+        "artist": "Pentatonix",
+        "duration": 195,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dance of the Sugar Plum Fairy",
+        "album": "That's Christmas To Me (Deluxe Edition)",
+        "artist": "Pentatonix",
+        "duration": 126,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It's the Most Wonderful Time of the Year",
+        "album": "That's Christmas To Me (Deluxe Edition)",
+        "artist": "Pentatonix",
+        "duration": 14,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Feels Right - Galloway Remix",
+        "album": "Feels Right",
+        "artist": "Jocelyn Alice",
+        "duration": 2,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "A Whiter Shade Of Pale",
+        "album": "A Whiter Shade Of Pale",
+        "artist": "Procol Harum",
+        "duration": 1590,
+        "playCount": 7,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Xylophonia",
+        "album": "Akademie Percussion Ensemble Vol. 2",
+        "artist": "Akademie Percussion Ensemble",
+        "duration": 64,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Minuano (Six Eight)",
+        "album": "Akademie Percussion Ensemble Vol. 2",
+        "artist": "Akademie Percussion Ensemble",
+        "duration": 9,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "You Spin Me Round (Like a Record)",
+        "album": "Youthquake",
+        "artist": "Dead Or Alive",
+        "duration": 33,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It's Raining Men - Single Version",
+        "album": "Dance Hits - 80s & 90s",
+        "artist": "The Weather Girls",
+        "duration": 17,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "24K Magic",
+        "album": "24K Magic",
+        "artist": "Bruno Mars",
+        "duration": 69,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Perm",
+        "album": "24K Magic",
+        "artist": "Bruno Mars",
+        "duration": 68,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Lose Yourself",
+        "album": "Curtain Call: The Hits",
+        "artist": "Eminem",
+        "duration": 880,
+        "playCount": 4,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Till I Collapse",
+        "album": "The Eminem Show",
+        "artist": "Eminem",
+        "duration": 62,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Didn't Know About You",
+        "album": "Blues-A-Plenty",
+        "artist": "Johnny Hodges & His Orchestra",
+        "duration": 7,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "That's the Way (I Like It) - 2004 Remaster",
+        "album": "KC & the Sunshine Band",
+        "artist": "KC & The Sunshine Band",
+        "duration": 37,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Jack Sparrow",
+        "album": "Pirates of the Caribbean: Dead Man's Chest",
+        "artist": "Hans Zimmer",
+        "duration": 34,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "He's A Pirate - Ti\u00ebsto Remix",
+        "album": "Pirates of the Caribbean: Dead Man's Chest",
+        "artist": "Hans Zimmer",
+        "duration": 66,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Davy Jones",
+        "album": "Pirates of the Caribbean: Dead Man's Chest",
+        "artist": "Hans Zimmer",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Pirates of the Carribeann Theme",
+        "album": "Pirates of the Carribeann Theme",
+        "artist": "The Snake Charmer",
+        "duration": 60,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Pirates of the Carribean: \"He's a Pirate\" (Klaus Badelt)",
+        "album": "Pirates of the Carribean: \"He's a Pirate\" (Klaus Badelt)",
+        "artist": "Dominik Hauser",
+        "duration": 268,
+        "playCount": 5,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Pirates of the Carribean Metal Medley: He's A Pirate / Jack Sparrow",
+        "album": "Pirates of the Caribbean",
+        "artist": "Mark the Hammer",
+        "duration": 149,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Main Themes - From \"Pirates of the Carribean:the Curse of the Black Pearl\"",
+        "album": "Greatest Film Classics",
+        "artist": "Klaus Badelt",
+        "duration": 352,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "He's a Pirate (From \"Pirates of the Carribean\")",
+        "album": "4 the Good Guys",
+        "artist": "Charlie Glass Piano Man",
+        "duration": 27,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Victory",
+        "album": "Battlecry",
+        "artist": "Two Steps from Hell",
+        "duration": 365,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thunderstruck",
+        "album": "Celloverse",
+        "artist": "2CELLOS",
+        "duration": 220,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Archangel",
+        "album": "Archangel",
+        "artist": "Thomas Bergersen",
+        "duration": 154,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Strength to Believe",
+        "album": "Strength To Believe - ES029",
+        "artist": "Epic Score",
+        "duration": 124,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Imperial March - From \"Star Wars: The Empire Strikes Back\"",
+        "album": "Star Wars Sampler",
+        "artist": "London Voices",
+        "duration": 113,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Thunder",
+        "album": "Thunder",
+        "artist": "Imagine Dragons",
+        "duration": 1,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Sucker for Pain (with Wiz Khalifa, Imagine Dragons, Logic & Ty Dolla $ign feat. X Ambassadors)",
+        "album": "Sucker for Pain (with Logic & Ty Dolla $ign feat. X Ambassadors)",
+        "artist": "Lil Wayne",
+        "duration": 245,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Whatever It Takes",
+        "album": "Whatever It Takes",
+        "artist": "Imagine Dragons",
+        "duration": 204,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Demons",
+        "album": "Night Visions",
+        "artist": "Imagine Dragons",
+        "duration": 175,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shots - Broiler Remix",
+        "album": "Shots EP",
+        "artist": "Imagine Dragons",
+        "duration": 191,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Warriors",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 170,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It's Time",
+        "album": "Night Visions",
+        "artist": "Imagine Dragons",
+        "duration": 296,
+        "playCount": 3,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Shots",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 236,
+        "playCount": 2,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Gold",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 216,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Smoke And Mirrors",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 259,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I\u2019m So Sorry",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 230,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "I Bet My Life",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 192,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Polaroid",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 230,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Friction",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 201,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "It Comes Back To You",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 216,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Dream",
+        "album": "Smoke + Mirrors",
+        "artist": "Imagine Dragons",
+        "duration": 97,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Overture",
+        "album": "Overwatch Collector's Edition Soundtrack",
+        "artist": "Sam Cardon",
+        "duration": 8,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Halo Theme Mjolnir Mix",
+        "album": "Halo 2, Vol. 1",
+        "artist": "Martin O'Donnell",
+        "duration": 2,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Hope For The Future - Thrash",
+        "album": "Hope For The Future",
+        "artist": "Paul McCartney",
+        "duration": 6,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Don't Stop 'Til You Get Enough",
+        "album": "Off the Wall",
+        "artist": "Michael Jackson",
+        "duration": 29,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "Star Wars (Main Theme)",
+        "album": "Star Wars: The Empire Strikes Back",
+        "artist": "John Williams",
+        "duration": 169,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    },
+    {
+        "song": "The Bird Is the Word",
+        "album": "The Bird Is the Word",
+        "artist": "The Ruffled Feathers",
+        "duration": 18,
+        "playCount": 1,
+        "skipCount": 0,
+        "avgSkipTime": 0
+    }
+]

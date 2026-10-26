@@ -62,18 +62,41 @@
 
     <section class="card" id="library">
       <div class="lib-head">
-        <h2>All songs <span class="period muted"></span></h2>
-        <input id="search" type="search" placeholder="Search songs, artists, albums…" autocomplete="off">
+        <div>
+          <h2>Your library <span class="period muted"></span></h2>
+          <p class="lib-summary" id="libSummary"></p>
+        </div>
+        <div class="seg" id="views" role="group" aria-label="View">
+          <button data-view="songs">Songs</button><button data-view="artists">Artists</button><button data-view="albums">Albums</button>
+        </div>
       </div>
+
+      <div class="lib-tools">
+        <label class="searchbox">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg>
+          <input id="search" type="search" placeholder="Search songs…" autocomplete="off" spellcheck="false">
+          <kbd>/</kbd>
+        </label>
+        <div class="fwrap">
+          <button class="ghost" id="filterBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="filterPanel">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M6 10h8M8.5 15h3"/></svg>
+            Filters <span class="badge" id="filterBadge" hidden></span>
+          </button>
+          <div class="fpanel" id="filterPanel" role="dialog" aria-label="Filters"></div>
+        </div>
+        <button class="ghost" id="csv" title="Download what's shown as a spreadsheet">Export CSV</button>
+      </div>
+      <div class="chips" id="chips" hidden></div>
+
       <div class="table-wrap">
-        <table>
+        <table class="lib">
           <thead><tr id="thead"></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
       <div class="lib-foot">
         <span class="muted small" id="count"></span>
-        <button id="more">Show more</button>
+        <button class="ghost" id="more">Show more</button>
       </div>
     </section>
   </main>

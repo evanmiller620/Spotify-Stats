@@ -20,9 +20,11 @@ from zoneinfo import ZoneInfo
 
 
 def load_plays(folder):
-    files = sorted(glob.glob(os.path.join(folder, "Streaming_History_Audio_*.json")))
+    # Newer exports name the files Streaming_History_Audio_*.json; older ones used endsong_*.json.
+    files = sorted(glob.glob(os.path.join(folder, "Streaming_History_Audio_*.json"))
+                   + glob.glob(os.path.join(folder, "endsong_*.json")))
     if not files:
-        raise SystemExit(f"No Streaming_History_Audio_*.json files found in {folder}")
+        raise SystemExit(f"No Streaming_History_Audio_*.json or endsong_*.json files found in {folder}")
     for path in files:
         print("Reading", os.path.basename(path))
         with open(path, encoding="utf-8") as f:
@@ -82,7 +84,14 @@ def main():
                 skip_hist[key[3]][min(9, heard // 100)] += 1
 
     # Compact output: lookup tables + one flat number array, so the file stays small.
-    months = sorted({k[3] for k in totals})
+    # Every month from first to last, including ones with no listening, so the chart has no silent gaps.
+    seen = sorted({k[3] for k in totals})
+    if not seen:
+        raise SystemExit("No music plays found in those files.")
+    months, (y, m) = [], map(int, seen[0].split("-"))
+    while f"{y:04d}-{m:02d}" <= seen[-1]:
+        months.append(f"{y:04d}-{m:02d}")
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
     month_ix = {m: i for i, m in enumerate(months)}
     artists, artist_ix, songs, song_ix, rows = [], {}, [], {}, []
     for (song, artist, album, month), t in sorted(totals.items(), key=lambda kv: kv[0][3]):

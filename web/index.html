@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spotify Stats</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Spotify Stats</h1>
+        <p class="muted" id="range"></p>
+      </div>
+      <nav id="years" aria-label="Choose a year"></nav>
+    </header>
+
+    <section class="tiles" id="tiles"></section>
+
+    <section class="card">
+      <div class="sel-head">
+        <div>
+          <h2>Listening time by month</h2>
+          <p class="muted small">Drag across the chart to pick a period. Click a single bar for one month.</p>
+        </div>
+        <div class="sel-info"><span id="selLabel"></span> <button id="selReset" hidden>Reset</button></div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <div class="two-col">
+      <section class="card">
+        <h2>Top artists <span class="period muted"></span></h2>
+        <ol class="toplist" id="topArtists"></ol>
+      </section>
+      <section class="card">
+        <h2>Top songs <span class="period muted"></span></h2>
+        <ol class="toplist" id="topSongs"></ol>
+      </section>
+    </div>
+
+    <div class="two-col" id="skipCard" hidden>
+      <section class="card">
+        <h2>Where you skip <span class="period muted"></span></h2>
+        <p class="muted small" id="skipNote"></p>
+        <div class="hist" id="skipHist"></div>
+        <p class="muted small axis-note">How far into the song you were when you skipped</p>
+      </section>
+      <section class="card">
+        <h2>Most skipped <span class="period muted"></span></h2>
+        <p class="muted small">Songs played 5+ times · skips of plays, and how far in</p>
+        <ol class="toplist" id="mostSkipped"></ol>
+      </section>
+    </div>
+
+    <section class="card" id="heatCard" hidden>
+      <h2>When you listen <span class="period muted"></span></h2>
+      <p class="muted small">Listening time by day and hour.</p>
+      <div class="heat" id="heat"></div>
+    </section>
+
+    <section class="card" id="library">
+      <div class="lib-head">
+        <h2>All songs <span class="period muted"></span></h2>
+        <input id="search" type="search" placeholder="Search songs, artists, albums…" autocomplete="off">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="lib-foot">
+        <span class="muted small" id="count"></span>
+        <button id="more">Show more</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="tip" id="tip" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

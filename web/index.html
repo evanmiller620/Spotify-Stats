@@ -8,6 +8,7 @@
 </head>
 <body>
   <main>
+    <div class="sourcebar" id="sourceBar" hidden></div>
     <header>
       <div>
         <h1>Spotify Stats</h1>
@@ -54,10 +55,55 @@
       </section>
     </div>
 
-    <section class="card" id="heatCard" hidden>
-      <h2>When you listen <span class="period muted"></span></h2>
-      <p class="muted small">Listening time by day and hour.</p>
-      <div class="heat" id="heat"></div>
+    <div class="two-col" id="distCards" hidden>
+      <section class="card">
+        <h2>Daily listening <span class="period muted"></span></h2>
+        <p class="muted small" id="distDaysNote"></p>
+        <div class="hist cats" id="distDays"></div>
+        <p class="muted small axis-note">Time listened in a day</p>
+      </section>
+      <section class="card">
+        <h2>Plays per song <span class="period muted"></span></h2>
+        <p class="muted small" id="distPlaysNote"></p>
+        <div class="hist cats" id="distPlays"></div>
+        <p class="muted small axis-note">How many times you played each song</p>
+      </section>
+    </div>
+    <div class="two-col" id="distCards2" hidden>
+      <section class="card">
+        <h2>How much you hear <span class="period muted"></span></h2>
+        <p class="muted small" id="distHeardNote"></p>
+        <div class="hist cats" id="distHeard"></div>
+        <p class="muted small axis-note">Share of the song played, every play</p>
+      </section>
+      <section class="card">
+        <h2>Song lengths <span class="period muted"></span></h2>
+        <p class="muted small" id="distLenNote"></p>
+        <div class="hist cats" id="distLen"></div>
+        <p class="muted small axis-note">Length of the songs you played, counted per play</p>
+      </section>
+    </div>
+
+    <section class="card" id="clockCard" hidden>
+      <div class="sel-head">
+        <div>
+          <h2>When you listen <span class="period muted"></span></h2>
+          <p class="muted small" id="clockNote"></p>
+        </div>
+        <div class="legend" aria-hidden="true"><span>less</span><i></i><span id="clockLegendMax"></span></div>
+      </div>
+      <div class="clock">
+        <div class="clock-y"><span style="top:0%">12am</span><span style="top:25%">6am</span><span style="top:50%">12pm</span><span style="top:75%">6pm</span><span style="top:100%">12am</span></div>
+        <div class="clock-plot" id="clockPlot"><canvas id="clockCanvas" role="img" aria-label="Listening by date and time of day"></canvas></div>
+        <div class="clock-x" id="clockX"></div>
+      </div>
+    </section>
+
+    <section class="card" id="retCard" hidden>
+      <h2>Retention over time <span class="period muted"></span></h2>
+      <p class="muted small">Share of song time you actually heard: total time heard ÷ total length of the songs you started. Hours listened set the weight, so a light week can't swing it; hollow dots are light weeks or months.</p>
+      <p class="muted small" id="retNote"></p>
+      <svg class="ret" id="retChart" width="100%" height="260" role="img" aria-label="Retention over time"></svg>
     </section>
 
     <section class="card" id="library">
@@ -66,8 +112,15 @@
           <h2>Your library <span class="period muted"></span></h2>
           <p class="lib-summary" id="libSummary"></p>
         </div>
-        <div class="seg" id="views" role="group" aria-label="View">
-          <button data-view="songs">Songs</button><button data-view="artists">Artists</button><button data-view="albums">Albums</button>
+        <div class="lib-ctrls">
+          <select id="libPeriod" class="period-pick" aria-label="Period"></select>
+          <div class="seg" id="views" role="group" aria-label="View">
+            <button data-view="songs">Songs</button><button data-view="artists">Artists</button><button data-view="albums">Albums</button>
+          </div>
+          <button class="ghost iconbtn" id="libFull" aria-pressed="false" title="Full screen (F)">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M17 8V3h-5M3 12v5h5M17 12v5h-5"/></svg>
+            <span>Full screen</span>
+          </button>
         </div>
       </div>
 
@@ -88,22 +141,27 @@
       </div>
       <div class="chips" id="chips" hidden></div>
 
-      <div class="table-wrap">
+      <div class="table-wrap" id="tableWrap" tabindex="0" aria-label="Library table">
         <table class="lib">
           <thead><tr id="thead"></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
+        <div id="libSentinel" aria-hidden="true"></div>
       </div>
       <div class="lib-foot">
         <span class="muted small" id="count"></span>
-        <button class="ghost" id="more">Show more</button>
+        <span class="keys muted small" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search · <kbd>F</kbd> full screen · <kbd>Esc</kbd> close</span>
+        <button class="ghost" id="toTop" hidden>↑ Top</button>
       </div>
     </section>
   </main>
 
   <div class="tip" id="tip" hidden></div>
 
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+  <dialog class="imp" id="importDlg"><div class="imp-body"></div></dialog>
+  <input type="file" id="importFile" accept=".zip,.json,application/zip,application/json" multiple hidden>
+
+  <!-- loader.js shows your own uploaded data if this browser has it, otherwise data.js; then starts app.js -->
+  <script src="loader.js"></script>
 </body>
 </html>

@@ -9,13 +9,18 @@ Retention: Spotify's export doesn't include song lengths, so each song's length 
 taken as its longest play that ended with the track finishing ("trackdone").
 Songs you never played to the end have no known length and are left out of the
 retention numbers (they still count everywhere else).
+
+Skips: Spotify's own "skipped" field is always false before late 2022, so a play
+also counts as skipped when it ended with next, back, or "endplay" (you picked
+something else). Those plays stop early in every year of the data, so this keeps
+skip rates comparable across years.
 """
 import argparse
 import glob
 import json
 import os
-from collections import defaultdict
-from datetime import datetime
+from collections import Counter, defaultdict
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 
@@ -31,18 +36,26 @@ def load_plays(folder):
             yield from json.load(f)
 
 
+SKIP_ENDS = {"fwdbtn", "backbtn", "endplay", "clickrow"}
+
+
+SLOT_MIN = 15                 # minutes per slot in the day-by-time-of-day chart
+SLOTS = 24 * 60 // SLOT_MIN   # 96 slots per day
+SLOT_CHARS = "0123456789abcdef"  # minutes listened in a slot (0-15), one character each
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("history_dir")
-    p.add_argument("--tz", default="America/Chicago", help="your time zone, for month and hour-of-day")
+    p.add_argument("--tz", default="America/Chicago", help="your time zone, for months, days and time of day")
     p.add_argument("--out", default=os.path.join(os.path.dirname(__file__), "web", "data.js"))
+    p.add_argument("--name", default="", help="whose history this is, shown on the page (e.g. Evan)")
     args = p.parse_args()
     tz = ZoneInfo(args.tz)
 
-    # month -> weekday (Mon=0) x hour -> seconds
-    heat = defaultdict(lambda: [[0] * 24 for _ in range(7)])
-    plays = []      # (song, artist, album, month), ms played, skipped
-    song_len = {}   # (song, artist, album) -> estimated length in ms
+    plays = []                      # (song, artist, album), start (local), ms played, skipped
+    song_len = {}                   # (song, artist, album) -> estimated length in ms
+    uris = defaultdict(Counter)     # (song, artist, album) -> track id -> plays
 
     # Pass 1: read every play and learn each song's length.
     for e in load_plays(args.history_dir):
@@ -52,47 +65,83 @@ def main():
         ms = int(e.get("ms_played") or 0)
         if ms < 1000:
             continue
-        when = datetime.fromisoformat(e["ts"].replace("Z", "+00:00")).astimezone(tz)
-        key = (song,
-               e.get("master_metadata_album_artist_name") or "Unknown artist",
-               e.get("master_metadata_album_album_name") or "",
-               when.strftime("%Y-%m"))
-        skipped = bool(e.get("skipped")) or e.get("reason_end") == "fwdbtn"
-        plays.append((key, ms, skipped))
-        if e.get("reason_end") == "trackdone" and ms > song_len.get(key[:3], 0):
-            song_len[key[:3]] = ms
-        heat[when.strftime("%Y-%m")][when.weekday()][when.hour] += ms // 1000
+        # "ts" is when the track stopped; the play started ms_played earlier.
+        end = datetime.fromisoformat(e["ts"].replace("Z", "+00:00"))
+        start = (end - timedelta(milliseconds=ms)).astimezone(tz)
+        skey = (song,
+                e.get("master_metadata_album_artist_name") or "Unknown artist",
+                e.get("master_metadata_album_album_name") or "")
+        skipped = bool(e.get("skipped")) or e.get("reason_end") in SKIP_ENDS
+        plays.append((skey, start, ms, skipped))
+        if e.get("reason_end") == "trackdone" and ms > song_len.get(skey, 0):
+            song_len[skey] = ms
+        uri = e.get("spotify_track_uri") or ""
+        if uri.startswith("spotify:track:"):
+            uris[skey][uri.rsplit(":", 1)[1]] += 1
+    if not plays:
+        raise SystemExit("No music plays found in those files.")
 
-    # Pass 2: totals per (song, month).
+    # Every month from first to last (no silent gaps), and every day in those months.
+    first, last = min(p[1] for p in plays), max(p[1] for p in plays)
+    months, (y, m) = [], (first.year, first.month)
+    while (y, m) <= (last.year, last.month):
+        months.append(f"{y:04d}-{m:02d}")
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    month_ix = {mo: i for i, mo in enumerate(months)}
+    day0 = date(first.year, first.month, 1)
+    ny, nm = (last.year + 1, 1) if last.month == 12 else (last.year, last.month + 1)
+    n_days = (date(ny, nm, 1) - day0).days
+
+    # Pass 2: totals per (song, month), plus per-day numbers.
     # [plays, seconds, skips, measured plays, heard sum, measured skips, heard-before-skip sum]
-    # "heard" is the fraction of the song played, stored in thousandths (1000 = whole song).
+    # "heard" is the fraction of the song played, in thousandths (1000 = whole song).
     totals = defaultdict(lambda: [0, 0, 0, 0, 0, 0, 0])
-    skip_hist = defaultdict(lambda: [0] * 10)  # month -> skips bucketed by % of song heard
-    for key, ms, skipped in plays:
-        t = totals[key]
+    skip_hist = defaultdict(lambda: [0] * 10)   # month -> skips by % of song heard
+    play_hist = defaultdict(lambda: [0] * 10)   # month -> all plays by % of song heard
+    day_sec = [0] * n_days                      # seconds listened per day
+    day_heard = [0] * n_days                    # seconds heard, plays with a known length
+    day_len = [0] * n_days                      # full length of those same plays, seconds
+    slots = [None] * n_days                     # day -> seconds per 15-minute slot
+    for skey, start, ms, skipped in plays:
+        month = start.strftime("%Y-%m")
+        t = totals[(*skey, month)]
         t[0] += 1
         t[1] += ms // 1000
         t[2] += skipped
-        length = song_len.get(key[:3])
+        d = (start.date() - day0).days
+        day_sec[d] += ms // 1000
+        length = song_len.get(skey)
         if length:
             heard = min(1000, round(ms * 1000 / length))
             t[3] += 1
             t[4] += heard
+            play_hist[month][min(9, heard // 100)] += 1
+            day_heard[d] += min(ms, length) // 1000
+            day_len[d] += length // 1000
             if skipped:
                 t[5] += 1
                 t[6] += heard
-                skip_hist[key[3]][min(9, heard // 100)] += 1
+                skip_hist[month][min(9, heard // 100)] += 1
+        # Spread the play over the 15-minute slots it covers (may cross midnight).
+        cur, end = start.replace(tzinfo=None), start.replace(tzinfo=None) + timedelta(milliseconds=ms)
+        while cur < end:
+            slot = (cur.hour * 60 + cur.minute) // SLOT_MIN
+            slot_end = datetime.combine(cur.date(), datetime.min.time()) + timedelta(minutes=(slot + 1) * SLOT_MIN)
+            seg_end = min(end, slot_end)
+            di = (cur.date() - day0).days
+            if 0 <= di < n_days:
+                if slots[di] is None:
+                    slots[di] = [0] * SLOTS
+                slots[di][slot] += (seg_end - cur).total_seconds()
+            cur = seg_end
+
+    def encode(day):  # minutes per slot as one hex character, trailing zeros dropped
+        if day is None:
+            return ""
+        chars = "".join(SLOT_CHARS[min(15, round(s / 60) or (1 if s >= 10 else 0))] for s in day)
+        return chars.rstrip("0")
 
     # Compact output: lookup tables + one flat number array, so the file stays small.
-    # Every month from first to last, including ones with no listening, so the chart has no silent gaps.
-    seen = sorted({k[3] for k in totals})
-    if not seen:
-        raise SystemExit("No music plays found in those files.")
-    months, (y, m) = [], map(int, seen[0].split("-"))
-    while f"{y:04d}-{m:02d}" <= seen[-1]:
-        months.append(f"{y:04d}-{m:02d}")
-        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
-    month_ix = {m: i for i, m in enumerate(months)}
     artists, artist_ix, songs, song_ix, rows = [], {}, [], {}, []
     for (song, artist, album, month), t in sorted(totals.items(), key=lambda kv: kv[0][3]):
         if artist not in artist_ix:
@@ -101,17 +150,25 @@ def main():
         skey = (song, artist, album)
         if skey not in song_ix:
             song_ix[skey] = len(songs)
-            songs.append([song, artist_ix[artist], album])
+            # [title, artist index, album, length in seconds (0 = unknown), Spotify track id]
+            top = uris[skey].most_common(1)
+            songs.append([song, artist_ix[artist], album, song_len.get(skey, 0) // 1000, top[0][0] if top else ""])
         rows += [song_ix[skey], month_ix[month], *t]
 
-    data = {"months": months, "artists": artists, "songs": songs, "cols": 9, "rows": rows,
-            "heat": dict(heat), "skipHist": dict(skip_hist)}
+    data = {
+        "name": args.name,
+        "months": months, "artists": artists, "songs": songs, "cols": 9, "rows": rows,
+        "skipHist": dict(skip_hist), "playHist": dict(play_hist),
+        "days": {"start": day0.isoformat(), "slotMin": SLOT_MIN, "sec": day_sec,
+                 "heard": day_heard, "len": day_len, "slots": [encode(d) for d in slots]},
+    }
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:
         f.write("window.SPOTIFY=" + json.dumps(data, separators=(",", ":"), ensure_ascii=False) + ";\n")
 
     hours = sum(v[1] for v in totals.values()) / 3600
-    print(f"{len(songs):,} songs, {len(artists):,} artists, {hours:,.0f} hours -> {args.out}")
+    print(f"{len(songs):,} songs, {len(artists):,} artists, {hours:,.0f} hours, "
+          f"{n_days:,} days -> {args.out} ({os.path.getsize(args.out) / 1e6:.1f} MB)")
 
 
 if __name__ == "__main__":

@@ -123,7 +123,6 @@ function setRange(r, { full = true } = {}) {
   const p = isAll() ? null : prevRange(r);
   prevAgg = p ? aggregate(p) : null;
   if (!full) { renderTiles(); renderSelection(); return; } // cheap live update while dragging
-  L.shown = 50;
   L.open = null;
   renderAll();
 }
@@ -303,33 +302,296 @@ $('mostSkipped').addEventListener('click', (e) => {
   if (li) librarySearch(li.dataset.q);
 });
 
-// ---------- render: heatmap ----------
-function renderHeat() {
-  if (!D.heat) return;
-  const grid = Array.from({ length: 7 }, () => new Array(24).fill(0));
-  const [from, to] = state.range;
-  for (const [key, g] of Object.entries(D.heat)) {
-    const m = D.months.indexOf(key);
-    if (m < from || m > to) continue;
-    g.forEach((row, d) => row.forEach((v, h) => { grid[d][h] += v; }));
+// ---------- days (from build.py's per-day data) ----------
+const DD = D.days || null;
+// First day index of each month; days are counted from the 1st of the first month.
+const monthDay = [];
+{
+  let acc = 0;
+  for (const m of D.months) {
+    monthDay.push(acc);
+    const [y, mo] = m.split('-').map(Number);
+    acc += new Date(Date.UTC(y, mo, 0)).getUTCDate();
   }
-  const max = Math.max(1, ...grid.flat());
-  let html = '<span></span>';
-  for (let h = 0; h < 24; h++) html += `<span class="hr">${h % 3 === 0 ? (h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h - 12) + 'p') : ''}</span>`;
-  grid.forEach((row, d) => {
-    html += `<span class="day">${DAYS[d]}</span>`;
-    row.forEach((v, h) => {
-      const a = 0.06 + 0.94 * (v / max);
-      html += `<span class="cell" data-d="${d}" data-h="${h}" data-v="${v}" style="background:rgba(var(--heat),${a.toFixed(3)})"></span>`;
-    });
-  });
-  $('heat').innerHTML = html;
-  $('heatCard').hidden = false;
+  monthDay.push(acc);
 }
-tooltip($('heat'), '.cell', (el) => {
-  const h = +el.dataset.h, fmt = (x) => `${x % 12 || 12}${x < 12 ? 'am' : 'pm'}`;
-  return `<b>${DAYS[el.dataset.d]} ${fmt(h)}–${fmt((h + 1) % 24)}</b><br>${hours(+el.dataset.v)}`;
+const NDAYS = DD ? DD.sec.length : 0;
+const day0ms = DD ? Date.parse(DD.start + 'T00:00:00Z') : 0;
+const dayDate = (i) => new Date(day0ms + i * 86400000);
+const fmtDay = (i, o = { month: 'short', day: 'numeric', year: 'numeric' }) => dayDate(i).toLocaleDateString(undefined, { timeZone: 'UTC', ...o });
+// Days with any listening, so the charts don't run into empty months at either end.
+const firstDataDay = DD ? DD.sec.findIndex((s) => s > 0) : 0;
+const lastDataDay = DD ? NDAYS - 1 - [...DD.sec].reverse().findIndex((s) => s > 0) : 0;
+function dayRange([a, b]) {
+  return [Math.max(monthDay[a], firstDataDay), Math.min(monthDay[b + 1] - 1, lastDataDay)];
+}
+// Minutes per 15-minute slot, decoded once: SLOTS numbers per day.
+const SLOTS = DD ? (24 * 60) / DD.slotMin : 96;
+const slotMin = DD ? new Uint8Array(NDAYS * SLOTS) : null;
+if (DD) DD.slots.forEach((str, d) => { for (let j = 0; j < str.length; j++) slotMin[d * SLOTS + j] = parseInt(str[j], 16); });
+const clockLabel = (minOfDay) => {
+  const h = Math.floor(minOfDay / 60) % 24, m = minOfDay % 60;
+  return `${h % 12 || 12}${m ? ':' + String(m).padStart(2, '0') : ''}${h < 12 ? 'am' : 'pm'}`;
+};
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+// ---------- histograms for the selected period ----------
+// bins: [{ label, value, tip }]; labels sit under each bar.
+function drawHist(id, bins, unit) {
+  const max = Math.max(1, ...bins.map((b) => b.value));
+  const total = bins.reduce((a, b) => a + b.value, 0) || 1;
+  $(id).innerHTML = bins.map((b, i) =>
+    `<div class="hbar" data-i="${i}" data-tip="${esc(`<b>${b.tip || b.label}</b><br>${num(b.value)} ${unit} · ${pct(b.value / total)}`)}">` +
+    `<i style="height:${(b.value / max) * 100}%"></i><b>${b.label}</b></div>`).join('');
+}
+function bucketIndex(edges, v) { let i = 0; while (i < edges.length && v >= edges[i]) i++; return i; }
+
+function renderDists() {
+  const [from, to] = state.range;
+  // 1. Daily listening
+  if (DD) {
+    const [d0, d1] = dayRange(state.range);
+    const edges = [1, 15 * 60, 30 * 60, 3600, 7200, 10800, 14400, 21600]; // seconds
+    const labels = ['None', '<15m', '15–30m', '½–1h', '1–2h', '2–3h', '3–4h', '4–6h', '6h+'];
+    const tips = ['No listening', 'Under 15 minutes', '15–30 minutes', '30–60 minutes', '1–2 hours', '2–3 hours', '3–4 hours', '4–6 hours', '6 hours or more'];
+    const counts = new Array(labels.length).fill(0), active = [];
+    for (let d = d0; d <= d1; d++) { counts[bucketIndex(edges, DD.sec[d])]++; if (DD.sec[d] > 0) active.push(DD.sec[d]); }
+    active.sort((a, b) => a - b);
+    const days = Math.max(0, d1 - d0 + 1);
+    $('distDaysNote').textContent = days ? `You listened on ${pct(active.length / days)} of ${num(days)} days` +
+      (active.length ? ` · a typical listening day was ${hours(active[Math.floor(active.length / 2)])}` : '') : 'No days in this period.';
+    drawHist('distDays', labels.map((l, i) => ({ label: l, value: counts[i], tip: tips[i] })), 'days');
+  }
+  // 2. Plays per song
+  {
+    const edges = [2, 3, 6, 11, 26, 51, 101];
+    const labels = ['1', '2', '3–5', '6–10', '11–25', '26–50', '51–100', '100+'];
+    const counts = new Array(labels.length).fill(0);
+    for (const v of agg.songs.values()) counts[bucketIndex(edges, v[0])]++;
+    const n = agg.songs.size;
+    $('distPlaysNote').textContent = n ? `${num(n)} songs · ${pct(counts[0] / n)} played only once` : 'No songs in this period.';
+    drawHist('distPlays', labels.map((l, i) => ({ label: l, value: counts[i], tip: `${l} play${l === '1' ? '' : 's'}` })), 'songs');
+  }
+  // 3. How much of each play you hear
+  if (D.playHist) {
+    const h = new Array(10).fill(0);
+    for (const [key, v] of Object.entries(D.playHist)) {
+      const m = D.months.indexOf(key);
+      if (m >= from && m <= to) v.forEach((c, b) => { h[b] += c; });
+    }
+    const n = h.reduce((a, b) => a + b, 0);
+    $('distHeardNote').textContent = n ? `${pct(h[9] / n)} of plays reached 90%+ of the song · ${pct((h[0] + h[1]) / n)} stopped in the first 20%` : 'No length data for this period.';
+    drawHist('distHeard', h.map((c, b) => ({ label: `${b * 10}%`, value: c, tip: `Heard ${b * 10}–${b * 10 + 10}% of the song` })), 'plays');
+  }
+  // 4. Length of the songs you play (weighted by plays)
+  {
+    const edges = [120, 180, 240, 300, 360, 480, 600];
+    const labels = ['<2m', '2–3m', '3–4m', '4–5m', '5–6m', '6–8m', '8–10m', '10m+'];
+    const counts = new Array(labels.length).fill(0), lens = [];
+    for (const [s, v] of agg.songs) {
+      const len = D.songs[s][3];
+      if (!len) continue;
+      counts[bucketIndex(edges, len)] += v[0];
+      lens.push([len, v[0]]);
+    }
+    lens.sort((a, b) => a[0] - b[0]);
+    const n = lens.reduce((a, b) => a + b[1], 0);
+    let acc = 0, median = 0;
+    for (const [len, w] of lens) { acc += w; if (acc >= n / 2) { median = len; break; } }
+    $('distLenNote').textContent = n ? `Typical play is a ${Math.floor(median / 60)}:${String(median % 60).padStart(2, '0')} song` : 'No length data for this period.';
+    drawHist('distLen', labels.map((l, i) => ({ label: l, value: counts[i], tip: `Songs ${l.replace('m', ' min')}` })), 'plays');
+  }
+  $('distCards').hidden = false;
+  $('distCards2').hidden = !(D.playHist && D.songs[0]?.[3] !== undefined);
+}
+for (const id of ['distDays', 'distPlays', 'distHeard', 'distLen']) tooltip($(id), '.hbar', (el) => el.dataset.tip);
+
+// ---------- when you listen: date × time of day ----------
+let clockCells = null; // for the tooltip: { d0, n, cols, colW, rowH }
+function renderClock() {
+  if (!DD) { $('clockCard').hidden = true; return; }
+  $('clockCard').hidden = false;
+  const wrap = $('clockPlot'), canvas = $('clockCanvas');
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  if (!W) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const [d0, d1] = dayRange(state.range), n = d1 - d0 + 1;
+  if (n <= 0) { clockCells = null; $('clockX').innerHTML = ''; return; }
+  const cols = Math.min(n, Math.floor(W)), colW = W / cols, rowH = H / SLOTS;
+  // average minutes per slot for each column of days
+  const vals = new Float32Array(cols * SLOTS);
+  for (let c = 0; c < cols; c++) {
+    const da = d0 + Math.floor((c * n) / cols), db = Math.max(da, d0 + Math.floor(((c + 1) * n) / cols) - 1);
+    for (let d = da; d <= db; d++) for (let j = 0; j < SLOTS; j++) vals[c * SLOTS + j] += slotMin[d * SLOTS + j];
+    const k = db - da + 1;
+    for (let j = 0; j < SLOTS; j++) vals[c * SLOTS + j] /= k;
+  }
+  // scale colors to the 95th percentile of non-empty cells, so long and short periods both read well
+  const nz = [];
+  for (const v of vals) if (v > 0) nz.push(v);
+  nz.sort((a, b) => a - b);
+  const top = nz.length ? Math.max(nz[Math.floor(nz.length * 0.97)], 0.5) : 1;
+  const rgb = cssVar('--heat');
+  // faint guide lines every 6 hours
+  ctx.fillStyle = cssVar('--line');
+  for (let h = 6; h < 24; h += 6) ctx.fillRect(0, Math.round(((h * 60) / DD.slotMin) * rowH), W, 1);
+  for (let c = 0; c < cols; c++) {
+    for (let j = 0; j < SLOTS; j++) {
+      const v = vals[c * SLOTS + j];
+      if (v <= 0) continue;
+      const t = Math.min(1, v / top);
+      ctx.fillStyle = `rgba(${rgb},${(0.08 + 0.92 * t).toFixed(3)})`;
+      ctx.fillRect(c * colW, j * rowH, colW + 0.6, rowH + 0.6);
+    }
+  }
+  clockCells = { d0, n, cols, colW, rowH, vals, top };
+
+  // x-axis: day ticks for short periods, months for medium, years for long
+  const ticks = [];
+  const xAt = (d) => ((d - d0) / n) * W;
+  if (n <= 45) {
+    const step = n <= 10 ? 1 : n <= 21 ? 3 : 7;
+    for (let d = d0; d <= d1; d += step) ticks.push([xAt(d), fmtDay(d, { month: 'short', day: 'numeric' })]);
+  } else {
+    const years = n > 900;
+    const stepM = years ? 12 : n > 400 ? 3 : 1;
+    for (let m = 0; m < D.months.length; m++) {
+      const d = monthDay[m];
+      if (d < d0 || d > d1) continue;
+      const mo = +D.months[m].slice(5);
+      if (years ? mo !== 1 : (mo - 1) % stepM !== 0) continue;
+      ticks.push([xAt(d), years ? D.months[m].slice(0, 4) : `${MONTHS[mo - 1]}${mo === 1 || ticks.length === 0 ? ' ' + D.months[m].slice(0, 4) : ''}`]);
+    }
+  }
+  $('clockX').innerHTML = ticks.map(([x, l]) => `<span style="left:${x}px">${l}</span>`).join('');
+  $('clockNote').textContent = `${fmtDay(d0)} – ${fmtDay(d1)}` +
+    (cols < n ? ` · each column is ${(n / cols).toFixed(n / cols < 10 ? 1 : 0)} days, averaged` : ' · one column per day');
+  $('clockLegendMax').textContent = `${top < 1 ? top.toFixed(1) : Math.round(top)}+ min`;
+}
+$('clockPlot').addEventListener('mousemove', (e) => {
+  const tip = $('tip');
+  if (!clockCells) { tip.hidden = true; return; }
+  const r = $('clockPlot').getBoundingClientRect();
+  const { d0, n, cols, colW, rowH, vals } = clockCells;
+  const c = Math.min(cols - 1, Math.max(0, Math.floor((e.clientX - r.left) / colW)));
+  const j = Math.min(SLOTS - 1, Math.max(0, Math.floor((e.clientY - r.top) / rowH)));
+  const da = d0 + Math.floor((c * n) / cols), db = Math.max(da, d0 + Math.floor(((c + 1) * n) / cols) - 1);
+  const when = da === db ? fmtDay(da, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : `${fmtDay(da)} – ${fmtDay(db)}`;
+  const v = vals[c * SLOTS + j];
+  const t0 = j * DD.slotMin;
+  tip.innerHTML = `<b>${when}</b><br>${clockLabel(t0)}–${clockLabel(t0 + DD.slotMin)}: ` +
+    (v > 0 ? `${da === db ? '' : 'avg '}${v < 1 ? '<1' : Math.round(v)} min listening` : 'nothing played');
+  tip.hidden = false;
+  const tr = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + tr.width > innerWidth - 8) x = e.clientX - tr.width - 14;
+  if (y + tr.height > innerHeight - 8) y = e.clientY - tr.height - 14;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
 });
+$('clockPlot').addEventListener('mouseleave', () => { $('tip').hidden = true; });
+
+// ---------- retention over time ----------
+// Time-weighted: total time heard ÷ total length of the songs you started, per week or month.
+// Hours of listening weight it naturally, so a stray play or two can't swing a point.
+let retBuckets = [];
+function renderRetention() {
+  if (!DD) { $('retCard').hidden = true; return; }
+  $('retCard').hidden = false;
+  const [d0, d1] = dayRange(state.range), n = d1 - d0 + 1;
+  const buckets = [];
+  const add = (a, b, label) => {
+    let heard = 0, len = 0, sec = 0;
+    for (let d = Math.max(a, d0); d <= Math.min(b, d1); d++) { heard += DD.heard[d]; len += DD.len[d]; sec += DD.sec[d]; }
+    buckets.push({ a: Math.max(a, d0), b: Math.min(b, d1), label, heard, len, sec, ret: len ? heard / len : null });
+  };
+  let unit;
+  if (n <= 0) unit = 'none';
+  else if (n <= 31) { unit = 'day'; for (let d = d0; d <= d1; d++) add(d, d, fmtDay(d, { weekday: 'short', month: 'short', day: 'numeric' })); }
+  else if (n <= 200) { unit = 'week'; for (let d = d0; d <= d1; d += 7) add(d, d + 6, `Week of ${fmtDay(d)}`); }
+  else {
+    unit = 'month';
+    for (let m = state.range[0]; m <= state.range[1]; m++) if (monthDay[m + 1] - 1 >= d0 && monthDay[m] <= d1) add(monthDay[m], monthDay[m + 1] - 1, monthLabel(D.months[m]));
+  }
+  retBuckets = buckets;
+  const svg = $('retChart'), W = svg.clientWidth || svg.parentElement.clientWidth;
+  const H = 278, top = 10, plotH = 170, gap = 28, stripH = 44, left = 36, right = 58;
+  const pw = W - left - right;
+  const ok = buckets.filter((b) => b.ret !== null);
+  if (!ok.length || pw <= 0) { svg.innerHTML = ''; $('retNote').textContent = 'No length data for this period.'; return; }
+  const secs = ok.map((b) => b.sec).sort((a, b) => a - b), median = secs[Math.floor(secs.length / 2)];
+  const low = (b) => b.sec < median * 0.25; // light weeks/months: shown hollow
+  const solid = ok.filter((b) => !low(b));
+  const rs = ok.map((b) => b.ret * 100);
+  let lo = Math.max(0, Math.floor((Math.min(...rs) - 4) / 5) * 5), hi = Math.min(100, Math.ceil((Math.max(...rs) + 4) / 5) * 5);
+  if (hi - lo < 10) { lo = Math.max(0, lo - 5); hi = Math.min(100, hi + 5); }
+  const step = hi - lo > 50 ? 20 : hi - lo > 20 ? 10 : 5;
+  const x = (i) => left + (buckets.length === 1 ? pw / 2 : (i / (buckets.length - 1)) * pw);
+  const y = (r) => top + plotH - ((Math.min(hi, Math.max(lo, r * 100)) - lo) / (hi - lo)) * plotH;
+  const overall = buckets.reduce((a, b) => a + b.heard, 0) / buckets.reduce((a, b) => a + b.len, 0);
+  const maxSec = Math.max(...buckets.map((b) => b.sec)) || 1;
+  let g = '';
+  for (let v = lo; v <= hi; v += step) g += `<line class="grid" x1="${left}" x2="${W - right}" y1="${y(v / 100)}" y2="${y(v / 100)}"/><text class="ylab" x="${left - 6}" y="${y(v / 100) + 4}">${v}%</text>`;
+  g += `<line class="avg" x1="${left}" x2="${W - right}" y1="${y(overall)}" y2="${y(overall)}"/>` +
+    `<text class="avglab" x="${W - right + 6}" y="${y(overall) + 4}">avg ${pct(overall)}</text>`;
+  // line through buckets that have data
+  let path = '', pen = false;
+  buckets.forEach((b, i) => {
+    if (b.ret === null) { pen = false; return; }
+    path += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(b.ret).toFixed(1)}`; pen = true;
+  });
+  g += `<path class="line" d="${path}"/>`;
+  buckets.forEach((b, i) => {
+    if (b.ret === null) return;
+    const room = buckets.length > 1 ? pw / (buckets.length - 1) : 20; // shrink dots when points are tightly packed
+    const r = Math.max(1.2, Math.min(2 + 2.5 * Math.sqrt(b.sec / maxSec), room * 0.45));
+    g += `<circle class="${low(b) ? 'pt low' : 'pt'}" cx="${x(i).toFixed(1)}" cy="${y(b.ret).toFixed(1)}" r="${r.toFixed(1)}"/>`;
+  });
+  // listening-time strip on the same x-axis
+  const sy = top + plotH + gap, bw = Math.max(1, Math.min(18, (pw / buckets.length) * 0.7));
+  g += `<text class="striplab" x="${left}" y="${sy - 8}">Listening time</text>`;
+  buckets.forEach((b, i) => {
+    const h = (b.sec / maxSec) * stripH;
+    g += `<rect class="sbar" x="${(x(i) - bw / 2).toFixed(1)}" y="${(sy + stripH - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.5, h).toFixed(1)}" rx="1"/>`;
+  });
+  // hover targets
+  const hw = buckets.length === 1 ? pw : pw / (buckets.length - 1);
+  buckets.forEach((b, i) => { g += `<rect class="hit" data-i="${i}" x="${(x(i) - hw / 2).toFixed(1)}" y="0" width="${hw.toFixed(1)}" height="${H}"/>`; });
+  // x labels: first, middle, last
+  const xl = [...new Set([0, Math.floor((buckets.length - 1) / 2), buckets.length - 1])];
+  g += xl.map((i, k) => `<text class="xlab" text-anchor="${k === 0 ? 'start' : k === xl.length - 1 ? 'end' : 'middle'}" x="${x(i)}" y="${H - 2}">${esc(buckets[i].label.replace('Week of ', ''))}</text>`).join('');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('height', H);
+  svg.innerHTML = g;
+  const best = solid.length ? solid.reduce((a, b) => (b.ret > a.ret ? b : a)) : null;
+  const worst = solid.length ? solid.reduce((a, b) => (b.ret < a.ret ? b : a)) : null;
+  $('retNote').textContent = `One point per ${unit} · overall ${pct(overall)}` +
+    (best && best !== worst ? ` · highest ${pct(best.ret)} (${best.label.replace('Week of ', 'week of ')}), lowest ${pct(worst.ret)} (${worst.label.replace('Week of ', 'week of ')})` : '');
+}
+tooltip($('retChart'), '.hit', (el) => {
+  const b = retBuckets[+el.dataset.i];
+  if (!b) return null;
+  return `<b>${esc(b.label)}</b><br>` + (b.ret === null ? 'No length data' : `${pct(b.ret)} of song time heard`) + `<br>${hours(b.sec)} listened`;
+});
+
+// Re-draw the canvas/SVG charts when their width changes.
+if (window.ResizeObserver) {
+  let rz = 0, lastW = 0;
+  new ResizeObserver(() => {
+    const w = $('clockPlot').clientWidth;
+    if (w === lastW) return;
+    lastW = w;
+    cancelAnimationFrame(rz);
+    rz = requestAnimationFrame(() => { renderClock(); renderRetention(); });
+  }).observe($('clockPlot'));
+}
+// Colors come from CSS, so redraw the canvas when the light/dark theme flips.
+window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => renderClock());
 
 // ---------- library: songs / artists / albums table ----------
 // Per-song all-time facts for the detail view.
@@ -470,6 +732,11 @@ function rangeRow(f) {
 }
 
 function renderPanel() {
+  // remember which control had focus so keyboard users don't lose their place when the panel redraws
+  const a = document.activeElement;
+  const keep = a && $('filterPanel').contains(a)
+    ? ['preset', 'saved', 'unit', 'act', 'del'].map((k) => (a.dataset[k] !== undefined ? `[data-${k}="${a.dataset[k]}"]` : '')).find(Boolean)
+    : null;
   const F = L.f, saved = loadSaved();
   const same = (p) => JSON.stringify(Object.assign(blankFilters(), p)) === JSON.stringify(F);
   const noun = { songs: 'songs', artists: 'artists', albums: 'albums' }[L.view];
@@ -501,6 +768,7 @@ function renderPanel() {
       <button class="primary" data-act="close">Done</button>
     </div>`;
   updatePanelCount();
+  if (keep) ($('filterPanel').querySelector(keep) || $('filterPanel').querySelector('.fp-x'))?.focus();
 }
 function updatePanelCount() {
   const el = $('fpCount');
@@ -520,7 +788,7 @@ function openPanel(open = !$('filterPanel').classList.contains('open')) {
 let panelTimer;
 function applyFromPanel(immediate) {
   clearTimeout(panelTimer);
-  const go = () => { L.shown = 50; L.open = null; renderTable(); updatePanelCount(); };
+  const go = () => { L.open = null; renderTable(); updatePanelCount(); };
   immediate ? go() : (panelTimer = setTimeout(go, 150));
 }
 
@@ -577,7 +845,7 @@ panel.addEventListener('click', (e) => {
 });
 panel.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.target.id === 'presetName') panel.querySelector('[data-act="doSave"]').click();
-  if (e.key === 'Escape') { openPanel(false); $('filterBtn').focus(); }
+  if (e.key === 'Escape') { e.preventDefault(); openPanel(false); $('filterBtn').focus(); }
 });
 $('filterBtn').addEventListener('click', (e) => { e.stopPropagation(); openPanel(); });
 document.addEventListener('pointerdown', (e) => {
@@ -586,7 +854,7 @@ document.addEventListener('pointerdown', (e) => {
 
 const L = {
   view: 'songs', q: '', artist: null, album: null, f: blankFilters(), timeUnit: 'min',
-  sort: 'sec', dir: -1, shown: 50, open: null,
+  sort: 'sec', dir: -1, open: null, hidePlayer: false, cursor: -1,
 };
 
 // Monthly seconds for a list of songs (cached), used by sparklines and the detail chart.
@@ -705,7 +973,9 @@ function detail(r) {
   const w = 600, h = 70, bw = w / N;
   const bars = [...v].map((x, i) => `<rect class="${i >= a && i <= b ? 'on' : ''}" x="${(i * bw + 0.5).toFixed(1)}" y="${(h - (x / max) * h).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${((x / max) * h).toFixed(1)}"><title>${monthLabel(D.months[i])}: ${hours(x)}</title></rect>`).join('');
   const s = r.id;
+  const len = D.songs[s][3]; // seconds; 0 = never played to the end, so unknown
   const facts = [
+    ['Length', len ? `${Math.floor(len / 60)}:${String(len % 60).padStart(2, '0')}` : '<span class="muted" title="You never played it to the end, so its length isn\'t in your data">Unknown</span>'],
     ['First played', monthLabel(D.months[songFirst[s]])],
     ['Last played', monthLabel(D.months[songLast[s]])],
     ['Peak month', `${monthLabel(D.months[peak])} · ${hours(v[peak])}`],
@@ -716,15 +986,57 @@ function detail(r) {
     <svg class="dchart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${bars}</svg>
     <div class="dchart-axis"><span>${D.months[0].slice(0, 4)}</span><span>${D.months[N - 1].slice(0, 4)}</span></div>
     <div class="actions">
+      ${D.songs[s][4] ? `<button class="embedbtn" data-embed="${s}" aria-expanded="${!L.hidePlayer}">${L.hidePlayer ? '▶ Show player' : 'Hide player'}</button>
+      <a class="spbtn" href="https://open.spotify.com/track/${D.songs[s][4]}" target="_blank" rel="noopener">Play on Spotify ↗</a>` : ''}
       <button data-artist="${r.a}">All songs by ${esc(r.artist)}</button>
       ${r.album ? `<button data-album="${esc(`${r.a}|${r.album}`)}">Album: ${esc(r.album)}</button>` : ''}
-    </div></div></td></tr>`;
+    </div>${D.songs[s][4] && !L.hidePlayer ? `<div class="embed"><div class="embed-slot" data-track="${D.songs[s][4]}"></div>
+      <p class="muted small">Starts a preview when you open a song. Press play in the player for the full song if you're signed into Spotify in this browser.</p></div>` : ''}
+    </div></td></tr>`;
 }
 
-let lastList = [];
+// ----- Spotify's embedded player (their iFrame API), loaded the first time a song is opened -----
+let spotifyApi = null; // Promise of the IFrameAPI, or of null if it can't load (offline, blocked)
+function loadSpotifyApi() {
+  if (!spotifyApi) {
+    spotifyApi = new Promise((resolve) => {
+      const done = (api) => { clearTimeout(timer); resolve(api); };
+      const timer = setTimeout(() => done(null), 6000);
+      window.onSpotifyIframeApiReady = (api) => done(api);
+      const sc = document.createElement('script');
+      sc.src = 'https://open.spotify.com/embed/iframe-api/v1';
+      sc.async = true;
+      sc.onerror = () => done(null);
+      document.head.appendChild(sc);
+    });
+  }
+  return spotifyApi;
+}
+// Put the player into the open row. autoplay = this render came from the user opening the row.
+async function mountPlayer(autoplay) {
+  const slot = document.querySelector('#tbody .embed-slot');
+  if (!slot) return;
+  const id = slot.dataset.track;
+  const api = await loadSpotifyApi();
+  if (!slot.isConnected) return; // row was closed or re-drawn meanwhile
+  const plain = () => {
+    slot.outerHTML = `<iframe src="https://open.spotify.com/embed/track/${id}?utm_source=generator" height="80"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Spotify player"></iframe>`;
+  };
+  if (!api) return plain();
+  try {
+    api.createController(slot, { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (ctrl) => {
+      if (autoplay) ctrl.addListener('ready', () => { try { ctrl.play(); } catch { /* browser blocked autoplay */ } });
+    });
+  } catch { plain(); }
+}
+
+let lastList = [], rendered = 0, maxSecShown = 1, curCols = [];
+const PAGE = 100; // rows added each time you scroll near the bottom
 function renderTable() {
   // controls reflect state
   document.querySelectorAll('#views button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.view === L.view));
+  renderPeriodPicker();
   $('search').placeholder = `Search ${L.view}…`;
 
   // chips: one per active filter, each removable
@@ -762,28 +1074,116 @@ function renderTable() {
     tp ? `<b>${pct(skips / tp)}</b> skipped` : '',
   ].filter(Boolean).join('<span class="dot">·</span>');
 
-  // table
-  const C = cols();
+  // table: header, then the first page of rows; more are added as you scroll
+  const C = curCols = cols();
   $('thead').innerHTML = C.map(([key, label, cls = '']) => {
     const on = L.sort === key && key !== 'trend';
     return `<th data-k="${key}" class="${cls} ${on ? 'sorted' : ''}">${label}${on && key !== 'rank' ? `<span class="arrow">${L.dir < 0 ? '↓' : '↑'}</span>` : ''}</th>`;
   }).join('');
-  const maxSec = list.reduce((m, r) => Math.max(m, r.sec), 1);
-  $('tbody').innerHTML = list.length ? list.slice(0, L.shown).map((r, i) => {
-    const open = r.kind === 'song' && L.open === r.id;
-    return `<tr class="row ${open ? 'open' : ''}" data-i="${i}">${C.map(([key]) => cell(key, r, i, maxSec)).join('')}</tr>` + (open ? detail(r) : '');
-  }).join('') : `<tr><td colspan="${C.length}" class="empty">Nothing matches. <button data-clear="all">Clear filters</button></td></tr>`;
-  $('count').textContent = list.length ? `Showing ${num(Math.min(L.shown, list.length))} of ${num(list.length)}` : '';
-  $('more').hidden = L.shown >= list.length;
+  maxSecShown = list.reduce((m, r) => Math.max(m, r.sec), 1);
+  rendered = 0;
+  $('tbody').innerHTML = list.length ? '' : `<tr><td colspan="${C.length}" class="empty">Nothing matches. <button data-clear="all">Clear filters</button></td></tr>`;
+  $('tableWrap').scrollTop = 0;
+  L.cursor = -1;
+  appendRows(PAGE);
   updatePanelCount();
+  mountPlayer(false);
+  syncUrl();
+}
+function rowHTML(r, i) {
+  const open = r.kind === 'song' && L.open === r.id;
+  return `<tr class="row${open ? ' open' : ''}${i === L.cursor ? ' cursor' : ''}" data-i="${i}">${curCols.map(([key]) => cell(key, r, i, maxSecShown)).join('')}</tr>` + (open ? detail(r) : '');
+}
+function appendRows(n) {
+  const end = Math.min(lastList.length, rendered + n);
+  if (end <= rendered) return updateFoot();
+  let html = '';
+  for (let i = rendered; i < end; i++) html += rowHTML(lastList[i], i);
+  $('tbody').insertAdjacentHTML('beforeend', html);
+  rendered = end;
+  updateFoot();
+}
+function updateFoot() {
+  const n = lastList.length;
+  $('count').textContent = !n ? '' : rendered >= n ? `All ${num(n)} shown` : `Showing ${num(rendered)} of ${num(n)} · scroll for more`;
+}
+const rowEl = (i) => $('tbody').querySelector(`tr.row[data-i="${i}"]`);
+
+// Open / close one song's detail without redrawing the table (keeps your place and the player).
+function closeOpen() {
+  $('tbody').querySelector('tr.detail')?.remove();
+  $('tbody').querySelector('tr.row.open')?.classList.remove('open');
+  L.open = null;
+}
+function toggleOpen(i) {
+  const r = lastList[i];
+  if (!r) return;
+  if (r.kind === 'artist') return libraryArtist(r.id);
+  if (r.kind === 'album') return libraryAlbum(r.id);
+  const wasOpen = L.open === r.id;
+  closeOpen();
+  if (wasOpen) return;
+  L.open = r.id;
+  L.hidePlayer = false; // each newly opened song gets its player (and autoplay)
+  const tr = rowEl(i);
+  tr.classList.add('open');
+  tr.insertAdjacentHTML('afterend', detail(r));
+  mountPlayer(true);
+  // bring the song and its panel into view inside the table
+  tr.nextElementSibling.scrollIntoView({ block: 'nearest' });
+  tr.scrollIntoView({ block: 'nearest' });
+}
+function togglePlayer() {
+  const tr = $('tbody').querySelector('tr.row.open'), d = $('tbody').querySelector('tr.detail');
+  if (!tr || !d) return;
+  L.hidePlayer = !L.hidePlayer;
+  d.outerHTML = detail(lastList[+tr.dataset.i]);
+  if (!L.hidePlayer) mountPlayer(true);
 }
 
+// Keyboard cursor: up/down move, Enter opens.
+function setCursor(i) {
+  if (!lastList.length) return;
+  i = Math.max(0, Math.min(lastList.length - 1, i));
+  if (i >= rendered) appendRows(i - rendered + PAGE);
+  $('tbody').querySelector('tr.row.cursor')?.classList.remove('cursor');
+  L.cursor = i;
+  const tr = rowEl(i);
+  tr.classList.add('cursor');
+  tr.scrollIntoView({ block: 'nearest' });
+}
+
+// Period picker inside the library (handy in full screen, where the chart isn't visible).
+function renderPeriodPicker() {
+  const sel = $('libPeriod'), r = state.range;
+  const opts = [['all', 'All time'], ...years.map((y) => [y, y])];
+  const match = isAll() ? 'all' : years.find((y) => sameRange(r, yearRange(y)));
+  sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('') +
+    (match ? '' : `<option value="custom">${esc(rangeLabel(r))}</option>`);
+  sel.value = match || 'custom';
+}
+
+// Full screen: the library fills the screen; header and filters stay put, the table scrolls.
+function setFocusMode(on) {
+  if (on === document.body.classList.contains('lib-focus')) return;
+  document.body.classList.toggle('lib-focus', on);
+  $('libFull').setAttribute('aria-pressed', on);
+  $('libFull').title = on ? 'Exit full screen (F or Esc)' : 'Full screen (F)';
+  $('libFull').querySelector('span').textContent = on ? 'Exit full screen' : 'Full screen';
+  const lib = $('library');
+  if (on && lib.requestFullscreen && !document.fullscreenElement) lib.requestFullscreen().catch(() => {});
+  if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  if (on) $('tableWrap').focus({ preventScroll: true });
+  else lib.scrollIntoView({ block: 'start' });
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) setFocusMode(false); });
+
 function setLib(patch) {
-  Object.assign(L, { shown: 50, open: null }, patch);
+  Object.assign(L, { open: null }, patch);
   renderTable();
   if ('view' in patch && panel.classList.contains('open')) renderPanel();
 }
-function libraryFocus() { $('library').scrollIntoView({ behavior: 'smooth' }); }
+function libraryFocus() { if (!document.body.classList.contains('lib-focus')) $('library').scrollIntoView({ behavior: 'smooth' }); }
 // Jumps from elsewhere on the page clear the library filters, so the thing you clicked is always shown.
 function librarySearch(text) { $('search').value = text; setLib({ q: text, view: 'songs', artist: null, album: null, f: blankFilters() }); libraryFocus(); }
 function libraryArtistFresh(a) { $('search').value = ''; setLib({ artist: a, album: null, q: '', view: 'songs', f: blankFilters() }); libraryFocus(); }
@@ -807,9 +1207,12 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $('search').focus(); }
 });
 $('library').addEventListener('click', (e) => {
-  const t = e.target.closest('[data-clear],[data-artist],[data-album],th,tr.row');
+  if (e.target.closest('a[href]')) return; // real links (Spotify) just open
+  const t = e.target.closest('[data-embed],[data-clear],[data-artist],[data-album],th,tr.row');
   if (!t) return;
-  if (t.dataset.clear) {
+  if (t.dataset.embed) {
+    togglePlayer();
+  } else if (t.dataset.clear) {
     const k = t.dataset.clear;
     if (k === 'all') { $('search').value = ''; setLib({ q: '', artist: null, album: null, f: blankFilters() }); }
     else if (k === 'q') { $('search').value = ''; setLib({ q: '' }); }
@@ -833,14 +1236,42 @@ $('library').addEventListener('click', (e) => {
     L.sort = k;
     renderTable();
   } else {
-    const r = lastList[+t.dataset.i];
-    if (!r) return;
-    if (r.kind === 'artist') libraryArtist(r.id);
-    else if (r.kind === 'album') libraryAlbum(r.id);
-    else { L.open = L.open === r.id ? null : r.id; renderTable(); }
+    const i = +t.dataset.i;
+    setCursor(i);
+    $('tableWrap').focus({ preventScroll: true });
+    toggleOpen(i);
   }
 });
-$('more').addEventListener('click', () => { L.shown += 100; renderTable(); });
+
+// Load more rows as you scroll near the bottom of the table.
+new IntersectionObserver((entries) => {
+  if (entries.some((e) => e.isIntersecting) && rendered < lastList.length) appendRows(PAGE);
+}, { root: $('tableWrap'), rootMargin: '600px 0px' }).observe($('libSentinel'));
+$('tableWrap').addEventListener('scroll', () => { $('toTop').hidden = $('tableWrap').scrollTop < 600; }, { passive: true });
+$('toTop').addEventListener('click', () => $('tableWrap').scrollTo({ top: 0, behavior: $('tableWrap').scrollTop > 3000 ? 'instant' : 'smooth' }));
+$('libFull').addEventListener('click', () => setFocusMode(!document.body.classList.contains('lib-focus')));
+$('libPeriod').addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (v !== 'custom') setRange(v === 'all' ? [0, N - 1] : yearRange(v));
+});
+
+// Keyboard: up/down (or j/k) move · Enter opens · Esc closes / leaves full screen · F full screen · / search
+document.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return; // one key press = one action
+  if (e.key === 'Escape' && panel.classList.contains('open')) { e.preventDefault(); openPanel(false); $('filterBtn').focus(); return; }
+  const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) || panel.classList.contains('open');
+  if (typing) return;
+  const inLib = document.body.classList.contains('lib-focus') || $('library').contains(document.activeElement);
+  if ((e.key === 'f' || e.key === 'F') && !e.repeat) { e.preventDefault(); setFocusMode(!document.body.classList.contains('lib-focus')); return; }
+  if (!inLib) return;
+  if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); setCursor(L.cursor + 1); }
+  else if (e.key === 'ArrowUp' || e.key === 'k') { e.preventDefault(); setCursor(L.cursor - 1); }
+  else if (e.key === 'Enter' && L.cursor >= 0) { e.preventDefault(); toggleOpen(L.cursor); }
+  else if (e.key === 'Escape') {
+    if (L.open !== null) { e.preventDefault(); closeOpen(); }
+    else if (document.body.classList.contains('lib-focus')) { e.preventDefault(); setFocusMode(false); }
+  }
+});
 $('csv').addEventListener('click', () => {
   const C = cols().filter(([k]) => k !== 'trend' && k !== 'rank');
   const val = (k, r) => k === 'first' ? D.months[r.first] : k === 'skip' ? (r.skip < 0 ? '' : r.skip.toFixed(3))
@@ -884,6 +1315,88 @@ function tooltip(root, selector, html) {
   root.addEventListener('mouseleave', () => { tip.hidden = true; });
 }
 
+// ---------- address bar: every filter change becomes a history step ----------
+// The library state lives after the # (e.g. #p=2024-01~2024-12&v=artists&plays=10~), so Back/Forward
+// step through earlier filters, and a filtered view can be bookmarked or reloaded.
+// Names are stored (not internal numbers), so links keep working after you rebuild data.js.
+const URL_TEXT = { songText: 'st', artistText: 'at', albumText: 'alt', exclude: 'x' };
+function stateToHash() {
+  const P = new URLSearchParams();
+  if (!isAll()) P.set('p', `${D.months[state.range[0]]}~${D.months[state.range[1]]}`);
+  if (L.view !== 'songs') P.set('v', L.view);
+  if (L.q) P.set('q', L.q);
+  if (L.artist !== null) P.set('ar', D.artists[L.artist]);
+  if (L.album !== null) {
+    const [a, ...rest] = L.album.split('|');
+    P.set('alba', D.artists[+a]);
+    P.set('alb', rest.join('|'));
+  }
+  for (const f of RANGES) {
+    const [lo, hi] = L.f[f.k];
+    if (lo === null && hi === null) continue;
+    const enc = (v) => (v === null ? '' : f.kind === 'month' ? D.months[v] : String(+v.toFixed(4)));
+    P.set(f.k, `${enc(lo)}~${enc(hi)}`);
+  }
+  if (L.f.newOnly) P.set('new', '1');
+  for (const [k, short] of Object.entries(URL_TEXT)) if (L.f[k]) P.set(short, L.f[k]);
+  if (L.sort !== 'sec' || L.dir !== -1) P.set('sort', `${L.sort}${L.dir > 0 ? '' : '-'}`);
+  return P.toString();
+}
+
+function hashToState(hash) {
+  const P = new URLSearchParams(hash.replace(/^#/, ''));
+  const month = (s) => { const i = D.months.indexOf(s); return i < 0 ? null : i; };
+  let range = [0, N - 1];
+  const p = (P.get('p') || '').split('~');
+  if (p.length === 2 && month(p[0]) !== null && month(p[1]) !== null) range = [Math.min(month(p[0]), month(p[1])), Math.max(month(p[0]), month(p[1]))];
+  const f = blankFilters();
+  for (const r of RANGES) {
+    const v = P.get(r.k);
+    if (!v || !v.includes('~')) continue;
+    const parse = (x) => (x === '' ? null : r.kind === 'month' ? month(x) : Number.isFinite(+x) ? +x : null);
+    f[r.k] = v.split('~').slice(0, 2).map(parse);
+  }
+  f.newOnly = P.get('new') === '1';
+  for (const [k, short] of Object.entries(URL_TEXT)) f[k] = P.get(short) || '';
+  const artistIx = (name) => { const i = name === null ? -1 : D.artists.indexOf(name); return i < 0 ? null : i; };
+  const ar = artistIx(P.get('ar'));
+  const alba = artistIx(P.get('alba'));
+  const sortRaw = P.get('sort') || 'sec-';
+  const sortKey = sortRaw.replace(/-$/, '');
+  const view = ['songs', 'artists', 'albums'].includes(P.get('v')) ? P.get('v') : 'songs';
+  return {
+    range,
+    lib: {
+      view, q: P.get('q') || '', f,
+      artist: ar, album: alba !== null && P.has('alb') ? `${alba}|${P.get('alb')}` : null,
+      sort: COLS[view].some(([k]) => k === sortKey) ? sortKey : 'sec',
+      dir: COLS[view].some(([k]) => k === sortKey) ? (sortRaw.endsWith('-') ? -1 : 1) : -1,
+    },
+  };
+}
+
+let urlTimer = 0, restoringUrl = false;
+// Called after every library render. Waits until you pause (typing, sliders) so one change = one Back step.
+function syncUrl() {
+  if (restoringUrl) return;
+  clearTimeout(urlTimer);
+  urlTimer = setTimeout(() => {
+    const h = stateToHash();
+    if (h === location.hash.replace(/^#/, '')) return;
+    try { history.pushState(null, '', h ? `#${h}` : location.pathname + location.search); } catch { /* some file:// setups */ }
+  }, 450);
+}
+function applyHash() {
+  const { range, lib } = hashToState(location.hash);
+  restoringUrl = true;
+  Object.assign(L, lib, { open: null });
+  $('search').value = L.q;
+  setRange(range);
+  if (panel.classList.contains('open')) renderPanel();
+  restoringUrl = false;
+}
+window.addEventListener('popstate', () => { clearTimeout(urlTimer); applyHash(); });
+
 // ---------- go ----------
 function renderAll() {
   renderYears();
@@ -891,8 +1404,10 @@ function renderAll() {
   renderTimeline();
   renderTop();
   renderSkips();
-  renderHeat();
+  renderDists();
+  renderClock();
+  renderRetention();
   renderTable();
 }
-$('range').textContent = `${monthLabel(D.months[0])} – ${monthLabel(D.months.at(-1))} · from your Spotify streaming history`;
-setRange([0, N - 1]);
+$('range').textContent = `${monthLabel(D.months[0])} – ${monthLabel(D.months.at(-1))} · ${window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : D.name ? `${D.name}'s` : 'example'} Spotify streaming history`;
+applyHash(); // start from the address (a bookmarked or reloaded view), or the default

@@ -65,6 +65,21 @@
 
   // ---------- processing: a straight port of build.py ----------
   const SKIP_ENDS = new Set(['fwdbtn', 'backbtn', 'endplay', 'clickrow']);
+  // Same rules as build.py: how a play started, and which kind of device it was on.
+  const START_GROUPS = { clickrow: 0, trackdone: 1, fwdbtn: 2, backbtn: 2, playbtn: 3, appload: 3, remote: 3, reconnect: 3 };
+  function device(platform) {
+    const p = (platform || '').toLowerCase();
+    const any = (keys) => keys.some((k) => p.includes(k));
+    if (any(['_tv', ' tv', 'tv;', 'playstation', 'xbox', 'roku', 'tizen', 'webos', 'chromecast'])) return 'TV / console';
+    if (p.startsWith('partner') || any(['echo', 'sonos', 'speaker', 'google_home', 'cast'])) return 'Smart speaker';
+    if (p.startsWith('ios') || p.includes('iphone') || p.includes('ipad')) return 'iPhone / iPad';
+    if (p.startsWith('android')) return 'Android';
+    if (p.startsWith('windows')) return 'Windows';
+    if (p.startsWith('osx') || p.includes('os x') || p.includes('macos')) return 'Mac';
+    if (p.includes('linux')) return 'Linux';
+    if (p.startsWith('web') || p.includes('web_player')) return 'Web player';
+    return 'Other';
+  }
   const SLOT_MIN = 15, SLOTS = (24 * 60) / SLOT_MIN, HEX = '0123456789abcdef';
   const pyRound = (x) => { const f = Math.floor(x), d = x - f; return d > 0.5 ? f + 1 : d < 0.5 ? f : f % 2 === 0 ? f : f + 1; }; // Python's round()
   const pad = (n, w = 2) => String(n).padStart(w, '0');
@@ -77,11 +92,13 @@
       return {
         ts: e.endTime ? e.endTime.replace(' ', 'T') + ':00Z' : null, ms: e.msPlayed, track: e.trackName,
         artist: e.artistName, album: '', reasonEnd: null, skipped: null, uri: null,
+        platform: null, reasonStart: null, shuffle: null, offline: false, incognito: false,
       };
     }
     return {
       ts: e.ts, ms: e.ms_played, track: e.master_metadata_track_name, artist: e.master_metadata_album_artist_name,
       album: e.master_metadata_album_album_name, reasonEnd: e.reason_end, skipped: e.skipped, uri: e.spotify_track_uri,
+      platform: e.platform, reasonStart: e.reason_start, shuffle: e.shuffle, offline: e.offline, incognito: e.incognito_mode,
     };
   }
 
@@ -103,7 +120,8 @@
         if (!Number.isFinite(end)) continue;
         const key = `${e.track}\u0000${e.artist || 'Unknown artist'}\u0000${e.album || ''}`;
         const skipped = Boolean(e.skipped) || SKIP_ENDS.has(e.reasonEnd);
-        plays.push([key, wall(end - ms), ms, skipped]);
+        const how = [device(e.platform), (Object.hasOwn(START_GROUPS, e.reasonStart) ? START_GROUPS[e.reasonStart] : 4), e.shuffle ?? null, Boolean(e.offline), Boolean(e.incognito)];
+        plays.push([key, wall(end - ms), ms, skipped, how]);
         if (e.reasonEnd === 'trackdone' && ms > (songLen.get(key) || 0)) songLen.set(key, ms);
         if (typeof e.uri === 'string' && e.uri.startsWith('spotify:track:')) {
           let c = uris.get(key);
@@ -130,15 +148,23 @@
     const skipHist = {}, playHist = {};
     const daySec = new Array(nDays).fill(0), dayHeard = new Array(nDays).fill(0), dayLen = new Array(nDays).fill(0);
     const slots = new Array(nDays).fill(null);
+    const howByMonth = {}; // month -> { dev: {device: sec}, start: [5 groups], shuf: [on, off], off: sec, priv: plays }
     for (let i = 0; i < plays.length; i++) {
       if (i % 25000 === 0) { progress('Crunching numbers', 0.6 + (i / plays.length) * 0.35); await tick(); }
-      const [key, start, ms, skipped] = plays[i];
+      const [key, start, ms, skipped, how] = plays[i];
       const sd = new Date(start);
       const month = `${sd.getUTCFullYear()}-${pad(sd.getUTCMonth() + 1)}`;
       const tk = `${key}\u0000${month}`;
       let t = totals.get(tk);
       if (!t) totals.set(tk, (t = [0, 0, 0, 0, 0, 0, 0]));
       t[0] += 1; t[1] += Math.floor(ms / 1000); t[2] += skipped ? 1 : 0;
+      const hm = (howByMonth[month] ||= { dev: {}, start: [0, 0, 0, 0, 0], shuf: [0, 0], off: 0, priv: 0 });
+      const [dev, sg, shuffle, offline, priv] = how;
+      hm.dev[dev] = (hm.dev[dev] || 0) + Math.floor(ms / 1000);
+      hm.start[sg] += 1;
+      if (shuffle !== null) hm.shuf[shuffle ? 0 : 1] += 1;
+      if (offline) hm.off += Math.floor(ms / 1000);
+      if (priv) hm.priv += 1;
       const d = Math.floor((Date.UTC(sd.getUTCFullYear(), sd.getUTCMonth(), sd.getUTCDate()) - day0) / DAY);
       daySec[d] += Math.floor(ms / 1000);
       const length = songLen.get(key);
@@ -186,7 +212,7 @@
       rows.push(songIx.get(sk), monthIx.get(month), ...t);
     }
     return {
-      months, artists, songs, cols: 9, rows, skipHist, playHist,
+      months, artists, songs, cols: 9, rows, skipHist, playHist, how: howByMonth,
       days: { start: new Date(day0).toISOString().slice(0, 10), slotMin: SLOT_MIN, sec: daySec, heard: dayHeard, len: dayLen, slots: slots.map(encode) },
       _plays: plays.length,
     };
@@ -200,7 +226,7 @@
   bar.innerHTML = src.kind === 'mine'
     ? `<span><b>Your data</b> · loaded ${fmtDate(src.savedAt)} · ${src.basic ? 'last-year export · ' : ''}stays in this browser only</span>
        <span class="sb-actions"><button class="ghost" data-act="pick">Load newer data</button><button class="ghost" data-act="remove">Remove my data</button></span>`
-    : `<span>You're looking at ${D.name ? `<b>${D.name}'s</b>` : 'an example'} Spotify history.</span>
+    : `<span>You're looking at ${D.name && !/^default$/i.test(D.name) ? `<b>${String(D.name).replace(/[&<>"]/g, '')}'s</b>` : 'the default'} Spotify history.</span>
        <span class="sb-actions"><button class="primary" data-act="pick">⬆ Load your own Spotify data</button></span>`;
   bar.hidden = false;
 

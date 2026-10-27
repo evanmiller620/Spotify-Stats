@@ -10,8 +10,27 @@ const hours = (s) => {
   const h = s / 3600;
   return h >= 100 ? `${num(h)} h` : h >= 1 ? `${h.toFixed(1)} h` : s >= 60 ? `${Math.round(s / 60)} min` : `${Math.round(s)} s`;
 };
-const pct = (x) => `${Math.round(x * 100)}%`;
+const pct = (x) => {
+  const r = Math.round(x * 100);
+  return x > 0 && r === 0 ? '<1%' : x < 1 && r === 100 ? '>99%' : `${r}%`; // never round a sliver to 0% or "almost all" to 100%
+};
 const monthLabel = (m) => `${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
+// Hide axis labels that would overlap the one before them (narrow screens).
+// If the first label (often a partial year) collides with the second, the first gives way.
+function declutter(labels, pad = 6) {
+  const els = [...labels];
+  els.forEach((el) => { el.style.visibility = ''; });
+  const box = els.map((el) => el.getBoundingClientRect());
+  if (!box.some((r) => r.width)) return; // not laid out yet
+  let start = 0;
+  if (box.length > 1 && box[0].right + pad > box[1].left) { els[0].style.visibility = 'hidden'; start = 1; }
+  let last = box[start];
+  for (let i = start + 1; i < els.length; i++) {
+    if (!box[i].width) continue;
+    if (last && box[i].left < last.right + pad) els[i].style.visibility = 'hidden';
+    else last = box[i];
+  }
+}
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 // ---------- one pass over the raw rows ----------
@@ -182,6 +201,7 @@ function renderTimeline() {
       `<i style="height:${(hrs[i] / top) * 100}%"></i>${showYear ? `<b>${m.slice(0, 4)}</b>` : ''}</div>`;
   }).join('');
   $('timeline').innerHTML = grid + `<div class="sel" id="sel"></div><div class="bars">${bars}</div>`;
+  declutter($('timeline').querySelectorAll('.bar b'));
   renderSelection();
 }
 
@@ -196,6 +216,8 @@ function renderSelection() {
   $('selLabel').textContent = isAll() ? `All time · ${monthsCount(state.range)}` : `${rangeLabel(state.range)} · ${monthsCount(state.range)}`;
   $('selReset').hidden = isAll();
   for (const el of document.querySelectorAll('.period')) el.textContent = rangeLabel(state.range);
+  $('jbPeriod').textContent = isAll() ? `All time · ${monthsCount(state.range)}` : `${rangeLabel(state.range)} · ${monthsCount(state.range)}`;
+  $('jbReset').hidden = isAll();
 }
 
 // Drag across the chart to pick months; a plain click picks one month.
@@ -234,6 +256,25 @@ function endDrag(e) {
 $('timeline').addEventListener('pointerup', endDrag);
 $('timeline').addEventListener('pointercancel', endDrag);
 $('selReset').addEventListener('click', () => setRange([0, N - 1]));
+// Keyboard on the chart: ←/→ move the period, Shift+←/→ make it longer/shorter, Home/End, Esc = all time.
+let keyCommit = 0;
+$('timeline').addEventListener('keydown', (e) => {
+  let [a, b] = state.range;
+  const all = isAll(), len = b - a;
+  if (e.key === 'Escape') { if (all) return; e.preventDefault(); e.stopPropagation(); setRange([0, N - 1]); return; }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    const d = e.key === 'ArrowLeft' ? -1 : 1;
+    if (all) [a, b] = d < 0 ? [N - 1, N - 1] : [0, 0];        // start from one month at the end you pressed toward
+    else if (e.shiftKey) b = Math.max(a, Math.min(N - 1, b + d)); // grow / shrink
+    else { a = Math.max(0, Math.min(N - 1 - len, a + d)); b = a + len; } // slide
+  } else if (e.key === 'Home') { a = 0; b = all ? 0 : len; }
+  else if (e.key === 'End') { b = N - 1; a = all ? N - 1 : N - 1 - len; }
+  else return;
+  e.preventDefault();
+  setRange([a, b], { full: false });           // quick update while keys are pressed
+  clearTimeout(keyCommit);
+  keyCommit = setTimeout(() => setRange(state.range), 250); // then redraw everything once
+});
 
 tooltip($('timeline'), '.bar', (el) => {
   if (drag) return null;
@@ -470,11 +511,12 @@ function renderClock() {
     }
   }
   $('clockX').innerHTML = ticks.map(([x, l]) => `<span style="left:${x}px">${l}</span>`).join('');
+  declutter($('clockX').children);
   $('clockNote').textContent = `${fmtDay(d0)} – ${fmtDay(d1)}` +
     (cols < n ? ` · each column is ${(n / cols).toFixed(n / cols < 10 ? 1 : 0)} days, averaged` : ' · one column per day');
   $('clockLegendMax').textContent = `${top < 1 ? top.toFixed(1) : Math.round(top)}+ min`;
 }
-$('clockPlot').addEventListener('mousemove', (e) => {
+function clockTip(e) {
   const tip = $('tip');
   if (!clockCells) { tip.hidden = true; return; }
   const r = $('clockPlot').getBoundingClientRect();
@@ -485,16 +527,12 @@ $('clockPlot').addEventListener('mousemove', (e) => {
   const when = da === db ? fmtDay(da, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : `${fmtDay(da)} – ${fmtDay(db)}`;
   const v = vals[c * SLOTS + j];
   const t0 = j * DD.slotMin;
-  tip.innerHTML = `<b>${when}</b><br>${clockLabel(t0)}–${clockLabel(t0 + DD.slotMin)}: ` +
-    (v > 0 ? `${da === db ? '' : 'avg '}${v < 1 ? '<1' : Math.round(v)} min listening` : 'nothing played');
-  tip.hidden = false;
-  const tr = tip.getBoundingClientRect();
-  let x = e.clientX + 14, y = e.clientY + 14;
-  if (x + tr.width > innerWidth - 8) x = e.clientX - tr.width - 14;
-  if (y + tr.height > innerHeight - 8) y = e.clientY - tr.height - 14;
-  tip.style.left = x + 'px'; tip.style.top = y + 'px';
-});
-$('clockPlot').addEventListener('mouseleave', () => { $('tip').hidden = true; });
+  placeTip(`<b>${when}</b><br>${clockLabel(t0)}–${clockLabel(t0 + DD.slotMin)}: ` +
+    (v > 0 ? `${da === db ? '' : 'avg '}${v < 1 ? '<1' : Math.round(v)} min listening` : 'nothing played'), e);
+}
+$('clockPlot').addEventListener('mousemove', (e) => { if (!fromTouch()) clockTip(e); });
+$('clockPlot').addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { lastTouch = performance.now(); clockTip(e); tipTouched = true; tipScrollY = scrollY; } });
+$('clockPlot').addEventListener('mouseleave', () => { if (!fromTouch()) $('tip').hidden = true; });
 
 // ---------- retention over time ----------
 // Time-weighted: total time heard ÷ total length of the songs you started, per week or month.
@@ -562,12 +600,19 @@ function renderRetention() {
   // hover targets
   const hw = buckets.length === 1 ? pw : pw / (buckets.length - 1);
   buckets.forEach((b, i) => { g += `<rect class="hit" data-i="${i}" x="${(x(i) - hw / 2).toFixed(1)}" y="0" width="${hw.toFixed(1)}" height="${H}"/>`; });
-  // x labels: first, middle, last
-  const xl = [...new Set([0, Math.floor((buckets.length - 1) / 2), buckets.length - 1])];
-  g += xl.map((i, k) => `<text class="xlab" text-anchor="${k === 0 ? 'start' : k === xl.length - 1 ? 'end' : 'middle'}" x="${x(i)}" y="${H - 2}">${esc(buckets[i].label.replace('Week of ', ''))}</text>`).join('');
+  // x labels: a tick per year for long monthly spans, otherwise first, middle, last
+  if (unit === 'month' && buckets.length > 24) {
+    buckets.forEach((b, i) => { if (b.label.startsWith('Jan ')) g += `<text class="xlab" text-anchor="middle" x="${x(i)}" y="${H - 2}">${b.label.slice(4)}</text>`; });
+  } else if (unit === 'month' && buckets.length > 2) {
+    buckets.forEach((b, i) => { g += `<text class="xlab" text-anchor="middle" x="${x(i)}" y="${H - 2}">${b.label.slice(0, 3)}${i === 0 || b.label.startsWith('Jan ') ? ' ' + b.label.slice(4) : ''}</text>`; });
+  } else {
+    const xl = [...new Set([0, Math.floor((buckets.length - 1) / 2), buckets.length - 1])];
+    g += xl.map((i, k) => `<text class="xlab" text-anchor="${k === 0 ? 'start' : k === xl.length - 1 ? 'end' : 'middle'}" x="${x(i)}" y="${H - 2}">${esc(buckets[i].label.replace('Week of ', ''))}</text>`).join('');
+  }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('height', H);
   svg.innerHTML = g;
+  declutter(svg.querySelectorAll('.xlab'));
   const best = solid.length ? solid.reduce((a, b) => (b.ret > a.ret ? b : a)) : null;
   const worst = solid.length ? solid.reduce((a, b) => (b.ret < a.ret ? b : a)) : null;
   $('retNote').textContent = `One point per ${unit} · overall ${pct(overall)}` +
@@ -587,11 +632,526 @@ if (window.ResizeObserver) {
     if (w === lastW) return;
     lastW = w;
     cancelAnimationFrame(rz);
-    rz = requestAnimationFrame(() => { renderClock(); renderRetention(); });
+    rz = requestAnimationFrame(() => { declutter($('timeline').querySelectorAll('.bar b')); renderClock(); renderRetention(); if (TOP.view === 'lines') renderRank(); else drawRace(TOP.t, true); renderNew(); renderCalendar(); });
   }).observe($('clockPlot'));
 }
 // Colors come from CSS, so redraw the canvas when the light/dark theme flips.
 window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => renderClock());
+
+// ---------- new charts: artists over time, new vs familiar, calendar, how you listen ----------
+const svgEl = (w, h, inner, label) => `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(label)}">${inner}</svg>`;
+const widthOf = (id) => Math.max(280, Math.floor($(id).clientWidth || $(id).parentElement.clientWidth || 600));
+
+// ----- Top over time: an animated race or rank lines, for artists / songs / albums by time / plays / skips -----
+const TOP = { view: 'race', entity: 'artists', metric: 'sec', mode: 'rolling', useFilters: false, t: 0, frame: 0, playing: false, speed: 700 };
+const TOP_METRICS = {
+  sec: { label: 'listening time', off: 3, fmt: (v) => hours(v) },
+  plays: { label: 'plays', off: 2, fmt: (v) => `${num(v)} plays` },
+  skips: { label: 'skips', off: 4, fmt: (v) => `${num(v)} skips` },
+};
+const TOP_ENT = {
+  artists: { one: 'artist', key: (s) => D.songs[s][1], name: (k) => D.artists[k], sub: () => '' },
+  songs: { one: 'song', key: (s) => s, name: (k) => D.songs[k][0], sub: (k) => D.artists[D.songs[k][1]] },
+  albums: { one: 'album', key: (s) => albumKey(s), name: (k) => k.slice(k.indexOf('|') + 1) || '(no album)', sub: (k) => D.artists[+k.slice(0, k.indexOf('|'))] },
+};
+const RANK_N = 6, RANK_MAX = 10, RACE_N = 8; // 8 bars = 8 distinct colors, so neighbours rarely match
+
+// Which items are allowed: everything, or only what passes the library's search & filters (for this period).
+function topAllowed() {
+  if (!TOP.useFilters) return null;
+  const saved = L.view;
+  L.view = TOP.entity;
+  try { return new Set(filterRows(libraryRows()).map((r) => r.id)); } finally { L.view = saved; }
+}
+const libFilterCount = () => activeFilters().length + (L.q ? 1 : 0) + (L.artist !== null ? 1 : 0) + (L.album !== null ? 1 : 0);
+
+// Per month in [a, b]: Map(item -> value of the chosen metric).
+function topMonthly(a, b, allowed) {
+  const off = TOP_METRICS[TOP.metric].off, key = TOP_ENT[TOP.entity].key;
+  const per = [];
+  for (let m = a; m <= b; m++) per.push(new Map());
+  for (let i = 0; i < R.length; i += W) {
+    const m = R[i + 1];
+    if (m < a || m > b) continue;
+    const v = R[i + off];
+    if (!v) continue;
+    const k = key(R[i]);
+    if (allowed && !allowed.has(k)) continue;
+    const mp = per[m - a];
+    mp.set(k, (mp.get(k) || 0) + v);
+  }
+  return per;
+}
+function topK(map, n) { // the n largest entries, without sorting the whole map
+  const out = [];
+  for (const [k, v] of map) {
+    if (v <= 0 || (out.length === n && v <= out[n - 1][1])) continue;
+    let i = out.length;
+    while (i > 0 && out[i - 1][1] < v) i--;
+    out.splice(i, 0, [k, v]);
+    if (out.length > n) out.pop();
+  }
+  return out;
+}
+
+// ----- the race -----
+// Monthly totals are the keyframes; playback runs on a continuous clock (TOP.t, in months) and blends
+// between neighbouring months, so values count up smoothly and bars glide when they swap places.
+let race = null; // { frames: top 8 per month, full: top 24 per month (Map), floor, a, frameColors }
+const raceNodes = new Map(); // key -> { el, y, op, col }
+const RACE_KEEP = 24;        // values kept per month, so a bar entering the top 8 can grow from its real value
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function buildRace() {
+  const [a, b] = state.range;
+  const per = topMonthly(a, b, topAllowed());
+  const run = new Map(), frames = [], full = [], floor = [], colors = new Map(), useCount = new Array(8).fill(0), lastSeen = new Map();
+  const frameColors = []; // color of each bar, per month (an item can get a new color after a long absence)
+  for (let f = 0; f < per.length; f++) {
+    for (const [k, v] of per[f]) run.set(k, (run.get(k) || 0) + v);
+    if (TOP.mode === 'rolling' && f >= 12) for (const [k, v] of per[f - 12]) { const r = run.get(k) - v; if (r > 0) run.set(k, r); else run.delete(k); }
+    const wide = topK(run, RACE_KEEP), top = wide.slice(0, RACE_N);
+    full.push(new Map(wide));
+    floor.push(wide.length === RACE_KEEP ? wide.at(-1)[1] : 0); // anything not kept is at most this
+    // a newcomer gets a color nobody else on screen has (fewest-used if all 8 are taken); it keeps it while it's
+    // around, and gives it up after 6 months off screen
+    for (const [k] of top) if (colors.has(k) && f - lastSeen.get(k) > 6) colors.delete(k);
+    for (const [k] of top) {
+      lastSeen.set(k, f);
+      if (colors.has(k)) continue;
+      const onScreen = new Set(top.filter(([o]) => colors.has(o)).map(([o]) => colors.get(o)));
+      const free = [0, 1, 2, 3, 4, 5, 6, 7].filter((c) => !onScreen.has(c));
+      const pool = free.length ? free : [0, 1, 2, 3, 4, 5, 6, 7];
+      pool.sort((x, y) => (useCount[x] - useCount[y]) || x - y);
+      colors.set(k, pool[0]); useCount[pool[0]]++;
+    }
+    frames.push(top);
+    frameColors.push(new Map(top.map(([k]) => [k, colors.get(k)])));
+  }
+  race = { frames, full, floor, a, colors, frameColors };
+  TOP.t = 0; TOP.frame = 0;
+  for (const n of raceNodes.values()) n.el.remove();
+  raceNodes.clear();
+  $('raceSlider').max = Math.max(0, frames.length - 1);
+  $('raceSlider').disabled = frames.length < 2;
+  $('racePlay').disabled = frames.length < 2;
+}
+function raceRowH() { return $('raceBars').clientWidth < 520 ? 30 : 34; }
+
+// The ranking at a moment between months: blend each item's value from month f to month f+1.
+function raceStateAt(t) {
+  const n = race.frames.length, f = Math.max(0, Math.min(n - 1, Math.floor(t))), g = Math.min(n - 1, f + 1), u = Math.min(1, Math.max(0, t - f));
+  const val = (i, k) => { const v = race.full[i].get(k); return v !== undefined ? v : Math.min(race.floor[i], race.full[i === f ? g : f].get(k) ?? 0); };
+  const keys = new Set([...race.frames[f], ...race.frames[g]].map(([k]) => k));
+  const out = [];
+  for (const k of keys) { const v = val(f, k) * (1 - u) + val(g, k) * u; if (v > 0) out.push([k, v]); }
+  out.sort((p, q) => q[1] - p[1]);
+  return { list: out.slice(0, RACE_N), f, g, u };
+}
+const raceColor = (k, f, g) => race.frameColors[f].get(k) ?? race.frameColors[g].get(k) ?? race.colors.get(k) ?? 0;
+
+// Paint one moment. dt = ms since the last paint (0 = jump straight there). Returns true when nothing is still moving.
+function paintRace(t, dt) {
+  if (!race || !race.frames.length) { $('raceEmpty').hidden = false; return true; }
+  const { list, f, g, u } = raceStateAt(t);
+  const rowH = raceRowH(), box = $('raceBars'), ent = TOP_ENT[TOP.entity], fmt = TOP_METRICS[TOP.metric].fmt;
+  const max = list[0]?.[1] || 1;
+  box.style.height = `${RACE_N * rowH}px`;
+  const ease = dt <= 0 || reduceMotion.matches ? 1 : 1 - Math.exp(-dt / 130); // glide toward the new spot
+  let settled = true;
+  const shown = new Set();
+  list.forEach(([k, v], i) => {
+    let n = raceNodes.get(k);
+    if (!n) {
+      const el = document.createElement('div');
+      el.className = 'rb';
+      const sub = ent.sub(k);
+      el.innerHTML = `<span class="rb-name" title="${esc(ent.name(k))}${sub ? ' · ' + esc(sub) : ''}">${esc(ent.name(k))}${sub ? `<small>${esc(sub)}</small>` : ''}</span><span class="rb-track"><i></i><b></b></span>`;
+      box.appendChild(el);
+      n = { el, y: ease === 1 ? i * rowH : RACE_N * rowH, op: ease === 1 ? 1 : 0, col: -1 };
+      raceNodes.set(k, n);
+    }
+    shown.add(k);
+    const ty = i * rowH;
+    n.y += (ty - n.y) * ease; n.op += (1 - n.op) * ease;
+    if (Math.abs(ty - n.y) > 0.5 || n.op < 0.99) settled = false; else { n.y = ty; n.op = 1; }
+    n.el.style.height = `${rowH - 6}px`;
+    n.el.style.transform = `translateY(${n.y.toFixed(1)}px)`;
+    n.el.style.opacity = n.op.toFixed(3);
+    n.el.style.zIndex = String(20 - i);
+    n.el.classList.toggle('lead', i === 0);
+    const col = raceColor(k, u < 0.5 ? f : g, u < 0.5 ? g : f) + 1;
+    if (n.col !== col) { if (n.col > 0) n.el.classList.remove(`c${n.col}`); n.el.classList.add(`c${col}`); n.col = col; }
+    n.el.querySelector('i').style.width = `${Math.max(0.5, (v / max) * 100).toFixed(2)}%`;
+    n.el.querySelector('b').textContent = fmt(v);
+  });
+  for (const [k, n] of raceNodes) { // items that dropped out sink below and fade
+    if (shown.has(k)) continue;
+    const ty = (RACE_N + 0.4) * rowH;
+    n.y += (ty - n.y) * ease; n.op += (0 - n.op) * ease;
+    n.el.style.transform = `translateY(${n.y.toFixed(1)}px)`;
+    n.el.style.opacity = n.op.toFixed(3);
+    if (n.op < 0.02) { n.el.remove(); raceNodes.delete(k); } else settled = false;
+  }
+  const mi = race.a + Math.min(race.frames.length - 1, Math.round(t)), label = monthLabel(D.months[mi]);
+  $('raceDate').innerHTML = `${label}<small>${TOP.mode === 'rolling' ? 'last 12 months' : 'running total'}</small>`;
+  $('raceLabel').textContent = label;
+  $('raceEmpty').hidden = list.length > 0;
+  return settled;
+}
+
+// One animation loop drives both playback and settling after a jump or scrub.
+let raceRaf = 0, raceLast = 0;
+function raceLoop(ts) {
+  const dt = raceLast ? Math.min(100, ts - raceLast) : 16;
+  raceLast = ts;
+  const end = race.frames.length - 1;
+  if (TOP.playing) {
+    TOP.t = Math.min(end, TOP.t + dt / TOP.speed); // TOP.speed = ms per month
+    $('raceSlider').value = TOP.t;
+  }
+  TOP.frame = Math.floor(TOP.t);
+  const settled = paintRace(TOP.t, dt);
+  if (TOP.playing && TOP.t >= end) racePlay(false);
+  if (TOP.playing || !settled) raceRaf = requestAnimationFrame(raceLoop);
+  else { raceRaf = 0; raceLast = 0; }
+}
+function raceKick() { if (!raceRaf && race) { raceLast = 0; raceRaf = requestAnimationFrame(raceLoop); } }
+// Jump to a month (or any point between months). instant = no gliding.
+function drawRace(t, instant = false) {
+  if (!race) return;
+  TOP.t = Math.max(0, Math.min(race.frames.length - 1, t));
+  TOP.frame = Math.floor(TOP.t);
+  $('raceSlider').value = TOP.t;
+  if (instant) paintRace(TOP.t, 0); else raceKick();
+}
+
+// playback
+function racePlay(on) {
+  TOP.playing = Boolean(on && race && race.frames.length > 1);
+  $('racePlay').innerHTML = TOP.playing ? '❚❚ Pause' : '▶ Play';
+  $('racePlay').setAttribute('aria-pressed', TOP.playing);
+  if (!TOP.playing) return;
+  if (TOP.t >= race.frames.length - 1) drawRace(0, true); // at the end: start over
+  raceKick();
+}
+function setRaceSpeed(ms) { TOP.speed = ms; }
+
+// ----- rank lines (the original view), generalized -----
+let rankData = null;
+function rankBuckets([a, b]) {
+  const n = b - a + 1;
+  if (n < 2) return null;
+  const unit = n >= 24 ? 'year' : n >= 6 ? 'quarter' : 'month';
+  const key = (m) => {
+    const [y, mo] = D.months[m].split('-');
+    return unit === 'year' ? y : unit === 'quarter' ? `${y} Q${Math.ceil(+mo / 3)}` : monthLabel(D.months[m]);
+  };
+  const keys = [];
+  for (let m = a; m <= b; m++) if (keys.at(-1) !== key(m)) keys.push(key(m));
+  return { unit, keys, key };
+}
+function renderRank() {
+  const bk = rankBuckets(state.range);
+  if (!bk || bk.keys.length < 2) {
+    $('rankChart').innerHTML = `<p class="muted small">Pick a period of a few months or more to see how rankings moved.</p>`;
+    rankData = null; return;
+  }
+  const [a, b] = state.range, idx = new Map(bk.keys.map((k, i) => [k, i]));
+  const per = topMonthly(a, b, topAllowed());
+  const perBucket = bk.keys.map(() => new Map()), total = new Map();
+  for (let m = a; m <= b; m++) {
+    const mp = perBucket[idx.get(bk.key(m))];
+    for (const [k, v] of per[m - a]) { mp.set(k, (mp.get(k) || 0) + v); total.set(k, (total.get(k) || 0) + v); }
+  }
+  const top = topK(total, RANK_N).map(([k]) => k);
+  const ranks = perBucket.map((mp) => {
+    const order = topK(mp, RANK_MAX).map(([k]) => k);
+    return new Map(top.map((k) => [k, { rank: order.indexOf(k) + 1 || Infinity, val: mp.get(k) || 0 }]));
+  });
+  rankData = { bk, top, ranks };
+  if (!top.length) { $('rankChart').innerHTML = '<p class="muted small">Nothing to rank with these settings.</p>'; return; }
+  const ent = TOP_ENT[TOP.entity];
+  const W0 = widthOf('rankChart'), small = W0 < 560;
+  const left = 34, right = small ? 104 : 200, top0 = 14, rowH = small ? 22 : 26;
+  let H = top0 + rowH * RANK_MAX + 34;
+  const pw = W0 - left - right, nB = bk.keys.length;
+  const x = (i) => left + (nB === 1 ? pw / 2 : (i / (nB - 1)) * pw);
+  const y = (r) => top0 + (Math.min(r, RANK_MAX + 0.6) - 1) * rowH;
+  const ends = top.map((k, s) => { const r = ranks[nB - 1].get(k).rank; return { k, s, r, out: r > RANK_MAX, y: y(r) }; })
+    .sort((p, q) => p.r - q.r || p.s - q.s);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 15) ends[i].y = ends[i - 1].y + 15;
+  H += Math.max(0, ends.at(-1).y + 10 - (top0 + rowH * (RANK_MAX - 1) + 22));
+  let g = '';
+  for (let r = 1; r <= RANK_MAX; r++) g += `<line class="grid" x1="${left}" x2="${left + pw}" y1="${y(r)}" y2="${y(r)}"/><text class="ylab" x="${left - 8}" y="${y(r) + 4}">#${r}</text>`;
+  g += `<text class="ylab" x="${left - 8}" y="${y(RANK_MAX + 0.6) + 4}">${RANK_MAX + 1}+</text>`;
+  const every = Math.max(1, Math.ceil(nB / Math.floor(pw / (bk.unit === 'year' ? 44 : 70))));
+  bk.keys.forEach((k, i) => { if (i % every === 0 || i === nB - 1) g += `<text class="xlab" text-anchor="${i === 0 ? 'start' : i === nB - 1 ? 'end' : 'middle'}" x="${x(i)}" y="${H - 8}">${esc(bk.unit === 'year' ? k : k.replace(/^(\d{4}) (Q\d)$/, '$2 ’$1').replace(/’20/, '’'))}</text>`; });
+  top.forEach((k, s) => {
+    let solid = '', dashed = '';
+    for (let i = 1; i < nB; i++) {
+      const r0 = ranks[i - 1].get(k).rank, r1 = ranks[i].get(k).rank;
+      if (r0 > RANK_MAX && r1 > RANK_MAX) continue;
+      const seg = `M${x(i - 1).toFixed(1)},${y(r0).toFixed(1)}L${x(i).toFixed(1)},${y(r1).toFixed(1)}`;
+      if (r0 > RANK_MAX || r1 > RANK_MAX) dashed += seg; else solid += seg;
+    }
+    g += `<g class="rk s${s + 1}" data-s="${s}"><path class="rk-line" d="${solid}"/><path class="rk-line out" d="${dashed}"/>`;
+    ranks.forEach((rk, i) => {
+      const r = rk.get(k).rank;
+      if (r > RANK_MAX && !rk.get(k).val) return;
+      g += `<circle class="rk-pt${r > RANK_MAX ? ' out' : ''}" cx="${x(i).toFixed(1)}" cy="${y(r).toFixed(1)}" r="${r > RANK_MAX ? 3 : 4}" data-s="${s}" data-i="${i}"/>`;
+    });
+    const e = ends.find((p) => p.s === s), name = ent.name(k);
+    g += `<circle class="rk-dot" cx="${left + pw + 12}" cy="${e.y}" r="4"/>` +
+      `<text class="rk-lab${e.out ? ' is-out' : ''}" x="${left + pw + 20}" y="${e.y + 4}">${esc(name.length > (small ? 11 : 24) ? name.slice(0, small ? 10 : 23) + '…' : name)}${e.out && !small ? `<tspan class="rk-outnote"> (out of top ${RANK_MAX})</tspan>` : ''}</text></g>`;
+  });
+  $('rankChart').innerHTML = svgEl(W0, H, g, `Rank of your top ${TOP.entity} over time`);
+  rankData.unit = bk.unit;
+}
+$('rankChart').addEventListener('mouseover', (e) => {
+  const g = e.target.closest('g.rk');
+  $('rankChart').classList.toggle('focus', !!g);
+  $('rankChart').querySelectorAll('g.rk').forEach((el) => el.classList.toggle('on', el === g));
+});
+$('rankChart').addEventListener('mouseleave', () => { $('rankChart').classList.remove('focus'); });
+tooltip($('rankChart'), '.rk-pt', (el) => {
+  if (!rankData) return null;
+  const { bk, top, ranks } = rankData, k = top[+el.dataset.s], v = ranks[+el.dataset.i].get(k), ent = TOP_ENT[TOP.entity];
+  return `<b>${esc(ent.name(k))}</b>${ent.sub(k) ? `<br>${esc(ent.sub(k))}` : ''}<br>${esc(bk.keys[+el.dataset.i])}: ${v.rank > RANK_MAX ? (v.val ? `outside the top ${RANK_MAX}` : 'none') : `#${v.rank}`} · ${TOP_METRICS[TOP.metric].fmt(v.val)}`;
+});
+
+// ----- the card: controls + which view -----
+function renderTopOver() {
+  racePlay(false);
+  const n = libFilterCount();
+  $('topFiltersCount').textContent = n ? ` (${n} active)` : ' (none set)';
+  document.querySelectorAll('#topView button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === TOP.view));
+  $('topEntity').value = TOP.entity; $('topMetric').value = TOP.metric; $('topMode').value = TOP.mode; $('topUseFilters').checked = TOP.useFilters;
+  $('topModeWrap').hidden = TOP.view !== 'race';
+  $('raceWrap').hidden = TOP.view !== 'race';
+  $('rankChart').hidden = TOP.view !== 'lines';
+  const what = `${TOP.entity} by ${TOP_METRICS[TOP.metric].label}`;
+  $('topTitle').textContent = `Top ${what}`;
+  $('topNote').textContent = TOP.view === 'race'
+    ? `Your top ${RACE_N} ${TOP.entity} ${TOP.mode === 'rolling' ? 'over the 12 months up to each point' : 'added up from the start of the period'}. Press play, or drag the slider to move through time.`
+    : `Your top ${RANK_N} ${what} in this period, ranked each ${rankBuckets(state.range)?.unit || 'month'}. Hover or tap a line to follow one.`;
+  if (TOP.view === 'race') { buildRace(); drawRace(0, true); } else renderRank();
+}
+let topRebuild = 0;
+function onLibraryFiltersChanged() { // keep the chart in step when it follows the library filters
+  if (!TOP.useFilters) return;
+  clearTimeout(topRebuild);
+  topRebuild = setTimeout(renderTopOver, 300);
+}
+$('topCard').addEventListener('click', (e) => {
+  const v = e.target.closest('#topView [data-v]');
+  if (v) { TOP.view = v.dataset.v; renderTopOver(); }
+});
+$('topCard').addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'topEntity') TOP.entity = t.value;
+  else if (t.id === 'topMetric') TOP.metric = t.value;
+  else if (t.id === 'topMode') TOP.mode = t.value;
+  else if (t.id === 'topUseFilters') TOP.useFilters = t.checked;
+  else if (t.id === 'raceSpeed') { setRaceSpeed(+t.value); return; }
+  else return;
+  renderTopOver();
+});
+$('racePlay').addEventListener('click', () => racePlay(!TOP.playing));
+$('raceSlider').addEventListener('input', (e) => { racePlay(false); drawRace(+e.target.value); });
+// the slider moves continuously; arrow keys still step a whole month
+$('raceSlider').addEventListener('keydown', (e) => {
+  const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 12, PageDown: -12 }[e.key];
+  if (d === undefined) return;
+  e.preventDefault(); racePlay(false);
+  drawRace(Math.round(TOP.t) + d);
+});
+$('raceWrap').addEventListener('keydown', (e) => {
+  if (e.key === ' ' && e.target.id !== 'racePlay' && !/SELECT|INPUT/.test(e.target.tagName)) { e.preventDefault(); racePlay(!TOP.playing); }
+});
+setRaceSpeed(700);
+tooltip($('raceBars'), '.rb', (el) => {
+  if (!race) return null;
+  const k = [...raceNodes].find(([, n]) => n.el === el)?.[0];
+  if (k === undefined) return null;
+  const fr = raceStateAt(TOP.t).list, i = fr.findIndex(([kk]) => kk === k); // what's on screen right now
+  if (i < 0) return null;
+  const ent = TOP_ENT[TOP.entity];
+  return `<b>#${i + 1} ${esc(ent.name(k))}</b>${ent.sub(k) ? `<br>${esc(ent.sub(k))}` : ''}<br>${TOP_METRICS[TOP.metric].fmt(fr[i][1])}`;
+});
+
+// ----- New vs familiar: listening to songs heard for the first time that month -----
+let newData = [];
+function renderNew() {
+  const [a, b] = state.range;
+  const rows = [];
+  for (let m = a; m <= b; m++) rows.push({ m, fresh: 0, known: 0, songs: 0 });
+  for (let i = 0; i < R.length; i += W) {
+    const m = R[i + 1];
+    if (m < a || m > b) continue;
+    const r = rows[m - a];
+    if (songFirst[R[i]] === m) r.fresh += R[i + 3]; else r.known += R[i + 3];
+  }
+  for (let s = 0; s < nSongs; s++) { const f = songFirst[s]; if (f >= a && f <= b) rows[f - a].songs++; }
+  newData = rows;
+  const W0 = widthOf('newChart'), H = 190, left = 40, top0 = 8, plotH = 150;
+  const pw = W0 - left - 4, n = rows.length, bw = pw / n;
+  const max = Math.max(1, ...rows.map((r) => r.fresh + r.known)) / 3600;
+  const step = niceStep(max), topV = Math.ceil(max / step) * step;
+  const yv = (h) => top0 + plotH - (h / topV) * plotH;
+  let g = '';
+  for (let v = 0; v <= topV; v += step) g += `<line class="grid" x1="${left}" x2="${W0}" y1="${yv(v)}" y2="${yv(v)}"/><text class="ylab" x="${left - 6}" y="${yv(v) + 4}">${num(v)} h</text>`;
+  rows.forEach((r, i) => {
+    const w = Math.min(64, Math.max(1, bw - Math.min(2, bw * 0.2))), x0 = left + i * bw + (bw - w) / 2; // cap width so a short period isn't one giant slab
+    const hf = r.fresh / 3600, hk = r.known / 3600;
+    const yF = yv(hf), yK = yv(hf + hk);
+    if (hf > 0) g += `<rect class="nv-new" x="${x0.toFixed(1)}" y="${yF.toFixed(1)}" width="${w.toFixed(1)}" height="${(top0 + plotH - yF).toFixed(1)}"/>`;
+    if (hk > 0) g += `<rect class="nv-known" x="${x0.toFixed(1)}" y="${yK.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(0, yF - yK - (hf > 0 ? 1.5 : 0)).toFixed(1)}" rx="${Math.min(3, w / 3).toFixed(1)}"/>`;
+    g += `<rect class="hit" data-i="${i}" x="${(left + i * bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}"/>`;
+    const lbl = D.months[r.m];
+    // short periods: every month; long ones: each January (every other year if they'd collide)
+    const yearEvery = bw * 12 < 34 ? 2 : 1;
+    const showYear = lbl.endsWith('-01') && (+lbl.slice(0, 4)) % yearEvery === 0;
+    if (n <= 14 || showYear) g += `<text class="xlab" x="${(x0 + w / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle">${n <= 14 ? MONTHS[+lbl.slice(5) - 1] : lbl.slice(0, 4)}</text>`;
+  });
+  $('newChart').innerHTML = svgEl(W0, H + 4, g, 'Listening to new songs versus songs you already knew, by month');
+  const fresh = rows.reduce((s, r) => s + r.fresh, 0), all = rows.reduce((s, r) => s + r.fresh + r.known, 0), songs = rows.reduce((s, r) => s + r.songs, 0);
+  // most exploring month: skip the first 6 months of your history (everything is "new" there) and very light months
+  const cands = rows.filter((r) => r.m >= 6 && r.fresh + r.known > 3600 * 5);
+  const best = cands.length ? cands.reduce((p, r) => (r.fresh / (r.fresh + r.known) > p.fresh / (p.fresh + p.known) ? r : p)) : null;
+  $('newNote').textContent = all ? `${pct(fresh / all)} of your listening was songs you'd never played before · ${num(songs)} songs heard for the first time` +
+    (n > 2 && best ? ` · most exploring: ${monthLabel(D.months[best.m])} (${pct(best.fresh / (best.fresh + best.known))} new)` : '') +
+    (a < 6 ? ' · the first months of your history count as all new' : '') : 'No listening in this period.';
+}
+tooltip($('newChart'), '.hit', (el) => {
+  const r = newData[+el.dataset.i];
+  if (!r) return null;
+  const all = r.fresh + r.known || 1;
+  return `<b>${monthLabel(D.months[r.m])}</b><br>New songs: ${hours(r.fresh)} (${pct(r.fresh / all)})<br>Songs you knew: ${hours(r.known)}<br>${num(r.songs)} songs played for the first time`;
+});
+
+// ----- Listening calendar: one row of weeks per year -----
+// 8 shades. Each one covers about an eighth of the days you listened in the selected period,
+// so the colors spread out whether the period is a light month or a heavy year.
+const CAL_LEVELS = 8;
+let calEdges = [];
+function calEdgesFor(d0, d1) {
+  const v = [];
+  for (let d = d0; d <= d1; d++) if (DD.sec[d] >= 60) v.push(DD.sec[d]);
+  v.sort((p, q) => p - q);
+  const edges = [];
+  for (let i = 1; i < CAL_LEVELS; i++) {
+    const e = Math.round((v[Math.floor((i * v.length) / CAL_LEVELS)] || 0) / 60) * 60; // whole minutes
+    if (e > (edges.at(-1) || 60)) edges.push(e);
+  }
+  return edges;
+}
+const calLevel = (sec) => { if (sec < 60) return 0; let i = 0; while (i < calEdges.length && sec >= calEdges[i]) i++; return i + 1; };
+const hm = (sec) => { const m = Math.round(sec / 60), h = Math.floor(m / 60); return h ? `${h} h${m % 60 ? ` ${m % 60} m` : ''}` : `${m} m`; }; // exact to the minute
+const calRange = (lv) => lv === 0 ? 'No listening' : lv === 1 ? `under ${hm(calEdges[0] ?? 3600)}` : lv > calEdges.length ? `${hm(calEdges.at(-1))} or more` : `${hm(calEdges[lv - 2])} – ${hm(calEdges[lv - 1])}`;
+let calDays = null, calAllYears = false;
+function renderCalendar() {
+  if (!DD) { $('calCard').hidden = true; return; }
+  $('calCard').hidden = false;
+  const [d0, d1] = dayRange(state.range);
+  if (d1 < d0) { $('calendar').innerHTML = ''; $('calNote').textContent = 'No days in this period.'; return; }
+  const W0 = widthOf('calendar'), labW = 30;
+  const cell = Math.max(5, Math.min(15, Math.floor((W0 - labW) / 54) - 2)), gap = cell >= 9 ? 2 : 1, pitch = cell + gap;
+  const y0 = dayDate(d0).getUTCFullYear(), y1 = dayDate(d1).getUTCFullYear();
+  calEdges = calEdgesFor(d0, d1);
+  const used = calEdges.length + 1;
+  $('calLegend').innerHTML = `<span>Less</span>${Array.from({ length: used + 1 }, (_, lv) => `<i class="cal q${lv === 0 ? 0 : Math.round(1 + ((lv - 1) * (CAL_LEVELS - 1)) / Math.max(1, used - 1))}" title="${calRange(lv)}"></i>`).join('')}<span>More</span>`;
+  const shade = (lv) => (lv === 0 ? 0 : Math.round(1 + ((lv - 1) * (CAL_LEVELS - 1)) / Math.max(1, used - 1))); // spread the shades if there are fewer levels
+  let html = '';
+  const shownFrom = calAllYears ? y0 : Math.max(y0, y1 - 2); // latest 3 years unless you ask for all
+  for (let yr = y1; yr >= shownFrom; yr--) {
+    const jan1 = Math.round((Date.UTC(yr, 0, 1) - day0ms) / 86400000);
+    const off = (dayDate(jan1).getUTCDay() + 6) % 7; // Monday = 0
+    const daysIn = (Date.UTC(yr + 1, 0, 1) - Date.UTC(yr, 0, 1)) / 86400000;
+    const weeks = Math.ceil((daysIn + off) / 7);
+    let g = '';
+    for (let k = 0; k < daysIn; k++) {
+      const d = jan1 + k;
+      if (d < d0 || d > d1) continue;
+      const col = Math.floor((k + off) / 7), row = (k + off) % 7;
+      const sec = DD.sec[d] || 0;
+      g += `<rect class="cal q${shade(calLevel(sec))}" data-d="${d}" x="${labW + col * pitch}" y="${18 + row * pitch}" width="${cell}" height="${cell}" rx="${Math.min(3, cell / 4)}"/>`;
+    }
+    for (let mo = 0; mo < 12; mo++) {
+      const k = (Date.UTC(yr, mo, 1) - Date.UTC(yr, 0, 1)) / 86400000, col = Math.floor((k + off) / 7);
+      const kEnd = (Date.UTC(yr, mo + 1, 1) - Date.UTC(yr, 0, 1)) / 86400000 - 1;
+      if (jan1 + kEnd < d0 || jan1 + k > d1) continue; // only label months in the period
+      if (cell >= 8 || mo % 3 === 0) g += `<text class="xlab" x="${labW + col * pitch}" y="11">${MONTHS[mo]}</text>`;
+    }
+    ['Mon', 'Wed', 'Fri'].forEach((l, j) => { if (cell >= 8) g += `<text class="ylab" x="${labW - 6}" y="${18 + j * 2 * pitch + cell - 1}">${l}</text>`; });
+    const w = labW + weeks * pitch, h = 18 + 7 * pitch;
+    html += `<div class="cal-year"><span class="cal-yr">${yr}</span>${svgEl(w, h, g, `Listening calendar ${yr}`)}</div>`;
+  }
+  if (shownFrom > y0 || calAllYears && y1 - y0 > 2) {
+    html += `<button class="ghost cal-more" data-calmore>${calAllYears ? 'Show only the latest 3 years' : `Show all ${y1 - y0 + 1} years`}</button>`;
+  }
+  $('calendar').innerHTML = html;
+  // streaks, biggest day, best weekday
+  let best = 0, bestEnd = d0, run = 0, gapBest = 0, gapRun = 0, big = d0, listened = 0;
+  const wd = new Array(7).fill(0), wdN = new Array(7).fill(0);
+  for (let d = d0; d <= d1; d++) {
+    const on = DD.sec[d] >= 60;
+    if (on) { listened++; run++; gapRun = 0; if (run > best) { best = run; bestEnd = d; } } else { run = 0; gapRun++; gapBest = Math.max(gapBest, gapRun); }
+    if (DD.sec[d] > DD.sec[big]) big = d;
+    const w = (dayDate(d).getUTCDay() + 6) % 7; wd[w] += DD.sec[d]; wdN[w]++;
+  }
+  const topWd = wd.map((s, i) => [s / (wdN[i] || 1), i]).sort((p, q) => q[0] - p[0])[0];
+  const dn = d1 - d0 + 1;
+  $('calNote').innerHTML = `Listened on <b>${num(listened)}</b> of ${num(dn)} days (${pct(listened / dn)}) · longest streak <b>${num(best)} day${best === 1 ? '' : 's'}</b>` +
+    (best > 1 ? ` (${fmtDay(bestEnd - best + 1, { month: 'short', day: 'numeric', year: 'numeric' })} – ${fmtDay(bestEnd, { month: 'short', day: 'numeric', year: 'numeric' })})` : '') +
+    ` · biggest day <b>${fmtDay(big, { month: 'short', day: 'numeric', year: 'numeric' })}</b> (${hours(DD.sec[big])})` +
+    ` · ${['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'][topWd[1]]} are your heaviest (${hours(topWd[0])} on average)` + (gapBest > 1 ? ` · longest break ${num(gapBest)} days` : '');
+  calDays = true;
+}
+$('calendar').addEventListener('click', (e) => {
+  if (!e.target.closest('[data-calmore]')) return;
+  calAllYears = !calAllYears;
+  renderCalendar();
+});
+tooltip($('calendar'), 'rect.cal', (el) => {
+  const d = +el.dataset.d;
+  return `<b>${fmtDay(d, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</b><br>${DD.sec[d] ? hm(DD.sec[d]) + ' listened' : 'No listening'}` +
+    (DD.sec[d] >= 60 ? `<br><span style="opacity:.75">shade ${calLevel(DD.sec[d])} of ${calEdges.length + 1}: ${calRange(calLevel(DD.sec[d]))}</span>` : '');
+});
+
+
+// ----- How you listen: devices, how songs started, shuffle, offline, private sessions -----
+const START_LABELS = ['You picked it', 'Played next on its own', 'You skipped to it', 'Pressed play / resumed', 'Other'];
+function hbars(list, total, unitFmt) {
+  const max = Math.max(1, ...list.map(([, v]) => v));
+  return list.map(([label, v]) => `<li><span class="hb-name">${esc(label)}</span><span class="hb-val">${unitFmt(v)} · ${pct(v / (total || 1))}</span>` +
+    `<span class="hb-track"><i style="width:${(v / max) * 100}%"></i></span></li>`).join('');
+}
+function renderHow() {
+  if (!D.how) { $('howCard').hidden = true; return; }
+  const [a, b] = state.range;
+  const dev = new Map(), start = [0, 0, 0, 0, 0], shuf = [0, 0];
+  let off = 0, priv = 0, sec = 0, plays = 0;
+  for (let m = a; m <= b; m++) {
+    const h = D.how[D.months[m]];
+    if (!h) continue;
+    for (const [k, v] of Object.entries(h.dev)) { dev.set(k, (dev.get(k) || 0) + v); sec += v; }
+    h.start.forEach((v, i) => { start[i] += v; plays += v; });
+    shuf[0] += h.shuf[0]; shuf[1] += h.shuf[1]; off += h.off; priv += h.priv;
+  }
+  const known = [...dev].filter(([k]) => k !== 'Other').length > 0;
+  $('howCard').hidden = false;
+  if (!plays) { $('howDevices').innerHTML = $('howStarts').innerHTML = ''; $('howNote').textContent = 'No listening in this period.'; return; }
+  const devList = [...dev].sort((p, q) => (p[0] === 'Other') - (q[0] === 'Other') || q[1] - p[1]);
+  $('howDevices').innerHTML = known ? hbars(devList, sec, hours) : '<li class="muted small">Not in this export.</li>';
+  const startList = START_LABELS.map((l, i) => [l, start[i]]).filter(([, v], i) => v > 0 || i < 4);
+  $('howStarts').innerHTML = start[4] === plays ? '<li class="muted small">Not in this export.</li>' : hbars(startList, plays, (v) => `${num(v)}`);
+  const sTot = shuf[0] + shuf[1];
+  $('howNote').innerHTML = [
+    sTot ? `Shuffle on for <b>${pct(shuf[0] / sTot)}</b> of plays` : '',
+    sec ? `<b>${pct(off / sec)}</b> of listening offline` : '',
+    plays ? `<b>${pct(priv / plays)}</b> of plays in a private session` : '',
+  ].filter(Boolean).join(' · ');
+}
 
 // ---------- library: songs / artists / albums table ----------
 // Per-song all-time facts for the detail view.
@@ -921,15 +1481,15 @@ function hl(text) {
 
 const COLS = {
   songs: [['rank', '#'], ['name', 'Song'], ['artist', 'Artist', 'opt'], ['plays', 'Plays', 'num'], ['sec', 'Time', 'num'],
-    ['skip', 'Skipped', 'num opt'], ['heard', 'Avg heard', 'num opt'], ['first', 'First played', 'num opt'], ['trend', 'Over time', 'opt']],
+    ['skip', 'Skipped', 'num opt'], ['heard', 'Avg heard', 'num opt'], ['first', 'First played', 'num opt mid'], ['trend', 'Over time', 'opt mid']],
   artists: [['rank', '#'], ['name', 'Artist'], ['songs', 'Songs', 'num'], ['plays', 'Plays', 'num'], ['sec', 'Time', 'num'],
-    ['skip', 'Skipped', 'num opt'], ['heard', 'Avg heard', 'num opt'], ['first', 'First played', 'num opt'], ['trend', 'Over time', 'opt']],
+    ['skip', 'Skipped', 'num opt'], ['heard', 'Avg heard', 'num opt'], ['first', 'First played', 'num opt mid'], ['trend', 'Over time', 'opt mid']],
   albums: [['rank', '#'], ['name', 'Album'], ['songs', 'Songs', 'num'], ['plays', 'Plays', 'num'], ['sec', 'Time', 'num'],
-    ['skip', 'Skipped', 'num opt'], ['heard', 'Avg heard', 'num opt'], ['first', 'First played', 'num opt'], ['trend', 'Over time', 'opt']],
+    ['skip', 'Skipped', 'num opt'], ['heard', 'Avg heard', 'num opt'], ['first', 'First played', 'num opt mid'], ['trend', 'Over time', 'opt mid']],
 };
 const cols = () => COLS[L.view].filter(([k]) => HAS_RET || k !== 'heard');
 
-function sparkline(v, w = 110, h = 26) {
+function sparkline(v, w = 92, h = 26) {
   const max = Math.max(...v) || 1, [a, b] = state.range;
   let d = '';
   const span = Math.max(1, N - 1);
@@ -960,8 +1520,8 @@ function cell(k, r, i, maxSec) {
     case 'sec': return `<td class="num timecell">${hours(r.sec)}<span class="cellbar"><i style="width:${(r.sec / maxSec) * 100}%"></i></span></td>`;
     case 'skip': return `<td class="num opt">${r.skip < 0 ? `<span class="muted" title="${NO_SKIP_DATA}">—</span>` : pct(r.skip)}</td>`;
     case 'heard': return `<td class="num opt">${meter(r.heard)}</td>`;
-    case 'first': return `<td class="num opt">${monthLabel(D.months[r.first])}</td>`;
-    case 'trend': return `<td class="trend opt">${sparkline(seriesFor(r))}</td>`;
+    case 'first': return `<td class="num opt mid">${monthLabel(D.months[r.first])}</td>`;
+    case 'trend': return `<td class="trend opt mid">${sparkline(seriesFor(r))}</td>`;
   }
 }
 
@@ -1072,7 +1632,7 @@ function renderTable() {
     `<b>${num(list.length)}</b> ${noun}${list.length === 1 ? '' : 's'}`,
     `<b>${hours(sec)}</b>`, `<b>${num(plays)}</b> plays`,
     tp ? `<b>${pct(skips / tp)}</b> skipped` : '',
-  ].filter(Boolean).join('<span class="dot">·</span>');
+  ].filter(Boolean).map((t) => `<span class="nw">${t}</span>`).join('<span class="dot">·</span><wbr>');
 
   // table: header, then the first page of rows; more are added as you scroll
   const C = curCols = cols();
@@ -1089,6 +1649,7 @@ function renderTable() {
   updatePanelCount();
   mountPlayer(false);
   syncUrl();
+  if (typeof onLibraryFiltersChanged === 'function') onLibraryFiltersChanged();
 }
 function rowHTML(r, i) {
   const open = r.kind === 'song' && L.open === r.id;
@@ -1297,22 +1858,110 @@ $('csv').addEventListener('click', () => {
 });
 
 // ---------- tooltip helper ----------
-function tooltip(root, selector, html) {
+function placeTip(content, e) {
   const tip = $('tip');
-  root.addEventListener('mousemove', (e) => {
-    const el = e.target.closest(selector);
-    const content = el && html(el);
-    if (!content) { tip.hidden = true; return; }
-    tip.innerHTML = content;
-    tip.hidden = false;
-    const r = tip.getBoundingClientRect();
-    let x = e.clientX + 14, y = e.clientY + 14;
-    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
-    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
-    tip.style.left = x + 'px';
-    tip.style.top = y + 'px';
-  });
-  root.addEventListener('mouseleave', () => { tip.hidden = true; });
+  if (!content) { tip.hidden = true; return; }
+  tip.innerHTML = content;
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + 'px';
+  tip.style.top = Math.max(8, y) + 'px';
+}
+// Hover with a mouse; tap on a touch screen (tap elsewhere or scroll to dismiss).
+function tooltip(root, selector, html) {
+  const show = (e) => { const el = e.target.closest(selector); placeTip(el && html(el), e); };
+  root.addEventListener('mousemove', (e) => { if (!fromTouch()) show(e); });
+  root.addEventListener('mouseleave', () => { if (!fromTouch()) $('tip').hidden = true; });
+  root.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { lastTouch = performance.now(); show(e); tipTouched = true; tipScrollY = scrollY; } });
+}
+// After a tap, browsers also send imitation mouse events; ignore those so the tap's label stays up.
+let tipTouched = false, tipScrollY = 0, lastTouch = -1e9;
+const fromTouch = () => performance.now() - lastTouch < 1000;
+document.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'touch' && tipTouched && !e.target.closest('.hist, #retChart, #clockPlot')) { $('tip').hidden = true; tipTouched = false; }
+}, true);
+// a real scroll (not the nudge a tap can cause) dismisses it
+window.addEventListener('scroll', () => { if (tipTouched && Math.abs(scrollY - tipScrollY) > 40) { $('tip').hidden = true; tipTouched = false; } }, { passive: true });
+
+// ---------- sticky section bar ----------
+new IntersectionObserver(([e]) => $('jumpbar').classList.toggle('stuck', !e.isIntersecting), { rootMargin: '-1px 0px 0px 0px' })
+  .observe(document.querySelector('header'));
+$('jumpbar').addEventListener('click', (e) => {
+  const a = e.target.closest('[data-jump]');
+  if (!a) return;
+  e.preventDefault(); // keep the # for the library's filters
+  $(a.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+$('jbReset').addEventListener('click', () => setRange([0, N - 1]));
+// highlight the section you're in
+function currentSection(ids) {
+  let cur = ids[0];
+  for (const id of ids) { const el = $(id); if (el && !el.hidden && el.getBoundingClientRect().top <= 140) cur = id; }
+  return cur;
+}
+{
+  const ids = ['tiles', 'topCard', 'skipCard', 'distCards', 'clockCard', 'library'];
+  let raf = 0;
+  const update = () => {
+    raf = 0;
+    const cur = currentSection(ids);
+    document.querySelectorAll('.jb-links a').forEach((a) => a.classList.toggle('here', a.dataset.jump === cur));
+    window.updateSideHere?.();
+  };
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+  addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(update); });
+}
+// "See all" on the top lists opens the full list in the library
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-seeall]');
+  if (!b) return;
+  $('search').value = '';
+  setLib({ view: b.dataset.seeall, q: '', artist: null, album: null, f: blankFilters(), sort: 'sec', dir: -1 });
+  libraryFocus();
+});
+
+// ---------- sidebar: every section, toggled from the tab on the left or the top bar ----------
+const SIDE_KEY = 'spotifyStats.sidebar';
+const sideDocked = () => matchMedia('(min-width: 1480px)').matches; // wide screens: sits in the margin
+function setSide(open, remember = true) {
+  $('sidenav').hidden = !open;
+  if (open) window.updateSideHere?.();
+  document.body.classList.toggle('side-open', open);
+  $('sideTab').setAttribute('aria-expanded', open);
+  $('jbMenu').setAttribute('aria-expanded', open);
+  if (remember) { try { localStorage.setItem(SIDE_KEY, open ? '1' : '0'); } catch { /* storage off */ } }
+}
+$('sideTab').addEventListener('click', () => setSide($('sidenav').hidden));
+$('jbMenu').addEventListener('click', () => setSide($('sidenav').hidden));
+$('sideClose').addEventListener('click', () => setSide(false));
+$('sidenav').addEventListener('click', (e) => {
+  const a = e.target.closest('[data-side]');
+  if (!a) return;
+  e.preventDefault(); // keep the # for the library's filters
+  $(a.dataset.side).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!sideDocked()) setSide(false, false); // on smaller screens get out of the way
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$('sidenav').hidden && !sideDocked() && !e.defaultPrevented) { e.preventDefault(); setSide(false, false); }
+});
+document.addEventListener('pointerdown', (e) => { // tap outside closes it when it's covering the page
+  if (!$('sidenav').hidden && !sideDocked() && !$('sidenav').contains(e.target) && !e.target.closest('#sideTab, #jbMenu')) setSide(false, false);
+});
+{
+  let saved = null;
+  try { saved = localStorage.getItem(SIDE_KEY); } catch { /* storage off */ }
+  if (saved === '1' && sideDocked()) setSide(true, false); // reopen on wide screens only
+  // highlight the section you're looking at; hide links to sections this data doesn't have
+  const links = [...document.querySelectorAll('#sidenav [data-side]')];
+  window.updateSideHere = () => {
+    if ($('sidenav').hidden) return;
+    const cur = currentSection(links.map((a) => a.dataset.side));
+    links.forEach((a) => a.classList.toggle('here', a.dataset.side === cur));
+  };
+  window.refreshSideLinks = () => links.forEach((a) => { const el = $(a.dataset.side); a.hidden = !el || el.hidden; });
 }
 
 // ---------- address bar: every filter change becomes a history step ----------
@@ -1404,10 +2053,16 @@ function renderAll() {
   renderTimeline();
   renderTop();
   renderSkips();
+  renderTopOver();
+  renderNew();
   renderDists();
+  renderHow();
   renderClock();
+  renderCalendar();
   renderRetention();
   renderTable();
+  window.refreshSideLinks?.();
 }
-$('range').textContent = `${monthLabel(D.months[0])} – ${monthLabel(D.months.at(-1))} · ${window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : D.name ? `${D.name}'s` : 'example'} Spotify streaming history`;
+$('range').textContent = `${monthLabel(D.months[0])} – ${monthLabel(D.months.at(-1))} · ${window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : D.name && !/^default$/i.test(D.name) ? `${D.name}'s` : 'the default'} Spotify streaming history`;
 applyHash(); // start from the address (a bookmarked or reloaded view), or the default
+document.body.classList.remove('booting');

@@ -55,6 +55,7 @@ window.SpotifyStore = (() => {
     await load('app.js');
     await load('import.js');
   })().catch((e) => {
+    document.body.classList.remove('booting');
     document.querySelector('main').insertAdjacentHTML('afterbegin', `<p class="card">Couldn't start: ${String(e.message || e)}</p>`);
   });
 })();

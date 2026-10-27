@@ -4,9 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spotify Stats</title>
+  <meta name="description" content="Charts and stats from a Spotify streaming history: top artists and songs, skips, listening habits, and a searchable library.">
+  <meta name="theme-color" content="#f4f4f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M8 23v-6M13 23V10M18 23v-9M23 23V7' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="booting">
+  <p class="boot" aria-live="polite">Loading listening history…</p>
+  <button class="side-tab" id="sideTab" aria-controls="sidenav" aria-expanded="false" title="Sections">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 10h12M4 15h12"/></svg><span>Sections</span>
+  </button>
+  <aside class="sidenav" id="sidenav" aria-label="Sections" hidden>
+    <div class="sn-head"><b>Sections</b><button class="sn-close" id="sideClose" aria-label="Close sections">×</button></div>
+    <nav><p class="sn-group">Overview</p><a href="#tiles" data-side="tiles">Summary</a><a href="#timelineCard" data-side="timelineCard">Listening by month</a><a href="#topLists" data-side="topLists">Top artists & songs</a><p class="sn-group">Trends</p><a href="#topCard" data-side="topCard">Top over time</a><a href="#newCard" data-side="newCard">New vs. familiar</a><p class="sn-group">Habits</p><a href="#skipCard" data-side="skipCard">Skips</a><a href="#distCards" data-side="distCards">Daily listening & plays</a><a href="#distCards2" data-side="distCards2">How much you hear</a><a href="#howCard" data-side="howCard">How you listen</a><p class="sn-group">When</p><a href="#clockCard" data-side="clockCard">Time of day</a><a href="#calCard" data-side="calCard">Calendar</a><a href="#retCard" data-side="retCard">Retention</a><p class="sn-group">Library</p><a href="#library" data-side="library">Your library</a></nav>
+  </aside>
   <main>
     <div class="sourcebar" id="sourceBar" hidden></div>
     <header>
@@ -17,9 +29,19 @@
       <nav id="years" aria-label="Choose a year"></nav>
     </header>
 
+    <nav class="jumpbar" id="jumpbar" aria-label="Sections">
+      <button class="ghost jb-menu" id="jbMenu" aria-controls="sidenav" title="Sections"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 10h12M4 15h12"/></svg></button>
+      <b class="jb-title">Spotify Stats</b>
+      <span class="jb-period" id="jbPeriod"></span>
+      <span class="jb-links">
+        <a href="#tiles" data-jump="tiles">Overview</a><a href="#topCard" data-jump="topCard">Trends</a><a href="#skipCard" data-jump="skipCard">Skips</a><a href="#distCards" data-jump="distCards">Habits</a><a href="#clockCard" data-jump="clockCard">When</a><a href="#library" data-jump="library">Library</a>
+      </span>
+      <button class="ghost jb-reset" id="jbReset" hidden>All time</button>
+    </nav>
+
     <section class="tiles" id="tiles"></section>
 
-    <section class="card">
+    <section class="card" id="timelineCard">
       <div class="sel-head">
         <div>
           <h2>Listening time by month</h2>
@@ -27,19 +49,60 @@
         </div>
         <div class="sel-info"><span id="selLabel"></span> <button id="selReset" hidden>Reset</button></div>
       </div>
-      <div class="timeline" id="timeline"></div>
+      <div class="timeline" id="timeline" tabindex="0" role="group" aria-label="Monthly listening. Arrow keys move the selected period, Shift+arrows change its length, Esc selects all time."></div>
     </section>
 
-    <div class="two-col">
+    <div class="two-col" id="topLists">
       <section class="card">
-        <h2>Top artists <span class="period muted"></span></h2>
+        <div class="cardhead"><h2>Top artists <span class="period muted"></span></h2><button class="seeall" data-seeall="artists">See all →</button></div>
         <ol class="toplist" id="topArtists"></ol>
       </section>
       <section class="card">
-        <h2>Top songs <span class="period muted"></span></h2>
+        <div class="cardhead"><h2>Top songs <span class="period muted"></span></h2><button class="seeall" data-seeall="songs">See all →</button></div>
         <ol class="toplist" id="topSongs"></ol>
       </section>
     </div>
+
+    <section class="card" id="topCard">
+      <div class="top-head">
+        <div>
+          <h2><span id="topTitle">Top artists by listening time</span> <span class="period muted"></span></h2>
+          <p class="muted small" id="topNote"></p>
+        </div>
+        <div class="seg" id="topView" role="group" aria-label="Chart type"><button data-v="race">Race</button><button data-v="lines">Lines</button></div>
+      </div>
+      <div class="top-ctrls">
+        <label>Show <select id="topEntity"><option value="artists">Artists</option><option value="songs">Songs</option><option value="albums">Albums</option></select></label>
+        <label>Ranked by <select id="topMetric"><option value="sec">Listening time</option><option value="plays">Plays</option><option value="skips">Skips</option></select></label>
+        <label id="topModeWrap">Counting <select id="topMode"><option value="rolling">Last 12 months</option><option value="total">Running total</option></select></label>
+        <label class="check-inline"><input type="checkbox" id="topUseFilters"> Only what matches the library's search &amp; filters<span class="muted" id="topFiltersCount"></span></label>
+      </div>
+      <div id="raceWrap">
+        <div class="race">
+          <div class="race-date" id="raceDate" aria-live="off"></div>
+          <div class="race-bars" id="raceBars"></div>
+          <p class="muted small" id="raceEmpty" hidden>Nothing to show with these settings.</p>
+        </div>
+        <div class="race-ctrl">
+          <button class="primary race-play" id="racePlay" aria-pressed="false">▶ Play</button>
+          <input type="range" id="raceSlider" min="0" max="0" value="0" step="any" aria-label="Move through time">
+          <span class="race-label" id="raceLabel"></span>
+          <select id="raceSpeed" aria-label="Speed"><option value="1200">Slow</option><option value="700" selected>Normal</option><option value="350">Fast</option></select>
+        </div>
+      </div>
+      <div class="rank" id="rankChart" hidden></div>
+    </section>
+
+    <section class="card" id="newCard">
+      <div class="sel-head">
+        <div>
+          <h2>New vs. familiar <span class="period muted"></span></h2>
+          <p class="muted small" id="newNote"></p>
+        </div>
+        <div class="legend2" aria-hidden="true"><span><i class="nv-new"></i>Songs new to you that month</span><span><i class="nv-known"></i>Songs you already knew</span></div>
+      </div>
+      <div class="newv" id="newChart"></div>
+    </section>
 
     <div class="two-col" id="skipCard" hidden>
       <section class="card">
@@ -84,6 +147,15 @@
       </section>
     </div>
 
+    <section class="card" id="howCard" hidden>
+      <h2>How you listen <span class="period muted"></span></h2>
+      <p class="muted small" id="howNote"></p>
+      <div class="how-grid">
+        <div><h3>Devices <span class="muted">listening time</span></h3><ul class="hbars" id="howDevices"></ul></div>
+        <div><h3>How songs started <span class="muted">plays</span></h3><ul class="hbars" id="howStarts"></ul></div>
+      </div>
+    </section>
+
     <section class="card" id="clockCard" hidden>
       <div class="sel-head">
         <div>
@@ -97,6 +169,17 @@
         <div class="clock-plot" id="clockPlot"><canvas id="clockCanvas" role="img" aria-label="Listening by date and time of day"></canvas></div>
         <div class="clock-x" id="clockX"></div>
       </div>
+    </section>
+
+    <section class="card" id="calCard" hidden>
+      <div class="sel-head">
+        <div>
+          <h2>Listening calendar <span class="period muted"></span></h2>
+          <p class="muted small" id="calNote"></p>
+        </div>
+        <div class="cal-legend" id="calLegend" aria-hidden="true"></div>
+      </div>
+      <div class="calendar" id="calendar"></div>
     </section>
 
     <section class="card" id="retCard" hidden>

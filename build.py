@@ -38,6 +38,33 @@ def load_plays(folder):
 
 SKIP_ENDS = {"fwdbtn", "backbtn", "endplay", "clickrow"}
 
+# How a play started, grouped: picked it / played next on its own / skipped to it / pressed play or resumed / other.
+# web/import.js has the same rules; keep them in step.
+START_GROUPS = {"clickrow": 0, "trackdone": 1, "fwdbtn": 2, "backbtn": 2,
+                "playbtn": 3, "appload": 3, "remote": 3, "reconnect": 3}
+
+
+def device(platform):
+    """Spotify's platform string (e.g. 'Android OS 10 API 29 (OnePlus…)', 'ios') -> a device type."""
+    p = (platform or "").lower()
+    if any(k in p for k in ("_tv", " tv", "tv;", "playstation", "xbox", "roku", "tizen", "webos", "chromecast")):
+        return "TV / console"
+    if p.startswith("partner") or any(k in p for k in ("echo", "sonos", "speaker", "google_home", "cast")):
+        return "Smart speaker"
+    if p.startswith("ios") or "iphone" in p or "ipad" in p:
+        return "iPhone / iPad"
+    if p.startswith("android"):
+        return "Android"
+    if p.startswith("windows"):
+        return "Windows"
+    if p.startswith("osx") or "os x" in p or "macos" in p:
+        return "Mac"
+    if "linux" in p:
+        return "Linux"
+    if p.startswith("web") or "web_player" in p:
+        return "Web player"
+    return "Other"
+
 
 SLOT_MIN = 15                 # minutes per slot in the day-by-time-of-day chart
 SLOTS = 24 * 60 // SLOT_MIN   # 96 slots per day
@@ -72,7 +99,9 @@ def main():
                 e.get("master_metadata_album_artist_name") or "Unknown artist",
                 e.get("master_metadata_album_album_name") or "")
         skipped = bool(e.get("skipped")) or e.get("reason_end") in SKIP_ENDS
-        plays.append((skey, start, ms, skipped))
+        how = (device(e.get("platform")), START_GROUPS.get(e.get("reason_start"), 4),
+               e.get("shuffle"), bool(e.get("offline")), bool(e.get("incognito_mode")))
+        plays.append((skey, start, ms, skipped, how))
         if e.get("reason_end") == "trackdone" and ms > song_len.get(skey, 0):
             song_len[skey] = ms
         uri = e.get("spotify_track_uri") or ""
@@ -102,12 +131,27 @@ def main():
     day_heard = [0] * n_days                    # seconds heard, plays with a known length
     day_len = [0] * n_days                      # full length of those same plays, seconds
     slots = [None] * n_days                     # day -> seconds per 15-minute slot
-    for skey, start, ms, skipped in plays:
+    # month -> how you listened: seconds per device, plays per start group, [shuffle on, off] plays,
+    # offline seconds, private-session plays
+    how_by_month = {}
+    for skey, start, ms, skipped, how in plays:
         month = start.strftime("%Y-%m")
         t = totals[(*skey, month)]
         t[0] += 1
         t[1] += ms // 1000
         t[2] += skipped
+        hm = how_by_month.get(month)
+        if hm is None:
+            hm = how_by_month[month] = {"dev": {}, "start": [0, 0, 0, 0, 0], "shuf": [0, 0], "off": 0, "priv": 0}
+        dev, sg, shuffle, offline, private = how
+        hm["dev"][dev] = hm["dev"].get(dev, 0) + ms // 1000
+        hm["start"][sg] += 1
+        if shuffle is not None:
+            hm["shuf"][0 if shuffle else 1] += 1
+        if offline:
+            hm["off"] += ms // 1000
+        if private:
+            hm["priv"] += 1
         d = (start.date() - day0).days
         day_sec[d] += ms // 1000
         length = song_len.get(skey)
@@ -158,7 +202,7 @@ def main():
     data = {
         "name": args.name,
         "months": months, "artists": artists, "songs": songs, "cols": 9, "rows": rows,
-        "skipHist": dict(skip_hist), "playHist": dict(play_hist),
+        "skipHist": dict(skip_hist), "playHist": dict(play_hist), "how": how_by_month,
         "days": {"start": day0.isoformat(), "slotMin": SLOT_MIN, "sec": day_sec,
                  "heard": day_heard, "len": day_len, "slots": [encode(d) for d in slots]},
     }

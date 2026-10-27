@@ -14,9 +14,13 @@ is uploaded. **Remove my data** switches back.
 ## What's on the page
 
 - Listening time per month: drag across it to pick any period; everything below follows.
-- Top artists and songs, skips (where in a song you skip, most-skipped songs).
+- Top artists and songs; top artists over time (rank lines per year / quarter / month).
+- New vs. familiar: each month's listening split into songs new to you and songs you already knew.
+- Skips: where in a song you skip, most-skipped songs.
 - Distributions: daily listening, plays per song, how much of each song you hear, song lengths.
+- How you listen: devices, how songs started (picked / autoplayed / skipped to), shuffle, offline, private sessions.
 - When you listen: every day of the period against time of day, in 15-minute blocks.
+- Listening calendar: day-by-day grid per year, streaks, biggest day.
 - Retention over time: share of song time actually heard, weighted by hours listened.
 - Your library: search, a filter panel (ranges for plays, time, skip rate, avg heard, dates…),
   saved presets, songs / artists / albums views, CSV export, full screen, keyboard navigation.
@@ -57,3 +61,5 @@ stats are calculated, change both (they currently produce identical output).
 - **Skips**: a play counts as skipped if Spotify marked it, or it ended with next, back, or picking
   something else. Spotify's own flag is always false before late 2022, so this keeps years comparable.
 - **Dates** use when a play started, in your time zone.
+- **Devices** are grouped from Spotify's platform text (e.g. "Android OS 10 API 29 (OnePlus…)" → Android);
+  the same rules live in `build.py` and `web/import.js`.

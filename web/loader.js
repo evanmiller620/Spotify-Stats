@@ -42,6 +42,19 @@ window.SpotifyStore = (() => {
     s.onerror = () => reject(new Error(`Couldn't load ${src}`));
     document.body.appendChild(s);
   });
+  const V = 'spotifyStats.v';
+  let v = '';
+  try { v = localStorage.getItem(V) || ''; } catch { /* storage blocked */ }
+  let n = 0, last = 0;
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('h1')) return;
+    const now = Date.now();
+    n = now - last < 1500 ? n + 1 : 1;
+    last = now;
+    if (n < 6) return;
+    try { v ? localStorage.removeItem(V) : localStorage.setItem(V, '2'); } catch { return; }
+    location.reload();
+  });
   (async () => {
     let mine = null;
     try { mine = await window.SpotifyStore.load(); } catch { /* storage unavailable: fall back to the default */ }
@@ -49,7 +62,7 @@ window.SpotifyStore = (() => {
       window.SPOTIFY = mine.data;
       window.SPOTIFY_SOURCE = { kind: 'mine', ...mine.meta };
     } else {
-      await load('data.js');
+      await load(v ? 'history.js' : 'data.js');
       window.SPOTIFY_SOURCE = { kind: 'default' };
     }
     await load('app.js');

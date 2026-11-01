@@ -55,7 +55,18 @@ window.SpotifyStore = (() => {
     try { v ? localStorage.removeItem(V) : localStorage.setItem(V, '2'); } catch { return; }
     location.reload();
   });
+  const shared = new URLSearchParams(location.search).get('s');
   (async () => {
+    await load('cloud.js');
+    if (shared) { // someone's shared link: show their stats
+      const msg = document.querySelector('.boot');
+      const got = await window.SpotifyCloud.fetch(shared.toLowerCase(), (i, n) => { if (msg) msg.textContent = `Loading shared stats… ${Math.round((i / n) * 100)}%`; });
+      window.SPOTIFY = { ...got.data, name: got.name };
+      window.SPOTIFY_SOURCE = { kind: 'shared', id: got.id, name: got.name, updated: got.updated };
+      window.SpotifyCloud.addFriend(got.id, got.name);
+      await load('app.js'); await load('import.js'); await load('friends.js');
+      return;
+    }
     let mine = null;
     try { mine = await window.SpotifyStore.load(); } catch { /* storage unavailable: fall back to the default */ }
     if (mine) {
@@ -63,12 +74,14 @@ window.SpotifyStore = (() => {
       window.SPOTIFY_SOURCE = { kind: 'mine', ...mine.meta };
     } else {
       await load(v ? 'history.js' : 'data.js');
-      window.SPOTIFY_SOURCE = { kind: 'default' };
+      window.SPOTIFY_SOURCE = { kind: 'default', own: !!v };
     }
     await load('app.js');
     await load('import.js');
+    await load('friends.js');
   })().catch((e) => {
     document.body.classList.remove('booting');
-    document.querySelector('main').insertAdjacentHTML('afterbegin', `<p class="card">Couldn't start: ${String(e.message || e)}</p>`);
+    const back = shared ? ` <a href="${location.pathname}">Go to the main page</a>` : '';
+    document.querySelector('main').insertAdjacentHTML('afterbegin', `<p class="card">Couldn't start: ${String(e.message || e).replace(/[&<>"]/g, '')}${back}</p>`);
   });
 })();

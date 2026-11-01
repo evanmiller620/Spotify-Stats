@@ -17,7 +17,7 @@
   </button>
   <aside class="sidenav" id="sidenav" aria-label="Sections" hidden>
     <div class="sn-head"><b>Sections</b><button class="sn-close" id="sideClose" aria-label="Close sections">×</button></div>
-    <nav><p class="sn-group">Overview</p><a href="#tiles" data-side="tiles">Summary</a><a href="#timelineCard" data-side="timelineCard">Listening by month</a><a href="#topLists" data-side="topLists">Top artists & songs</a><p class="sn-group">Trends</p><a href="#topCard" data-side="topCard">Top over time</a><a href="#newCard" data-side="newCard">New vs. familiar</a><p class="sn-group">Habits</p><a href="#skipCard" data-side="skipCard">Skips</a><a href="#distCards" data-side="distCards">Daily listening & plays</a><a href="#distCards2" data-side="distCards2">How much you hear</a><a href="#howCard" data-side="howCard">How you listen</a><p class="sn-group">When</p><a href="#clockCard" data-side="clockCard">Time of day</a><a href="#calCard" data-side="calCard">Calendar</a><a href="#retCard" data-side="retCard">Retention</a><p class="sn-group">Library</p><a href="#library" data-side="library">Your library</a></nav>
+    <nav><p class="sn-group">Overview</p><a href="#tiles" data-side="tiles">Summary</a><a href="#timelineCard" data-side="timelineCard">Listening by month</a><a href="#topLists" data-side="topLists">Top artists & songs</a><a href="#spreadCard" data-side="spreadCard">Every artist</a><p class="sn-group">Trends</p><a href="#topCard" data-side="topCard">Top over time</a><a href="#newCard" data-side="newCard">New vs. familiar</a><p class="sn-group">Habits</p><a href="#skipCard" data-side="skipCard">Skips</a><a href="#distCards" data-side="distCards">Daily listening & plays</a><a href="#distCards2" data-side="distCards2">How much you hear</a><a href="#howCard" data-side="howCard">How you listen</a><p class="sn-group">When</p><a href="#clockCard" data-side="clockCard">Time of day</a><a href="#calCard" data-side="calCard">Calendar</a><a href="#retCard" data-side="retCard">Retention</a><p class="sn-group">Library</p><a href="#library" data-side="library">Your library</a></nav>
   </aside>
   <main>
     <div class="sourcebar" id="sourceBar" hidden></div>
@@ -36,6 +36,7 @@
       <span class="jb-links">
         <a href="#tiles" data-jump="tiles">Overview</a><a href="#topCard" data-jump="topCard">Trends</a><a href="#skipCard" data-jump="skipCard">Skips</a><a href="#distCards" data-jump="distCards">Habits</a><a href="#clockCard" data-jump="clockCard">When</a><a href="#library" data-jump="library">Library</a>
       </span>
+      <button class="ghost jb-play" id="jbPlay" type="button" hidden></button>
       <button class="ghost jb-reset" id="jbReset" hidden>All time</button>
     </nav>
 
@@ -62,6 +63,25 @@
         <ol class="toplist" id="topSongs"></ol>
       </section>
     </div>
+
+    <section class="card" id="spreadCard">
+      <div class="top-head">
+        <div>
+          <h2><span id="spreadTitle">Every artist, by listening time</span> <span class="period muted"></span></h2>
+          <p class="muted small" id="spreadNote"></p>
+        </div>
+        <div class="seg" id="spreadScale" role="group" aria-label="Scale"><button data-v="linear" title="Bar heights to scale">Linear</button><button data-v="log" title="Each step up is 10× more, so the long tail stays visible">Log</button></div>
+      </div>
+      <div class="top-ctrls">
+        <label>Show <select id="spreadEntity"><option value="artists">Artists</option><option value="songs">Songs</option><option value="albums">Albums</option></select></label>
+        <label>Bar height <select id="spreadMetric"><option value="sec">Listening time</option><option value="plays">Plays</option><option value="skips">Skips</option><option value="skip">Skip rate</option><option value="heard">Avg heard</option><option value="songs">Different songs</option></select></label>
+        <label>Sorted by <select id="spreadSort"><option value="sec">Listening time</option><option value="plays">Plays</option><option value="skips">Skips</option><option value="skip">Skip rate</option><option value="heard">Avg heard</option><option value="songs">Different songs</option></select></label>
+        <label>Range <select id="spreadTop"><option value="0">All</option><option value="500">Top 500</option><option value="100">Top 100</option><option value="50">Top 50</option></select></label>
+        <label class="check-inline"><input type="checkbox" id="spreadUseFilters"> Only what matches the library's search &amp; filters<span class="muted" id="spreadFiltersCount"></span></label>
+      </div>
+      <div class="spread-plot" id="spreadPlot"><canvas id="spreadCanvas" role="img" aria-label="Every artist side by side, tallest first"></canvas></div>
+      <p class="muted small" id="spreadEmpty" hidden>Nothing to show with these settings.</p>
+    </section>
 
     <section class="card" id="topCard">
       <div class="top-head">

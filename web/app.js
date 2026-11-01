@@ -310,6 +310,215 @@ $('topSongs').addEventListener('click', (e) => {
   if (li) librarySearch(li.dataset.q);
 });
 
+// ---------- every artist / song / album, side by side ----------
+const SPREAD_METRICS = {
+  sec: { label: 'Listening time', short: 'listening time', val: (r) => r.sec, fmt: (v) => hours(v), add: true },
+  plays: { label: 'Plays', short: 'plays', val: (r) => r.plays, fmt: (v) => num(v), add: true },
+  skips: { label: 'Skips', short: 'skips', val: (r) => r.skips, fmt: (v) => num(v), add: true },
+  skip: { label: 'Skip rate', short: 'skip rate', val: (r) => (r.tp >= 5 ? r.skip : null), fmt: (v) => pct(v), rate: true },
+  heard: { label: 'Avg heard', short: 'share heard', val: (r) => (r.mp >= 5 ? r.heard : null), fmt: (v) => pct(v), rate: true },
+  songs: { label: 'Different songs', short: 'songs', val: (r) => r.songs, fmt: (v) => num(v), add: true, groups: true },
+};
+const SPREAD = { entity: 'artists', metric: 'sec', sort: 'sec', top: 0, log: true, useFilters: false, hover: -1 };
+let spread = null; // what's drawn: { items, vals, cols: [[from, to, max, mean, best]], geometry }
+
+function spreadItems() {
+  const saved = L.view;
+  L.view = SPREAD.entity;
+  try { const rows = libraryRows(); return SPREAD.useFilters ? filterRows(rows) : rows; } finally { L.view = saved; }
+}
+function renderSpread() {
+  const card = $('spreadCard');
+  const M = SPREAD_METRICS[SPREAD.metric], S = SPREAD_METRICS[SPREAD.sort];
+  const one = TOP_ENT[SPREAD.entity].one, many = one + 's';
+  $('spreadTitle').textContent = `Every ${one}, by ${M.short}`;
+  $('spreadMetric').querySelector('[value="songs"]').hidden = SPREAD.entity === 'songs';
+  $('spreadSort').querySelector('[value="songs"]').hidden = SPREAD.entity === 'songs';
+  const useLog = SPREAD.log && !M.rate; // percentages stay linear
+  card.querySelectorAll('#spreadScale [data-v]').forEach((b) => {
+    b.setAttribute('aria-pressed', String((b.dataset.v === 'log') === useLog));
+    b.disabled = !!M.rate && b.dataset.v === 'log';
+  });
+  $('spreadFiltersCount').textContent = libFilterCount() ? ` (${libFilterCount()} active)` : ' (none set)';
+
+  let items = spreadItems();
+  const sv = (r) => S.val(r) ?? -1;
+  items.sort((a, b) => sv(b) - sv(a) || b.sec - a.sec);
+  const total = items.length;
+  if (SPREAD.top) items = items.slice(0, SPREAD.top);
+  const vals = items.map((r) => M.val(r));
+  const n = items.length;
+
+  // note: how lopsided it is
+  const bits = [`${num(total)} ${total === 1 ? one : many}`];
+  if (n && M.add && SPREAD.sort === SPREAD.metric && !SPREAD.top) {
+    const sum = vals.reduce((a, v) => a + (v || 0), 0);
+    let acc = 0, half = 0;
+    for (let i = 0; i < n; i++) { acc += vals[i] || 0; if (acc >= sum / 2) { half = i + 1; break; } }
+    if (sum) bits.push(`the top ${num(half)} (${pct(half / n)}) make up half your ${M.short}`);
+    const top10 = vals.slice(0, 10).reduce((a, v) => a + (v || 0), 0);
+    if (n > 20 && sum) bits.push(`the top 10 alone: ${pct(top10 / sum)}`);
+  }
+  const once = items.filter((r) => r.plays === 1).length;
+  if (once) bits.push(`${num(once)} played only once`);
+  if (M.rate) bits.push(`${M.label.toLowerCase()} needs 5+ plays to count`);
+  $('spreadNote').textContent = bits.join(' · ');
+
+  const wrap = $('spreadPlot'), canvas = $('spreadCanvas');
+  const Wd = wrap.clientWidth, Hd = wrap.clientHeight;
+  if (!Wd) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(Wd * dpr); canvas.height = Math.round(Hd * dpr);
+  canvas.style.width = Wd + 'px'; canvas.style.height = Hd + 'px';
+  const left = 48, right = 6, top = 10, bottom = 24, PW = Wd - left - right, PH = Hd - top - bottom;
+
+  // one column per pixel (or a real bar per item when there are few)
+  const per = n <= PW / 3, cols = [];
+  const nc = per ? n : Math.min(n, Math.floor(PW));
+  for (let c = 0; c < nc; c++) {
+    const from = per ? c : Math.floor((c * n) / nc), to = per ? c + 1 : Math.max(from + 1, Math.floor(((c + 1) * n) / nc));
+    let mx = null, best = from, s = 0, k = 0;
+    for (let i = from; i < to; i++) {
+      const v = vals[i];
+      if (v === null || v === undefined) continue;
+      s += v; k++;
+      if (mx === null || v > mx) { mx = v; best = i; }
+    }
+    cols.push([from, to, mx, k ? s / k : null, best]);
+  }
+  const present = vals.filter((v) => v !== null && v !== undefined);
+  const vmax = present.length ? Math.max(...present) : 0;
+  const posMin = present.reduce((m, v) => (v > 0 && v < m ? v : m), Infinity);
+  // y scale
+  const isTime = SPREAD.metric === 'sec', unit = isTime ? 3600 : 1;
+  let y, ticks = [];
+  if (useLog && vmax > 0) {
+    // floor sits just under the smallest value, so a single play or a few seconds still shows as a bar
+    const lo = isTime ? Math.min(30, posMin / 2) : 0.5, hi = Math.max(vmax, lo * 10);
+    const L0 = Math.log10(lo), L1 = Math.log10(hi);
+    y = (v) => (v > 0 ? top + PH - ((Math.log10(Math.max(v, lo)) - L0) / (L1 - L0)) * PH : top + PH);
+    const cand = isTime ? [1, 60, 600, 3600, 36000, 360000, 3600000] : [1, 10, 100, 1000, 10000, 100000, 1000000];
+    ticks = cand.filter((v) => v > lo && v <= hi * 1.0001);
+  } else {
+    const mx = M.rate ? Math.max(0.01, vmax) : (vmax || 1) / unit;
+    const step = M.rate ? (vmax > 0.5 ? 0.25 : vmax > 0.2 ? 0.1 : 0.05) : niceStep(mx);
+    const topV = M.rate ? Math.min(1, Math.ceil(mx / step) * step) : Math.ceil(mx / step) * step;
+    y = (v) => top + PH - (Math.max(0, v) / (topV * unit)) * PH;
+    for (let v = 0; v <= topV + 1e-9; v += step) ticks.push(v * unit);
+  }
+  const tickLabel = (v) => (M.rate ? `${Math.round(v * 100)}%` : !isTime ? num(v) : v === 0 ? '0' : v < 60 ? `${v} s` : v < 3600 ? `${v / 60} min` : `${num(v / 3600)} h`);
+  spread = { items, vals, cols, per, left, top, PW, PH, n, y, ticks, tickLabel, Wd, Hd, dpr, jag: SPREAD.sort !== SPREAD.metric };
+  $('spreadEmpty').hidden = n > 0;
+  drawSpread();
+}
+function drawSpread() {
+  const G = spread;
+  if (!G) return;
+  const canvas = $('spreadCanvas'), ctx = canvas.getContext('2d');
+  ctx.setTransform(G.dpr, 0, 0, G.dpr, 0, 0);
+  ctx.clearRect(0, 0, G.Wd, G.Hd);
+  const cs = getComputedStyle(document.documentElement), css = (k) => cs.getPropertyValue(k).trim();
+  const font = `11px ${getComputedStyle(document.body).fontFamily}`;
+  ctx.font = font; ctx.textBaseline = 'middle';
+  // grid + y labels
+  ctx.strokeStyle = css('--line'); ctx.fillStyle = css('--muted'); ctx.lineWidth = 1; ctx.textAlign = 'right';
+  for (const t of G.ticks) {
+    const yy = Math.round(G.y(t)) + 0.5;
+    ctx.beginPath(); ctx.moveTo(G.left, yy); ctx.lineTo(G.left + G.PW, yy); ctx.stroke();
+    ctx.fillText(G.tickLabel(t), G.left - 6, yy);
+  }
+  if (!G.n) return;
+  // bars
+  const cw = G.PW / G.cols.length, gap = G.per && cw > 4 ? Math.min(2, cw * 0.2) : 0, base = G.top + G.PH;
+  const bar = css('--bar'), dim = css('--bar-dim'), hi = css('--text');
+  G.cols.forEach(([, , mx, mean], c) => {
+    if (mx === null) return;
+    const x = G.left + c * cw;
+    if (G.jag && !G.per) { // unsorted heights: light = tallest in the column, dark = the column's average
+      ctx.fillStyle = c === SPREAD.hover ? hi : dim; ctx.fillRect(x, G.y(mx), cw + 0.4, base - G.y(mx));
+      if (c !== SPREAD.hover) { ctx.fillStyle = bar; ctx.fillRect(x, G.y(mean), cw + 0.4, base - G.y(mean)); }
+    } else {
+      ctx.fillStyle = c === SPREAD.hover ? hi : bar;
+      const h = Math.max(mx > 0 ? 1 : 0, base - G.y(mx));
+      ctx.fillRect(x + gap / 2, base - h, Math.max(0.6, cw - gap + (G.per ? 0 : 0.4)), h);
+    }
+  });
+  // x axis: rank ticks
+  ctx.fillStyle = css('--muted'); ctx.textBaseline = 'top';
+  const xs = [1];
+  const step = niceStep(G.n * 0.75) || 1;
+  for (let r = step; r <= G.n; r += step) xs.push(r);
+  let lastR = -Infinity;
+  xs.forEach((r, k) => {
+    const x = G.left + ((r - 0.5) / G.n) * G.PW, label = num(r);
+    const w = ctx.measureText(label).width;
+    if (x - w / 2 < lastR + 10) return;
+    ctx.textAlign = k === 0 ? 'left' : x + w / 2 > G.left + G.PW ? 'right' : 'center';
+    const lx = k === 0 ? G.left : x;
+    ctx.fillText(label, lx, base + 7);
+    lastR = ctx.textAlign === 'left' ? lx + w : ctx.textAlign === 'right' ? lx : lx + w / 2;
+  });
+}
+function spreadAt(e) {
+  const G = spread;
+  if (!G || !G.n) return -1;
+  const r = $('spreadPlot').getBoundingClientRect();
+  const x = e.clientX - r.left - G.left;
+  if (x < 0 || x > G.PW) return -1;
+  return Math.min(G.cols.length - 1, Math.floor((x / G.PW) * G.cols.length));
+}
+function spreadTip(e) {
+  const c = spreadAt(e);
+  if (c !== SPREAD.hover) { SPREAD.hover = c; drawSpread(); }
+  if (c < 0) { $('tip').hidden = true; return; }
+  const G = spread, [from, to, mx, , best] = G.cols[c], it = G.items[best];
+  const ent = TOP_ENT[SPREAD.entity], M = SPREAD_METRICS[SPREAD.metric];
+  const sub = it.kind === 'artist' ? '' : it.kind === 'song' ? it.artist : it.sub;
+  const bits = [hours(it.sec), `${num(it.plays)} play${it.plays === 1 ? '' : 's'}`];
+  if (it.tp) bits.push(`${pct(it.skip)} skipped`);
+  if (it.kind !== 'song') bits.push(`${num(it.songs)} song${it.songs === 1 ? '' : 's'}`);
+  placeTip(`<b>#${num(best + 1)} ${esc(it.name)}</b>${sub ? `<br><span style="opacity:.75">${esc(sub)}</span>` : ''}` +
+    (M.rate ? `<br>${mx === null ? `${M.label}: needs 5+ plays` : `${M.label}: ${M.fmt(mx)}`}` : '') + `<br>${bits.join(' · ')}` +
+    (to - from > 1 ? `<br><span style="opacity:.75">ranks ${num(from + 1)}–${num(to)}: ${num(to - from)} ${ent.one}s share this spot</span>` : ''), e);
+}
+{
+  const plot = $('spreadPlot');
+  let lastType = 'mouse';
+  plot.addEventListener('mousemove', (e) => { if (!fromTouch()) spreadTip(e); });
+  plot.addEventListener('mouseleave', () => { if (fromTouch()) return; $('tip').hidden = true; SPREAD.hover = -1; drawSpread(); });
+  plot.addEventListener('pointerdown', (e) => {
+    lastType = e.pointerType;
+    if (e.pointerType === 'touch') { lastTouch = performance.now(); spreadTip(e); tipTouched = true; tipScrollY = scrollY; }
+  });
+  plot.addEventListener('click', (e) => { // mouse: open it in the library; touch: the tap just shows the label
+    if (lastType === 'touch') return;
+    const c = spreadAt(e);
+    if (c < 0) return;
+    const it = spread.items[spread.cols[c][4]];
+    $('tip').hidden = true;
+    if (it.kind === 'artist') libraryArtistFresh(it.a);
+    else if (it.kind === 'song') librarySearch(it.name);
+    else libraryAlbum(it.id);
+  });
+}
+$('spreadCard').addEventListener('click', (e) => {
+  const b = e.target.closest('#spreadScale [data-v]');
+  if (b) { SPREAD.log = b.dataset.v === 'log'; renderSpread(); }
+});
+$('spreadCard').addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'spreadEntity') {
+    SPREAD.entity = t.value;
+    if (t.value === 'songs') { if (SPREAD.metric === 'songs') SPREAD.metric = $('spreadMetric').value = 'sec'; if (SPREAD.sort === 'songs') SPREAD.sort = $('spreadSort').value = 'sec'; }
+  }
+  if (t.id === 'spreadMetric') SPREAD.metric = t.value;
+  if (t.id === 'spreadSort') SPREAD.sort = t.value;
+  if (t.id === 'spreadTop') SPREAD.top = +t.value;
+  if (t.id === 'spreadUseFilters') SPREAD.useFilters = t.checked;
+  SPREAD.hover = -1;
+  renderSpread();
+});
+
 // ---------- render: skips ----------
 function renderSkips() {
   const total = agg.hist.reduce((a, b) => a + b, 0);
@@ -632,11 +841,11 @@ if (window.ResizeObserver) {
     if (w === lastW) return;
     lastW = w;
     cancelAnimationFrame(rz);
-    rz = requestAnimationFrame(() => { declutter($('timeline').querySelectorAll('.bar b')); renderClock(); renderRetention(); if (TOP.view === 'lines') renderRank(); else drawRace(TOP.t, true); renderNew(); renderCalendar(); });
+    rz = requestAnimationFrame(() => { declutter($('timeline').querySelectorAll('.bar b')); renderClock(); renderRetention(); if (TOP.view === 'lines') renderRank(); else drawRace(TOP.t, true); renderNew(); renderCalendar(); renderSpread(); });
   }).observe($('clockPlot'));
 }
 // Colors come from CSS, so redraw the canvas when the light/dark theme flips.
-window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => renderClock());
+window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => { renderClock(); drawSpread(); });
 
 // ---------- new charts: artists over time, new vs familiar, calendar, how you listen ----------
 const svgEl = (w, h, inner, label) => `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(label)}">${inner}</svg>`;
@@ -937,7 +1146,10 @@ function renderTopOver() {
   if (TOP.view === 'race') { buildRace(); drawRace(0, true); } else renderRank();
 }
 let topRebuild = 0;
-function onLibraryFiltersChanged() { // keep the chart in step when it follows the library filters
+let spreadRebuild = 0;
+function onLibraryFiltersChanged() { // keep the charts in step when they follow the library filters
+  $('spreadFiltersCount').textContent = libFilterCount() ? ` (${libFilterCount()} active)` : ' (none set)';
+  if (SPREAD.useFilters) { clearTimeout(spreadRebuild); spreadRebuild = setTimeout(renderSpread, 300); }
   if (!TOP.useFilters) return;
   clearTimeout(topRebuild);
   topRebuild = setTimeout(renderTopOver, 300);
@@ -1532,6 +1744,11 @@ function detail(r) {
   v.forEach((x, i) => { if (x > v[peak]) peak = i; });
   const w = 600, h = 70, bw = w / N;
   const bars = [...v].map((x, i) => `<rect class="${i >= a && i <= b ? 'on' : ''}" x="${(i * bw + 0.5).toFixed(1)}" y="${(h - (x / max) * h).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${((x / max) * h).toFixed(1)}"><title>${monthLabel(D.months[i])}: ${hours(x)}</title></rect>`).join('');
+  const yrs = []; // each calendar year's span of months, for the ticks and labels under the chart
+  D.months.forEach((m, i) => { if (!i || m.endsWith('-01')) yrs.push({ y: m.slice(0, 4), from: i, to: i }); else yrs.at(-1).to = i; });
+  const grid = yrs.slice(1).map(({ from }) => `<line class="yg" x1="${(from * bw).toFixed(1)}" x2="${(from * bw).toFixed(1)}" y1="0" y2="${h}" vector-effect="non-scaling-stroke"/>`).join('');
+  const axis = yrs.map(({ y, from, to }) => `<span class="yl" style="left:${((from / N) * 100).toFixed(3)}%;width:${(((to - from + 1) / N) * 100).toFixed(3)}%">` +
+    (to - from >= 3 ? `<span class="yf">${y}</span><span class="ys">’${y.slice(2)}</span>` : '') + '</span>').join('');
   const s = r.id;
   const len = D.songs[s][3]; // seconds; 0 = never played to the end, so unknown
   const facts = [
@@ -1543,8 +1760,8 @@ function detail(r) {
   ];
   return `<tr class="detail"><td colspan="${cols().length}"><div class="detail-in">
     <div class="facts">${facts.map(([l, x]) => `<div><span>${l}</span><b>${x}</b></div>`).join('')}</div>
-    <svg class="dchart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${bars}</svg>
-    <div class="dchart-axis"><span>${D.months[0].slice(0, 4)}</span><span>${D.months[N - 1].slice(0, 4)}</span></div>
+    <svg class="dchart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${grid}${bars}</svg>
+    <div class="dchart-years" aria-hidden="true">${axis}</div>
     <div class="actions">
       ${D.songs[s][4] ? `<button class="embedbtn" data-embed="${s}" aria-expanded="${!L.hidePlayer}">${L.hidePlayer ? '▶ Show player' : 'Hide player'}</button>
       <a class="spbtn" href="https://open.spotify.com/track/${D.songs[s][4]}" target="_blank" rel="noopener">Play on Spotify ↗</a>` : ''}
@@ -1572,24 +1789,145 @@ function loadSpotifyApi() {
   }
   return spotifyApi;
 }
-// Put the player into the open row. autoplay = this render came from the user opening the row.
+// ----- One player for the whole page -----
+// The Spotify player lives outside the table, so it keeps playing when you close the song, search or
+// browse. While its song is open it sits exactly over the song's player slot; when you leave a playing
+// song it moves to a mini player in the corner (moving the box, never the iframe, so playback continues).
+const PL = { host: null, frame: null, ctrl: null, track: null, song: null, slot: null, mode: 'off', paused: true, started: false, plain: false };
+function plHost() {
+  if (PL.host) return PL.host;
+  const h = document.createElement('div');
+  h.id = 'player';
+  h.className = 'pl';
+  h.hidden = true;
+  h.innerHTML = `<div class="pl-bar"><span class="pl-now">Now playing</span><button class="pl-title" type="button" title="Show this song in your library"></button>
+    <button class="pl-close" type="button" aria-label="Close player" title="Close player">×</button></div><div class="pl-frame"><div></div></div>`;
+  document.body.appendChild(h);
+  PL.host = h;
+  PL.frame = h.querySelector('.pl-frame > div');
+  h.querySelector('.pl-close').addEventListener('click', () => plStop());
+  h.querySelector('.pl-title').addEventListener('click', () => { if (PL.song !== null) librarySearch(D.songs[PL.song][0]); });
+  return h;
+}
+function plSongFor(track) { return D.songs.findIndex((x) => x[4] === track); }
+function plSetMode(mode) {
+  PL.mode = mode;
+  const h = plHost();
+  h.hidden = mode === 'off' || mode === 'hidden';
+  h.classList.toggle('slot', mode === 'slot');
+  h.classList.toggle('dock', mode === 'dock');
+  if (mode !== 'slot') { h.style.cssText = ''; }
+  if (mode === 'slot') plFollow();
+  if (PL.song !== null) h.querySelector('.pl-title').textContent = `${D.songs[PL.song][0]} · ${D.artists[D.songs[PL.song][1]]}`;
+  plChip();
+}
+// keep the player box glued to the slot (the table scrolls inside its own box)
+let plRaf = 0;
+function plFollow() {
+  cancelAnimationFrame(plRaf);
+  if (PL.mode !== 'slot') return;
+  const slot = PL.slot;
+  if (!slot || !slot.isConnected) { plLeftSlot(); return; }
+  const r = slot.getBoundingClientRect(), w = $('tableWrap').getBoundingClientRect();
+  const headH = $('thead').getBoundingClientRect().height;
+  const top = Math.max(w.top + headH, 0), bottom = Math.min(w.bottom, innerHeight);
+  const h = PL.host, st = h.style;
+  st.left = `${r.left}px`; st.top = `${r.top}px`; st.width = `${r.width}px`;
+  const ct = Math.max(0, top - r.top), cb = Math.max(0, r.bottom - bottom);
+  st.clipPath = ct || cb ? `inset(${ct}px 0 ${cb}px 0)` : '';
+  st.visibility = ct + cb >= r.height || !r.width ? 'hidden' : '';
+  plRaf = requestAnimationFrame(plFollow);
+}
+// the song's panel closed or was redrawn: keep playing in the corner, or tuck the player away
+function plLeftSlot() {
+  PL.slot = null;
+  if (PL.ctrl && PL.started && !PL.paused) plSetMode('dock');
+  else if (PL.mode === 'slot') plSetMode(PL.plain ? 'off' : 'hidden');
+  if (PL.plain && PL.mode === 'off') { PL.frame.innerHTML = '<div></div>'; PL.track = null; }
+}
+function plStop() {
+  try { PL.ctrl?.pause(); } catch { /* not ready */ }
+  PL.paused = true;
+  plSetMode(PL.slot?.isConnected ? 'slot' : 'hidden');
+}
+// the play / pause chip in the top bar
+function plChip() {
+  const b = $('jbPlay');
+  if (!b) return;
+  const show = PL.ctrl && PL.started && PL.song !== null && PL.mode !== 'off' && PL.mode !== 'hidden';
+  b.hidden = !show;
+  if (!show) return;
+  b.innerHTML = `<span class="jp-icon" aria-hidden="true">${PL.paused ? '▶' : '❚❚'}</span><span class="jp-name">${esc(D.songs[PL.song][0])}</span>`;
+  b.setAttribute('aria-label', `${PL.paused ? 'Play' : 'Pause'} ${D.songs[PL.song][0]}`);
+  b.title = PL.paused ? 'Play' : 'Pause';
+}
+$('jbPlay')?.addEventListener('click', () => { try { PL.ctrl?.togglePlay(); } catch { /* not ready */ } });
+
+// Put the player into the open song's panel. autoplay = the user just opened it.
 async function mountPlayer(autoplay) {
   const slot = document.querySelector('#tbody .embed-slot');
-  if (!slot) return;
+  if (!slot) { if (PL.mode === 'slot') plLeftSlot(); return; }
   const id = slot.dataset.track;
+  const busy = PL.ctrl && PL.started && !PL.paused && PL.track !== id; // something else is playing
+  if (busy) { // don't cut off what's playing: offer to switch instead
+    if (PL.mode === 'slot') plLeftSlot();
+    slot.innerHTML = `<button class="pl-switch" type="button">▶ Play this song instead</button>`;
+    slot.classList.add('waiting');
+    slot.querySelector('button').addEventListener('click', () => { slot.innerHTML = ''; slot.classList.remove('waiting'); plAttach(slot, id, true); });
+    return;
+  }
+  plAttach(slot, id, autoplay);
+}
+async function plAttach(slot, id, play) {
+  plHost();
   const api = await loadSpotifyApi();
   if (!slot.isConnected) return; // row was closed or re-drawn meanwhile
-  const plain = () => {
-    slot.outerHTML = `<iframe src="https://open.spotify.com/embed/track/${id}?utm_source=generator" height="80"
-      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Spotify player"></iframe>`;
-  };
-  if (!api) return plain();
-  try {
-    api.createController(slot, { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (ctrl) => {
-      if (autoplay) ctrl.addListener('ready', () => { try { ctrl.play(); } catch { /* browser blocked autoplay */ } });
-    });
-  } catch { plain(); }
+  PL.slot = slot;
+  PL.song = plSongFor(id);
+  if (!api) { // no controller API: a plain player that lives and dies with the panel
+    PL.plain = true;
+    if (PL.track !== id) {
+      PL.frame.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${id}?utm_source=generator" height="80"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Spotify player"></iframe>`;
+      PL.track = id;
+    }
+    plSetMode('slot');
+    return;
+  }
+  if (!PL.ctrl) {
+    PL.track = id;
+    PL.wantPlay = play;
+    plSetMode('slot');
+    try {
+      api.createController(PL.frame, { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (ctrl) => {
+        PL.ctrl = ctrl;
+        ctrl.addListener('playback_update', (e) => {
+          const was = PL.paused;
+          PL.paused = !!e.data.isPaused;
+          if (!PL.paused) PL.started = true;
+          if (was !== PL.paused) plChip();
+        });
+        if (PL.wantPlay) ctrl.addListener('ready', () => { try { ctrl.play(); } catch { /* browser blocked autoplay */ } });
+      });
+    } catch { PL.ctrl = null; }
+    return;
+  }
+  if (PL.track !== id) {
+    PL.track = id; PL.started = false; PL.paused = true;
+    try { PL.ctrl.loadUri(`spotify:track:${id}`); } catch { /* ignore */ }
+    if (play) setTimeout(() => { try { PL.ctrl.play(); } catch { /* blocked */ } }, 250);
+  } else if (play && PL.paused) {
+    try { PL.ctrl.play(); } catch { /* blocked */ }
+  }
+  plSetMode('slot');
 }
+// any change to the table (closing a song, searching, switching views) may remove the slot
+new MutationObserver(() => {
+  if (PL.mode !== 'slot' || PL.slot?.isConnected) return;
+  const again = document.querySelector('#tbody .embed-slot'); // same song redrawn: just follow the new slot
+  if (again && again.dataset.track === PL.track) { PL.slot = again; return; }
+  plLeftSlot();
+}).observe($('tbody'), { childList: true, subtree: true });
 
 let lastList = [], rendered = 0, maxSecShown = 1, curCols = [];
 const PAGE = 100; // rows added each time you scroll near the bottom
@@ -1698,6 +2036,7 @@ function togglePlayer() {
   const tr = $('tbody').querySelector('tr.row.open'), d = $('tbody').querySelector('tr.detail');
   if (!tr || !d) return;
   L.hidePlayer = !L.hidePlayer;
+  if (L.hidePlayer && PL.mode === 'slot') { try { PL.ctrl?.pause(); } catch { /* not ready */ } PL.paused = true; }
   d.outerHTML = detail(lastList[+tr.dataset.i]);
   if (!L.hidePlayer) mountPlayer(true);
 }
@@ -1732,7 +2071,8 @@ function setFocusMode(on) {
   $('libFull').title = on ? 'Exit full screen (F or Esc)' : 'Full screen (F)';
   $('libFull').querySelector('span').textContent = on ? 'Exit full screen' : 'Full screen';
   const lib = $('library');
-  if (on && lib.requestFullscreen && !document.fullscreenElement) lib.requestFullscreen().catch(() => {});
+  // the whole page goes full screen (the library fills it), so the mini player can stay on top
+  if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
   if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
   if (on) $('tableWrap').focus({ preventScroll: true });
   else lib.scrollIntoView({ block: 'start' });
@@ -1881,7 +2221,7 @@ function tooltip(root, selector, html) {
 let tipTouched = false, tipScrollY = 0, lastTouch = -1e9;
 const fromTouch = () => performance.now() - lastTouch < 1000;
 document.addEventListener('pointerdown', (e) => {
-  if (e.pointerType === 'touch' && tipTouched && !e.target.closest('.hist, #retChart, #clockPlot')) { $('tip').hidden = true; tipTouched = false; }
+  if (e.pointerType === 'touch' && tipTouched && !e.target.closest('.hist, #retChart, #clockPlot, #spreadPlot')) { $('tip').hidden = true; tipTouched = false; }
 }, true);
 // a real scroll (not the nudge a tap can cause) dismisses it
 window.addEventListener('scroll', () => { if (tipTouched && Math.abs(scrollY - tipScrollY) > 40) { $('tip').hidden = true; tipTouched = false; } }, { passive: true });
@@ -2052,6 +2392,7 @@ function renderAll() {
   renderTiles();
   renderTimeline();
   renderTop();
+  renderSpread();
   renderSkips();
   renderTopOver();
   renderNew();

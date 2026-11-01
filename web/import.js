@@ -235,7 +235,7 @@
   const show = (html) => { dlg.querySelector('.imp-body').innerHTML = html; if (!dlg.open) dlg.showModal(); };
   const intro = () => show(`
     <h2>Load your own Spotify data</h2>
-    <p>Pick the <b>.zip</b> Spotify emailed you (or the .json files inside it). It's processed right here in your browser and saved in this browser only. Nothing is uploaded.</p>
+    <p>Pick the <b>.zip</b> Spotify emailed you (or the .json files inside it). It's processed right here in your browser and saved in this browser only. Nothing is uploaded unless you open <b>Friends</b>, which shares your stats so friends can compare.</p>
     <div class="imp-drop" data-act="choose"><b>Choose file…</b><span>or drop it here</span></div>
     <details><summary>How do I get my data?</summary>
       <ol><li>On spotify.com go to <b>Account → Privacy settings</b> (“Download your data”).</li>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spotify Stats · Data editor</title>
+<style>
+:root { color-scheme: light; --bg: #f4f4f2; --card: #fcfcfb; --text: #0b0b0b; --text-2: #52514e; --muted: #6b6a65; --line: #e4e3df;
+  --bar: #2a78d6; --bar-dim: #b7d3f6; --edit: #eb6834; --edit-bg: #fdf0e9; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg: #111110; --card: #1a1a19; --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e86;
+  --line: #2c2c2a; --bar: #3987e5; --bar-dim: #24405f; --edit: #d95926; --edit-bg: #33221a; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+.top { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px 20px; background: var(--card); border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 17px; margin: 0; }
+.top .file { color: var(--text-2); font-size: 13px; }
+.top .spacer { flex: 1; }
+.btn { border: 1px solid var(--line); background: var(--card); border-radius: 9px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--text); color: var(--card); border-color: var(--text); font-weight: 600; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.small { padding: 3px 8px; font-size: 12px; }
+.muted { color: var(--muted); } .small { font-size: 12px; }
+.wrap { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 16px; padding: 16px 20px 40px; max-width: 1400px; margin: 0 auto; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.card h2 { font-size: 15px; margin: 0 0 8px; }
+.start { max-width: 640px; margin: 40px auto; }
+.start p { color: var(--text-2); }
+#q { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 9px; padding: 8px 10px; }
+.list { list-style: none; margin: 10px 0 0; padding: 0; max-height: calc(100vh - 260px); overflow: auto; }
+.list li { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+.list li:hover { background: var(--bg); }
+.list li.on { background: color-mix(in srgb, var(--bar) 12%, var(--card)); }
+.list .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 550; }
+.list .a { grid-column: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--muted); }
+.list .v { grid-row: 1 / 3; grid-column: 2; align-self: center; text-align: right; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; font-size: 10px; font-weight: 600; color: var(--edit); border: 1px solid var(--edit); border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: 1px; }
+.song h2 { font-size: 18px; margin: 0; }
+.song .sub { color: var(--text-2); margin: 2px 0 10px; }
+.totals { display: flex; flex-wrap: wrap; gap: 6px 18px; font-variant-numeric: tabular-nums; margin-bottom: 10px; }
+.totals b { font-weight: 650; }
+.totals .was { color: var(--muted); text-decoration: line-through; margin-right: 4px; font-weight: 400; }
+svg.mini { display: block; width: 100%; height: 56px; margin: 4px 0 10px; }
+svg.mini rect { fill: var(--bar-dim); } svg.mini rect.e { fill: var(--edit); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; padding: 6px; border-bottom: 1px solid var(--line); }
+td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
+th.n, td.n { text-align: right; }
+td input { width: 88px; text-align: right; border: 1px solid var(--line); background: var(--bg); border-radius: 7px; padding: 4px 6px; font-variant-numeric: tabular-nums; }
+tr.e td { background: var(--edit-bg); }
+tr.e input.ch { border-color: var(--edit); }
+.orig { font-size: 11px; color: var(--muted); }
+.add { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.add select { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 5px 8px; }
+.edits { margin-top: 16px; }
+.edits ul { list-style: none; padding: 0; margin: 6px 0 0; max-height: 260px; overflow: auto; }
+.edits li { display: flex; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.edits li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.edits li small { display: block; color: var(--text-2); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.status { font-size: 13px; color: var(--text-2); }
+.note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+@media (max-width: 800px) { .wrap { grid-template-columns: 1fr; } .list { max-height: 320px; } }
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Data editor</h1>
+  <span class="file" id="fileLabel">No file open</span>
+  <span class="spacer"></span>
+  <span class="status" id="status" role="status"></span>
+  <button class="btn" id="openBtn">Open project folder…</button>
+  <button class="btn primary" id="saveBtn" disabled>Save</button>
+</div>
+
+<div class="start card" id="start">
+  <h2>Edit the numbers in a stats data file</h2>
+  <p>Open the <b>Spotify-Stats</b> project folder. Pick the data file to edit, search for a song, and change its plays,
+    listening time or skips for any month. <b>Save</b> writes the data file and keeps your changes in a small file in
+    <code>edits/</code>, so they're applied again when you rebuild from a new Spotify export
+    (<code>python3 build.py … --edits edits/&lt;file&gt;.json</code>).</p>
+  <p class="small muted">Works in Chrome or Edge. In other browsers you can open the file directly; Save then downloads the two files for you to put in place.</p>
+  <p><button class="btn primary" id="openBtn2">Open project folder…</button> <button class="btn" id="openFileBtn">Open a data file…</button>
+    <input type="file" id="fileInput" accept=".js" hidden> <input type="file" id="editsInput" accept=".json" hidden></p>
+  <p id="pick" hidden></p>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div>
+    <div class="card">
+      <input id="q" type="search" placeholder="Search songs or artists…" autocomplete="off">
+      <ul class="list" id="list"></ul>
+    </div>
+    <div class="card edits">
+      <h2>Your edits <span class="muted" id="editCount"></span></h2>
+      <ul id="editList"></ul>
+      <p class="note">Edits change plays, time and skips everywhere they're counted: totals, top lists, the library, trends and skip stats. Day-by-day charts (calendar, time of day, daily listening) and devices come from separate day totals and don't change.</p>
+    </div>
+  </div>
+  <div class="card song" id="song"><p class="muted">Pick a song on the left.</p></div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const num = (n) => Math.round(n).toLocaleString();
+  const hrs = (s) => (s >= 3600 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`);
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const mLabel = (m) => `${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
+
+  let D = null, W = 9, fileName = '', dirHandle = null, fileHandle = null, editsHandle = null;
+  let base = new Map();   // "song|month" -> [plays, sec, skips] as in the file
+  let edits = new Map();  // "song|month" -> { plays, sec, skips }
+  let songTot = [];       // per song: [plays, sec] as in the file
+  let cur = null, dirty = false;
+
+  // ---------- open ----------
+  const parseData = (text) => {
+    const t = text.trim();
+    if (!t.startsWith('window.SPOTIFY=')) throw new Error("That isn't a stats data file (it should start with window.SPOTIFY=).");
+    return JSON.parse(t.slice('window.SPOTIFY='.length).replace(/;\s*$/, ''));
+  };
+  async function openFolder() {
+    if (!window.showDirectoryPicker) { $('fileInput').click(); return; }
+    try { dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); } catch { return; }
+    let web;
+    try { web = await dirHandle.getDirectoryHandle('web'); } catch { web = dirHandle; }
+    const found = [];
+    for await (const [name, h] of web.entries()) {
+      if (h.kind !== 'file' || !name.endsWith('.js')) continue;
+      const f = await h.getFile();
+      const head = await f.slice(0, 20).text();
+      if (head.startsWith('window.SPOTIFY=')) found.push({ name, h, size: f.size });
+    }
+    if (!found.length) { status('No data files found. Pick the Spotify-Stats folder (the one with web/ inside).'); return; }
+    found.sort((a, b) => b.size - a.size);
+    $('pick').hidden = false;
+    $('pick').innerHTML = `Data file: <select id="pickSel">${found.map((f, i) => `<option value="${i}">web/${esc(f.name)} (${(f.size / 1e6).toFixed(1)} MB)</option>`).join('')}</select> <button class="btn primary" id="pickGo">Edit this file</button>`;
+    $('pickGo').onclick = async () => {
+      const f = found[+$('pickSel').value];
+      fileHandle = f.h;
+      editsHandle = null;
+      let editsText = '';
+      try { // edits/<name>.json, if you've saved edits before (created on first save)
+        const ed = await dirHandle.getDirectoryHandle('edits');
+        editsText = await (await (await ed.getFileHandle(f.name.replace(/\.js$/, '.json'))).getFile()).text();
+      } catch { /* none yet */ }
+      load(await (await f.h.getFile()).text(), `web/${f.name}`, editsText);
+    };
+  }
+  function load(text, name, editsText) {
+    try { D = parseData(text); } catch (e) { status(e.message); return; }
+    W = D.cols || 9; fileName = name;
+    base = new Map(); songTot = D.songs.map(() => [0, 0]);
+    for (let i = 0; i < D.rows.length; i += W) {
+      const r = D.rows;
+      base.set(`${r[i]}|${D.months[r[i + 1]]}`, [r[i + 2], r[i + 3], r[i + 4]]);
+      songTot[r[i]][0] += r[i + 2]; songTot[r[i]][1] += r[i + 3];
+    }
+    edits = new Map();
+    let missed = 0;
+    if (editsText && editsText.trim()) {
+      try {
+        const byTrack = new Map(), byName = new Map();
+        D.songs.forEach((s, i) => { if (s[4]) byTrack.set(s[4], i); byName.set(`${s[0]}\n${D.artists[s[1]]}`, i); });
+        for (const e of JSON.parse(editsText).edits || []) {
+          const s = (e.track && byTrack.get(e.track)) ?? byName.get(`${e.song}\n${e.artist}`);
+          if (s === undefined || !D.months.includes(e.month)) { missed++; continue; }
+          const k = `${s}|${e.month}`;
+          if (Array.isArray(e.was)) { // the file already has this edit in it: show what it was before
+            const f = base.get(k) || [0, 0, 0];
+            songTot[s][0] += e.was[0] - f[0]; songTot[s][1] += e.was[1] - f[1];
+            if (e.was[0] || e.was[1]) base.set(k, e.was.slice(0, 3)); else base.delete(k);
+          }
+          edits.set(k, { plays: e.plays, sec: e.sec, skips: e.skips || 0 });
+        }
+      } catch { status("Couldn't read the saved edits file; starting with no edits."); }
+    }
+    $('start').hidden = true; $('app').hidden = false;
+    $('fileLabel').textContent = `${fileName} · ${num(D.songs.length)} songs, ${D.months.length} months` + (dirHandle ? '' : ' (Save will download)');
+    dirty = false; updateSave();
+    status(missed ? `${missed} saved edit(s) didn't match a song or month in this file.` : edits.size ? `Loaded ${edits.size} saved edit(s).` : '');
+    renderList(); renderEdits();
+  }
+  $('openBtn').onclick = $('openBtn2').onclick = openFolder;
+  $('openFileBtn').onclick = () => $('fileInput').click();
+  $('fileInput').onchange = async () => {
+    const f = $('fileInput').files[0]; if (!f) return;
+    const text = await f.text();
+    fileName = f.name;
+    $('editsInput').onchange = async () => { const e = $('editsInput').files[0]; load(text, f.name, e ? await e.text() : ''); };
+    if (confirm('Do you have a saved edits file for this data (edits/*.json)? OK to pick it, Cancel to start fresh.')) $('editsInput').click();
+    else load(text, f.name, '');
+  };
+
+  // ---------- current values (file + edits) ----------
+  const val = (s, m) => { const e = edits.get(`${s}|${m}`); if (e) return [e.plays, e.sec, e.skips]; return base.get(`${s}|${m}`) || [0, 0, 0]; };
+  function songNow(s) {
+    let p = songTot[s][0], t = songTot[s][1];
+    for (const [k, e] of edits) {
+      const [si, m] = k.split('|');
+      if (+si !== s) continue;
+      const b = base.get(k) || [0, 0, 0];
+      p += e.plays - b[0]; t += e.sec - b[1];
+    }
+    return [p, t];
+  }
+  const editedSongs = () => new Set([...edits.keys()].map((k) => +k.split('|')[0]));
+
+  // ---------- song list ----------
+  function renderList() {
+    const q = $('q').value.trim().toLowerCase(), ed = editedSongs();
+    let ids = D.songs.map((_, i) => i);
+    if (q) { const toks = q.split(/\s+/); ids = ids.filter((i) => { const h = `${D.songs[i][0]} ${D.artists[D.songs[i][1]]}`.toLowerCase(); return toks.every((t) => h.includes(t)); }); }
+    ids.sort((a, b) => songTot[b][1] - songTot[a][1]);
+    const shown = ids.slice(0, 200);
+    $('list').innerHTML = shown.map((i) => {
+      const [p, t] = songNow(i);
+      return `<li data-s="${i}" class="${i === cur ? 'on' : ''}"><span class="t">${esc(D.songs[i][0])}${ed.has(i) ? '<span class="badge">edited</span>' : ''}</span>
+        <span class="v">${num(p)} play${p === 1 ? '' : 's'}<br>${hrs(t)}</span><span class="a">${esc(D.artists[D.songs[i][1]])}</span></li>`;
+    }).join('') + (ids.length > shown.length ? `<li class="muted small" style="cursor:default">${num(ids.length - shown.length)} more: refine the search</li>` : '');
+  }
+  $('q').addEventListener('input', renderList);
+  $('list').addEventListener('click', (e) => { const li = e.target.closest('li[data-s]'); if (li) { cur = +li.dataset.s; renderList(); renderSong(); } });
+
+  // ---------- one song ----------
+  function renderSong() {
+    if (cur === null) return;
+    const s = cur, song = D.songs[s];
+    const months = D.months.filter((m) => base.has(`${s}|${m}`) || edits.has(`${s}|${m}`));
+    const [p0, t0] = songTot[s], [p1, t1] = songNow(s);
+    const max = Math.max(1, ...D.months.map((m) => val(s, m)[0]));
+    const bw = 600 / D.months.length;
+    const bars = D.months.map((m, i) => { const v = val(s, m)[0]; return v ? `<rect class="${edits.has(`${s}|${m}`) ? 'e' : ''}" x="${(i * bw).toFixed(1)}" width="${Math.max(1, bw - 0.6).toFixed(1)}" y="${(56 - (v / max) * 56).toFixed(1)}" height="${((v / max) * 56).toFixed(1)}"><title>${mLabel(m)}: ${v} plays</title></rect>` : ''; }).join('');
+    const free = D.months.filter((m) => !months.includes(m));
+    $('song').innerHTML = `
+      <h2>${esc(song[0])}</h2><p class="sub">${esc(D.artists[song[1]])}${song[2] ? ` · ${esc(song[2])}` : ''}</p>
+      <div class="totals"><span>Plays <b>${p1 !== p0 ? `<span class="was">${num(p0)}</span>` : ''}${num(p1)}</b></span><span>Listening time <b>${t1 !== t0 ? `<span class="was">${hrs(t0)}</span>` : ''}${hrs(t1)}</b></span></div>
+      <svg class="mini" viewBox="0 0 600 56" preserveAspectRatio="none">${bars}</svg>
+      <table><thead><tr><th>Month</th><th class="n">Plays</th><th class="n">Minutes</th><th class="n">Skips</th><th></th></tr></thead><tbody>
+      ${months.map((m) => { const k = `${s}|${m}`, [p, t, sk] = val(s, m), b = base.get(k), e = edits.has(k);
+        return `<tr data-m="${m}" class="${e ? 'e' : ''}"><td>${mLabel(m)}${e ? `<div class="orig">was ${b ? `${b[0]} plays · ${(b[1] / 60).toFixed(1)} min · ${b[2]} skips` : 'not played'}</div>` : ''}</td>
+          <td class="n"><input type="number" min="0" step="1" data-f="plays" value="${p}" class="${e && (!b || b[0] !== p) ? 'ch' : ''}"></td>
+          <td class="n"><input type="number" min="0" step="0.1" data-f="min" value="${(t / 60).toFixed(1)}" class="${e && (!b || b[1] !== t) ? 'ch' : ''}"></td>
+          <td class="n"><input type="number" min="0" step="1" data-f="skips" value="${sk}" class="${e && (!b || b[2] !== sk) ? 'ch' : ''}"></td>
+          <td>${e ? '<button class="btn small" data-reset>Undo</button>' : ''}</td></tr>`; }).join('')}
+      </tbody></table>
+      <div class="add"><span class="small muted">Add plays in another month:</span><select id="addMonth">${free.slice().reverse().map((m) => `<option>${m}</option>`).join('')}</select><button class="btn small" id="addGo">Add</button></div>
+      <p class="note">Changing plays also changes minutes at this song's usual minutes per play, unless you've typed the minutes yourself. Skips can't be more than plays.</p>`;
+  }
+  const typedMin = new Set(); // rows where minutes were typed by hand
+  $('song').addEventListener('change', (e) => {
+    const inp = e.target.closest('input[data-f]'); if (!inp) return;
+    const m = inp.closest('tr').dataset.m, k = `${cur}|${m}`, b = base.get(k) || [0, 0, 0];
+    let [p, t, sk] = val(cur, m);
+    const v = Math.max(0, Number(inp.value) || 0);
+    if (inp.dataset.f === 'plays') {
+      const np = Math.round(v);
+      if (!typedMin.has(k)) { const per = p ? t / p : (b[0] ? b[1] / b[0] : (D.songs[cur][3] || 200)); t = Math.round(per * np); }
+      p = np;
+    } else if (inp.dataset.f === 'min') { t = Math.round(v * 60); typedMin.add(k); }
+    else sk = Math.round(v);
+    sk = Math.min(sk, p);
+    if (b[0] === p && b[1] === t && b[2] === sk) edits.delete(k); else edits.set(k, { plays: p, sec: t, skips: sk });
+    changed();
+  });
+  $('song').addEventListener('click', (e) => {
+    if (e.target.closest('[data-reset]')) { const k = `${cur}|${e.target.closest('tr').dataset.m}`; edits.delete(k); typedMin.delete(k); changed(); }
+    if (e.target.id === 'addGo') { const m = $('addMonth').value; if (!m) return; const k = `${cur}|${m}`; const per = songTot[cur][0] ? songTot[cur][1] / songTot[cur][0] : (D.songs[cur][3] || 200); edits.set(k, { plays: 1, sec: Math.round(per), skips: 0 }); changed(); }
+  });
+  function changed() { dirty = true; updateSave(); renderSong(); renderList(); renderEdits(); }
+
+  // ---------- edits list ----------
+  function renderEdits() {
+    const list = [...edits].sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+    $('editCount').textContent = list.length ? `(${list.length})` : '';
+    $('editList').innerHTML = list.length ? list.map(([k, e]) => { const [s, m] = k.split('|'), b = base.get(k) || [0, 0, 0];
+      return `<li data-k="${k}"><span title="Open">${esc(D.songs[s][0])}<small>${mLabel(m)}: ${b[0]} → ${e.plays} plays · ${(b[1] / 60).toFixed(1)} → ${(e.sec / 60).toFixed(1)} min${b[2] !== e.skips ? ` · ${b[2]} → ${e.skips} skips` : ''}</small></span><button class="btn small" data-undo>Undo</button></li>`; }).join('')
+      : '<li class="muted small">None yet.</li>';
+  }
+  $('editList').addEventListener('click', (e) => {
+    const li = e.target.closest('li[data-k]'); if (!li) return;
+    if (e.target.closest('[data-undo]')) { edits.delete(li.dataset.k); typedMin.delete(li.dataset.k); changed(); return; }
+    cur = +li.dataset.k.split('|')[0]; renderList(); renderSong();
+  });
+
+  // ---------- save ----------
+  function editsJson() {
+    const out = [...edits].map(([k, e]) => { const [s, m] = k.split('|'), song = D.songs[s];
+      return { song: song[0], artist: D.artists[song[1]], track: song[4] || '', month: m, plays: e.plays, sec: e.sec, skips: e.skips, was: base.get(k) || [0, 0, 0] }; });
+    out.sort((a, b) => (a.artist + a.song + a.month).localeCompare(b.artist + b.song + b.month));
+    return JSON.stringify({ version: 1, note: 'Hand edits for the stats data file. Applied by tools/editor.html and build.py --edits.', edits: out }, null, 1) + '\n';
+  }
+  // Same rules as apply_edits() in build.py: absolute values, retention/skip sums scaled with plays/skips.
+  function applyEdits(data) {
+    const rows = data.rows.slice(), rnd = (x) => Math.floor(x + 0.5);
+    const at = new Map();
+    for (let i = 0; i < rows.length; i += W) at.set(`${rows[i]}|${rows[i + 1]}`, i);
+    const drop = new Set();
+    for (const [k, e] of edits) {
+      const [s, m] = k.split('|'), mi = data.months.indexOf(m);
+      const plays = Math.max(0, e.plays | 0), sec = Math.max(0, e.sec | 0), skips = Math.min(plays, Math.max(0, e.skips | 0));
+      let i = at.get(`${s}|${mi}`);
+      if (i === undefined) {
+        if (!plays && !sec) continue;
+        i = rows.length; at.set(`${s}|${mi}`, i); rows.push(+s, mi, 0, 0, 0, 0, 0, 0, 0);
+      }
+      const p0 = rows[i + 2], sk0 = rows[i + 4], rp = p0 ? plays / p0 : 0, rs = sk0 ? skips / sk0 : 0;
+      rows[i + 2] = plays; rows[i + 3] = sec; rows[i + 4] = skips;
+      rows[i + 5] = Math.min(plays, rnd(rows[i + 5] * rp)); rows[i + 6] = rnd(rows[i + 6] * rp);
+      rows[i + 7] = Math.min(skips, rnd(rows[i + 7] * rs)); rows[i + 8] = rnd(rows[i + 8] * rs);
+      if (!plays && !sec) drop.add(i); else drop.delete(i);
+    }
+    const chunks = [];
+    for (let i = 0; i < rows.length; i += W) if (!drop.has(i)) chunks.push(rows.slice(i, i + W));
+    chunks.sort((a, b) => a[1] - b[1]); // stable: keeps rows in month order
+    return { ...data, rows: chunks.flat() };
+  }
+  window.__applyEdits = (data, list) => { const save = edits; edits = new Map(list); try { return applyEdits(data); } finally { edits = save; } }; // for tests
+  async function save() {
+    const data = applyEdits(D);
+    const js = 'window.SPOTIFY=' + JSON.stringify(data) + ';\n', ej = editsJson();
+    status('Saving…');
+    try {
+      if (fileHandle && dirHandle) {
+        if (!editsHandle) editsHandle = await (await dirHandle.getDirectoryHandle('edits', { create: true })).getFileHandle(fileName.split('/').pop().replace(/\.js$/, '.json'), { create: true });
+        for (const [h, text] of [[editsHandle, ej], [fileHandle, js]]) { const w = await h.createWritable(); await w.write(text); await w.close(); }
+        status(`Saved ${fileName} (${(js.length / 1e6).toFixed(1)} MB) and edits/${fileName.split('/').pop().replace(/\.js$/, '.json')}.`);
+      } else {
+        for (const [name, text, type] of [[fileName.split('/').pop(), js, 'text/javascript'], [fileName.split('/').pop().replace(/\.js$/, '.json'), ej, 'application/json']]) {
+          const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        }
+        status('Downloaded both files. Put the .js in web/ and the .json in edits/.');
+      }
+      // what's saved is now the file's content
+      load(js, fileName, ej);
+    } catch (e) { status(`Couldn't save: ${e.message}`); }
+  }
+  $('saveBtn').onclick = save;
+  function updateSave() { $('saveBtn').disabled = !D || !dirty; }
+  function status(t) { $('status').textContent = t; }
+  window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+  document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); if (dirty) save(); } });
+})();
+</script>
+</body>
+</html>

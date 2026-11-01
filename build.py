@@ -66,6 +66,59 @@ def device(platform):
     return "Other"
 
 
+def load_edits(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f).get("edits", [])
+
+
+def apply_edits(data, edits):
+    """Set a song's plays / listening time / skips for a month, as edited in tools/editor.html.
+
+    The same rules live in tools/editor.html. Values are absolute, so applying twice changes nothing.
+    The retention and skip-point sums are scaled with plays and skips so averages stay the same.
+    """
+    W, rows, songs, artists = data["cols"], data["rows"], data["songs"], data["artists"]
+    by_track = {s[4]: i for i, s in enumerate(songs) if s[4]}
+    by_name = {(s[0], artists[s[1]]): i for i, s in enumerate(songs)}
+    month_ix = {m: i for i, m in enumerate(data["months"])}
+    at = {(rows[i], rows[i + 1]): i for i in range(0, len(rows), W)}
+    rnd = lambda x: int(x + 0.5)
+    applied = skipped = 0
+    drop = set()
+    for e in edits:
+        s = by_track.get(e.get("track") or "") if e.get("track") else None
+        if s is None:
+            s = by_name.get((e.get("song"), e.get("artist")))
+        m = month_ix.get(e.get("month"))
+        if s is None or m is None:
+            skipped += 1
+            continue
+        plays, sec = max(0, int(e["plays"])), max(0, int(e["sec"]))
+        skips = min(plays, max(0, int(e.get("skips", 0))))
+        i = at.get((s, m))
+        if i is None:
+            if plays == 0 and sec == 0:
+                applied += 1
+                continue
+            at[(s, m)] = i = len(rows)
+            rows += [s, m, 0, 0, 0, 0, 0, 0, 0]
+        p0, sk0 = rows[i + 2], rows[i + 4]
+        rp = plays / p0 if p0 else 0
+        rs = skips / sk0 if sk0 else 0
+        rows[i + 2], rows[i + 3], rows[i + 4] = plays, sec, skips
+        rows[i + 5] = min(plays, rnd(rows[i + 5] * rp)); rows[i + 6] = rnd(rows[i + 6] * rp)
+        rows[i + 7] = min(skips, rnd(rows[i + 7] * rs)); rows[i + 8] = rnd(rows[i + 8] * rs)
+        if plays == 0 and sec == 0:
+            drop.add(i)
+        else:
+            drop.discard(i)
+        applied += 1
+    chunks = [rows[i:i + W] for i in range(0, len(rows), W) if i not in drop]
+    chunks.sort(key=lambda r: r[1])  # keep rows in month order
+    data["rows"] = [x for r in chunks for x in r]
+    return applied, skipped
+
+
 SLOT_MIN = 15                 # minutes per slot in the day-by-time-of-day chart
 SLOTS = 24 * 60 // SLOT_MIN   # 96 slots per day
 SLOT_CHARS = "0123456789abcdef"  # minutes listened in a slot (0-15), one character each
@@ -77,6 +130,7 @@ def main():
     p.add_argument("--tz", default="America/Chicago", help="your time zone, for months, days and time of day")
     p.add_argument("--out", default=os.path.join(os.path.dirname(__file__), "web", "data.js"))
     p.add_argument("--name", default="", help="whose history this is, shown on the page (e.g. Evan)")
+    p.add_argument("--edits", help="hand edits to apply (a JSON file saved by tools/editor.html)")
     args = p.parse_args()
     tz = ZoneInfo(args.tz)
 
@@ -206,7 +260,10 @@ def main():
         "days": {"start": day0.isoformat(), "slotMin": SLOT_MIN, "sec": day_sec,
                  "heard": day_heard, "len": day_len, "slots": [encode(d) for d in slots]},
     }
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    if args.edits:
+        applied, skipped = apply_edits(data, load_edits(args.edits))
+        print(f"Applied {applied} hand edit(s) from {args.edits}" + (f"; {skipped} didn't match anything" if skipped else ""))
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:
         f.write("window.SPOTIFY=" + json.dumps(data, separators=(",", ":"), ensure_ascii=False) + ";\n")
 

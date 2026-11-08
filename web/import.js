@@ -149,6 +149,7 @@
     const daySec = new Array(nDays).fill(0), dayHeard = new Array(nDays).fill(0), dayLen = new Array(nDays).fill(0);
     const slots = new Array(nDays).fill(null);
     const howByMonth = {}; // month -> { dev: {device: sec}, start: [5 groups], shuf: [on, off], off: sec, priv: plays }
+    const artHow = new Map(); // artist -> plays per start group (5), plays on shuffle
     for (let i = 0; i < plays.length; i++) {
       if (i % 25000 === 0) { progress('Crunching numbers', 0.6 + (i / plays.length) * 0.35); await tick(); }
       const [key, start, ms, skipped, how] = plays[i];
@@ -162,6 +163,11 @@
       const [dev, sg, shuffle, offline, priv] = how;
       hm.dev[dev] = (hm.dev[dev] || 0) + Math.floor(ms / 1000);
       hm.start[sg] += 1;
+      const an = key.split('\u0000')[1];
+      let ah = artHow.get(an);
+      if (!ah) artHow.set(an, (ah = [0, 0, 0, 0, 0, 0]));
+      ah[sg] += 1;
+      if (shuffle) ah[5] += 1;
       if (shuffle !== null) hm.shuf[shuffle ? 0 : 1] += 1;
       if (offline) hm.off += Math.floor(ms / 1000);
       if (priv) hm.priv += 1;
@@ -213,6 +219,7 @@
     }
     return {
       months, artists, songs, cols: 9, rows, skipHist, playHist, how: howByMonth,
+      artHow: artists.flatMap((a) => artHow.get(a) || [0, 0, 0, 0, 0, 0]),
       days: { start: new Date(day0).toISOString().slice(0, 10), slotMin: SLOT_MIN, sec: daySec, heard: dayHeard, len: dayLen, slots: slots.map(encode) },
       _plays: plays.length,
     };

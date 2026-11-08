@@ -85,6 +85,7 @@ def apply_edits(data, edits):
     rnd = lambda x: int(x + 0.5)
     applied = skipped = 0
     drop = set()
+    before = artist_plays(data) if data.get("artHow") else None
     for e in edits:
         s = by_track.get(e.get("track") or "") if e.get("track") else None
         if s is None:
@@ -116,7 +117,24 @@ def apply_edits(data, edits):
     chunks = [rows[i:i + W] for i in range(0, len(rows), W) if i not in drop]
     chunks.sort(key=lambda r: r[1])  # keep rows in month order
     data["rows"] = [x for r in chunks for x in r]
+    # "how each artist gets played" counts scale with the artist's plays
+    ah = data.get("artHow")
+    if ah and before:
+        after = artist_plays(data)
+        for a, p0 in before.items():
+            p1 = after.get(a, 0)
+            if p1 != p0 and p0:
+                for k in range(6):
+                    ah[a * 6 + k] = rnd(ah[a * 6 + k] * p1 / p0)
     return applied, skipped
+
+
+def artist_plays(data):
+    W, rows, songs, out = data["cols"], data["rows"], data["songs"], {}
+    for i in range(0, len(rows), W):
+        a = songs[rows[i]][1]
+        out[a] = out.get(a, 0) + rows[i + 2]
+    return out
 
 
 SLOT_MIN = 15                 # minutes per slot in the day-by-time-of-day chart
@@ -188,6 +206,7 @@ def main():
     # month -> how you listened: seconds per device, plays per start group, [shuffle on, off] plays,
     # offline seconds, private-session plays
     how_by_month = {}
+    art_how = defaultdict(lambda: [0] * 6)      # artist -> plays per start group (5), plays on shuffle
     for skey, start, ms, skipped, how in plays:
         month = start.strftime("%Y-%m")
         t = totals[(*skey, month)]
@@ -200,8 +219,12 @@ def main():
         dev, sg, shuffle, offline, private = how
         hm["dev"][dev] = hm["dev"].get(dev, 0) + ms // 1000
         hm["start"][sg] += 1
+        ah = art_how[skey[1]]
+        ah[sg] += 1
         if shuffle is not None:
             hm["shuf"][0 if shuffle else 1] += 1
+        if shuffle:
+            ah[5] += 1
         if offline:
             hm["off"] += ms // 1000
         if private:
@@ -257,6 +280,7 @@ def main():
         "name": args.name,
         "months": months, "artists": artists, "songs": songs, "cols": 9, "rows": rows,
         "skipHist": dict(skip_hist), "playHist": dict(play_hist), "how": how_by_month,
+        "artHow": [x for a in artists for x in art_how[a]],
         "days": {"start": day0.isoformat(), "slotMin": SLOT_MIN, "sec": day_sec,
                  "heard": day_heard, "len": day_len, "slots": [encode(d) for d in slots]},
     }

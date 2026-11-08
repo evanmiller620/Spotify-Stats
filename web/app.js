@@ -1626,7 +1626,7 @@ document.addEventListener('pointerdown', (e) => {
 
 const L = {
   view: 'songs', q: '', artist: null, album: null, f: blankFilters(), timeUnit: 'min',
-  sort: 'sec', dir: -1, open: null, hidePlayer: false, cursor: -1,
+  sort: 'sec', dir: -1, open: null, cursor: -1,
 };
 
 // Monthly seconds for a list of songs (cached), used by sparklines and the detail chart.
@@ -1763,12 +1763,11 @@ function detail(r) {
     <svg class="dchart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${grid}${bars}</svg>
     <div class="dchart-years" aria-hidden="true">${axis}</div>
     <div class="actions">
-      ${D.songs[s][4] ? `<button class="embedbtn" data-embed="${s}" aria-expanded="${!L.hidePlayer}">${L.hidePlayer ? '▶ Show player' : 'Hide player'}</button>
-      <a class="spbtn" href="https://open.spotify.com/track/${D.songs[s][4]}" target="_blank" rel="noopener">Play on Spotify ↗</a>` : ''}
+      ${D.songs[s][4] ? `${plButton(D.songs[s][4])}
+      <a class="spbtn" href="https://open.spotify.com/track/${D.songs[s][4]}" target="_blank" rel="noopener">Open in Spotify ↗</a>` : ''}
       <button data-artist="${r.a}">All songs by ${esc(r.artist)}</button>
       ${r.album ? `<button data-album="${esc(`${r.a}|${r.album}`)}">Album: ${esc(r.album)}</button>` : ''}
-    </div>${D.songs[s][4] && !L.hidePlayer ? `<div class="embed"><div class="embed-slot" data-track="${D.songs[s][4]}"></div>
-      <p class="muted small">Starts a preview when you open a song. Press play in the player for the full song if you're signed into Spotify in this browser.</p></div>` : ''}
+    </div>
     </div></td></tr>`;
 }
 
@@ -1789,11 +1788,10 @@ function loadSpotifyApi() {
   }
   return spotifyApi;
 }
-// ----- One player for the whole page -----
-// The Spotify player lives outside the table, so it keeps playing when you close the song, search or
-// browse. While its song is open it sits exactly over the song's player slot; when you leave a playing
-// song it moves to a mini player in the corner (moving the box, never the iframe, so playback continues).
-const PL = { host: null, frame: null, ctrl: null, track: null, song: null, slot: null, mode: 'off', paused: true, started: false, plain: false };
+// ----- One player for the whole page: the mini player in the corner -----
+// Play on a song sends it there; it keeps playing while you close the song, search or browse.
+// Its own controls (Spotify's) plus the top-bar button and the song's Play button control it.
+const PL = { host: null, frame: null, ctrl: null, track: null, song: null, mode: 'off', paused: true, started: false, plain: false, wantPlay: false };
 function plHost() {
   if (PL.host) return PL.host;
   const h = document.createElement('div');
@@ -1813,48 +1811,37 @@ function plSongFor(track) { return D.songs.findIndex((x) => x[4] === track); }
 function plSetMode(mode) {
   PL.mode = mode;
   const h = plHost();
-  h.hidden = mode === 'off' || mode === 'hidden';
-  h.classList.toggle('slot', mode === 'slot');
+  h.hidden = mode !== 'dock';
   h.classList.toggle('dock', mode === 'dock');
-  if (mode !== 'slot') { h.style.cssText = ''; }
-  if (mode === 'slot') plFollow();
   if (PL.song !== null) h.querySelector('.pl-title').textContent = `${D.songs[PL.song][0]} · ${D.artists[D.songs[PL.song][1]]}`;
   plChip();
-}
-// keep the player box glued to the slot (the table scrolls inside its own box)
-let plRaf = 0;
-function plFollow() {
-  cancelAnimationFrame(plRaf);
-  if (PL.mode !== 'slot') return;
-  const slot = PL.slot;
-  if (!slot || !slot.isConnected) { plLeftSlot(); return; }
-  const r = slot.getBoundingClientRect(), w = $('tableWrap').getBoundingClientRect();
-  const headH = $('thead').getBoundingClientRect().height;
-  const top = Math.max(w.top + headH, 0), bottom = Math.min(w.bottom, innerHeight);
-  const h = PL.host, st = h.style;
-  st.left = `${r.left}px`; st.top = `${r.top}px`; st.width = `${r.width}px`;
-  const ct = Math.max(0, top - r.top), cb = Math.max(0, r.bottom - bottom);
-  st.clipPath = ct || cb ? `inset(${ct}px 0 ${cb}px 0)` : '';
-  st.visibility = ct + cb >= r.height || !r.width ? 'hidden' : '';
-  plRaf = requestAnimationFrame(plFollow);
-}
-// the song's panel closed or was redrawn: keep playing in the corner, or tuck the player away
-function plLeftSlot() {
-  PL.slot = null;
-  if (PL.ctrl && PL.started && !PL.paused) plSetMode('dock');
-  else if (PL.mode === 'slot') plSetMode(PL.plain ? 'off' : 'hidden');
-  if (PL.plain && PL.mode === 'off') { PL.frame.innerHTML = '<div></div>'; PL.track = null; }
 }
 function plStop() {
   try { PL.ctrl?.pause(); } catch { /* not ready */ }
   PL.paused = true;
-  plSetMode(PL.slot?.isConnected ? 'slot' : 'hidden');
+  if (PL.plain) { PL.frame.innerHTML = '<div></div>'; PL.track = null; } // a plain player can't be paused from here
+  plSetMode('hidden');
+}
+const plIsPlaying = (track) => PL.mode === 'dock' && PL.track === track && !PL.paused;
+// the Play / Pause button in a song's panel
+function plButton(track) {
+  const on = plIsPlaying(track);
+  return `<button class="playbtn${on ? ' on' : ''}" data-play="${track}" aria-label="${on ? 'Pause' : 'Play'}">${on ? '❚❚ Pause' : '▶ Play'}</button>`;
+}
+function plButtons() { // update in place, so a focused button keeps focus
+  document.querySelectorAll('#tbody [data-play]').forEach((b) => {
+    const on = plIsPlaying(b.dataset.play);
+    b.classList.toggle('on', on);
+    b.textContent = on ? '❚❚ Pause' : '▶ Play';
+    b.setAttribute('aria-label', on ? 'Pause' : 'Play');
+  });
 }
 // the play / pause chip in the top bar
 function plChip() {
+  plButtons();
   const b = $('jbPlay');
   if (!b) return;
-  const show = PL.ctrl && PL.started && PL.song !== null && PL.mode !== 'off' && PL.mode !== 'hidden';
+  const show = PL.ctrl && PL.started && PL.song !== null && PL.mode === 'dock';
   b.hidden = !show;
   if (!show) return;
   b.innerHTML = `<span class="jp-icon" aria-hidden="true">${PL.paused ? '▶' : '❚❚'}</span><span class="jp-name">${esc(D.songs[PL.song][0])}</span>`;
@@ -1863,41 +1850,28 @@ function plChip() {
 }
 $('jbPlay')?.addEventListener('click', () => { try { PL.ctrl?.togglePlay(); } catch { /* not ready */ } });
 
-// Put the player into the open song's panel. autoplay = the user just opened it.
-async function mountPlayer(autoplay) {
-  const slot = document.querySelector('#tbody .embed-slot');
-  if (!slot) { if (PL.mode === 'slot') plLeftSlot(); return; }
-  const id = slot.dataset.track;
-  const busy = PL.ctrl && PL.started && !PL.paused && PL.track !== id; // something else is playing
-  if (busy) { // don't cut off what's playing: offer to switch instead
-    if (PL.mode === 'slot') plLeftSlot();
-    slot.innerHTML = `<button class="pl-switch" type="button">▶ Play this song instead</button>`;
-    slot.classList.add('waiting');
-    slot.querySelector('button').addEventListener('click', () => { slot.innerHTML = ''; slot.classList.remove('waiting'); plAttach(slot, id, true); });
-    return;
-  }
-  plAttach(slot, id, autoplay);
-}
-async function plAttach(slot, id, play) {
+// Play a song in the corner player (or pause it if it's the one playing).
+async function plPlay(id) {
+  if (plIsPlaying(id) && PL.ctrl) { try { PL.ctrl.pause(); } catch { /* not ready */ } return; }
   plHost();
   const api = await loadSpotifyApi();
-  if (!slot.isConnected) return; // row was closed or re-drawn meanwhile
-  PL.slot = slot;
   PL.song = plSongFor(id);
-  if (!api) { // no controller API: a plain player that lives and dies with the panel
+  if (!api) { // no controller API: a plain player, press play inside it
     PL.plain = true;
     if (PL.track !== id) {
       PL.frame.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${id}?utm_source=generator" height="80"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Spotify player"></iframe>`;
       PL.track = id;
     }
-    plSetMode('slot');
+    plSetMode('dock');
     return;
   }
   if (!PL.ctrl) {
     PL.track = id;
-    PL.wantPlay = play;
-    plSetMode('slot');
+    PL.wantPlay = true;
+    plSetMode('dock');
+    if (PL.creating) return;
+    PL.creating = true;
     try {
       api.createController(PL.frame, { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (ctrl) => {
         PL.ctrl = ctrl;
@@ -1907,27 +1881,21 @@ async function plAttach(slot, id, play) {
           if (!PL.paused) PL.started = true;
           if (was !== PL.paused) plChip();
         });
-        if (PL.wantPlay) ctrl.addListener('ready', () => { try { ctrl.play(); } catch { /* browser blocked autoplay */ } });
+        ctrl.addListener('ready', () => { if (PL.wantPlay) { try { ctrl.play(); } catch { /* browser blocked autoplay */ } } });
       });
-    } catch { PL.ctrl = null; }
+    } catch { PL.ctrl = null; PL.creating = false; }
     return;
   }
   if (PL.track !== id) {
     PL.track = id; PL.started = false; PL.paused = true;
     try { PL.ctrl.loadUri(`spotify:track:${id}`); } catch { /* ignore */ }
-    if (play) setTimeout(() => { try { PL.ctrl.play(); } catch { /* blocked */ } }, 250);
-  } else if (play && PL.paused) {
-    try { PL.ctrl.play(); } catch { /* blocked */ }
+    plSetMode('dock');
+    setTimeout(() => { try { PL.ctrl.play(); } catch { /* blocked */ } }, 250);
+    return;
   }
-  plSetMode('slot');
+  plSetMode('dock');
+  try { PL.ctrl.play(); } catch { /* blocked */ }
 }
-// any change to the table (closing a song, searching, switching views) may remove the slot
-new MutationObserver(() => {
-  if (PL.mode !== 'slot' || PL.slot?.isConnected) return;
-  const again = document.querySelector('#tbody .embed-slot'); // same song redrawn: just follow the new slot
-  if (again && again.dataset.track === PL.track) { PL.slot = again; return; }
-  plLeftSlot();
-}).observe($('tbody'), { childList: true, subtree: true });
 
 let lastList = [], rendered = 0, maxSecShown = 1, curCols = [];
 const PAGE = 100; // rows added each time you scroll near the bottom
@@ -1985,7 +1953,6 @@ function renderTable() {
   L.cursor = -1;
   appendRows(PAGE);
   updatePanelCount();
-  mountPlayer(false);
   syncUrl();
   if (typeof onLibraryFiltersChanged === 'function') onLibraryFiltersChanged();
 }
@@ -2010,7 +1977,9 @@ const rowEl = (i) => $('tbody').querySelector(`tr.row[data-i="${i}"]`);
 
 // Open / close one song's detail without redrawing the table (keeps your place and the player).
 function closeOpen() {
-  $('tbody').querySelector('tr.detail')?.remove();
+  const d = $('tbody').querySelector('tr.detail');
+  if (d?.contains(document.activeElement)) $('tableWrap').focus({ preventScroll: true }); // keep the keyboard in the table
+  d?.remove();
   $('tbody').querySelector('tr.row.open')?.classList.remove('open');
   L.open = null;
 }
@@ -2023,24 +1992,13 @@ function toggleOpen(i) {
   closeOpen();
   if (wasOpen) return;
   L.open = r.id;
-  L.hidePlayer = false; // each newly opened song gets its player (and autoplay)
   const tr = rowEl(i);
   tr.classList.add('open');
   tr.insertAdjacentHTML('afterend', detail(r));
-  mountPlayer(true);
   // bring the song and its panel into view inside the table
   tr.nextElementSibling.scrollIntoView({ block: 'nearest' });
   tr.scrollIntoView({ block: 'nearest' });
 }
-function togglePlayer() {
-  const tr = $('tbody').querySelector('tr.row.open'), d = $('tbody').querySelector('tr.detail');
-  if (!tr || !d) return;
-  L.hidePlayer = !L.hidePlayer;
-  if (L.hidePlayer && PL.mode === 'slot') { try { PL.ctrl?.pause(); } catch { /* not ready */ } PL.paused = true; }
-  d.outerHTML = detail(lastList[+tr.dataset.i]);
-  if (!L.hidePlayer) mountPlayer(true);
-}
-
 // Keyboard cursor: up/down move, Enter opens.
 function setCursor(i) {
   if (!lastList.length) return;
@@ -2109,10 +2067,10 @@ document.addEventListener('keydown', (e) => {
 });
 $('library').addEventListener('click', (e) => {
   if (e.target.closest('a[href]')) return; // real links (Spotify) just open
-  const t = e.target.closest('[data-embed],[data-clear],[data-artist],[data-album],th,tr.row');
+  const t = e.target.closest('[data-play],[data-clear],[data-artist],[data-album],th,tr.row');
   if (!t) return;
-  if (t.dataset.embed) {
-    togglePlayer();
+  if (t.dataset.play) {
+    plPlay(t.dataset.play);
   } else if (t.dataset.clear) {
     const k = t.dataset.clear;
     if (k === 'all') { $('search').value = ''; setLib({ q: '', artist: null, album: null, f: blankFilters() }); }
@@ -2243,7 +2201,7 @@ function currentSection(ids) {
   return cur;
 }
 {
-  const ids = ['tiles', 'topCard', 'skipCard', 'distCards', 'clockCard', 'library'];
+  const ids = ['tiles', 'topCard', 'skipCard', 'distCards', 'clockCard', 'obsCard', 'library'];
   let raf = 0;
   const update = () => {
     raf = 0;
@@ -2401,6 +2359,7 @@ function renderAll() {
   renderClock();
   renderCalendar();
   renderRetention();
+  window.renderStories?.();
   renderTable();
   window.refreshSideLinks?.();
 }

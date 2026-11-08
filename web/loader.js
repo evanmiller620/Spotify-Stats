@@ -58,13 +58,19 @@ window.SpotifyStore = (() => {
   const shared = new URLSearchParams(location.search).get('s');
   (async () => {
     await load('cloud.js');
+    await load('spotify.js');
+    if (window.SpotifyAuth.isCallback()) { // back from Spotify's sign-in: save the playlist, then return
+      const msg = document.querySelector('.boot');
+      await window.SpotifyAuth.finish((t) => { if (msg) msg.textContent = t; });
+      return;
+    }
     if (shared) { // someone's shared link: show their stats
       const msg = document.querySelector('.boot');
       const got = await window.SpotifyCloud.fetch(shared.toLowerCase(), (i, n) => { if (msg) msg.textContent = `Loading shared stats… ${Math.round((i / n) * 100)}%`; });
       window.SPOTIFY = { ...got.data, name: got.name };
       window.SPOTIFY_SOURCE = { kind: 'shared', id: got.id, name: got.name, updated: got.updated };
       window.SpotifyCloud.addFriend(got.id, got.name);
-      await load('app.js'); await load('import.js'); await load('friends.js');
+      await load('app.js'); await load('stories.js'); await load('import.js'); await load('playlists.js'); await load('friends.js');
       return;
     }
     let mine = null;
@@ -77,7 +83,9 @@ window.SpotifyStore = (() => {
       window.SPOTIFY_SOURCE = { kind: 'default', own: !!v };
     }
     await load('app.js');
+    await load('stories.js');
     await load('import.js');
+    await load('playlists.js');
     await load('friends.js');
   })().catch((e) => {
     document.body.classList.remove('booting');

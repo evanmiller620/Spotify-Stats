@@ -17,7 +17,7 @@
   </button>
   <aside class="sidenav" id="sidenav" aria-label="Sections" hidden>
     <div class="sn-head"><b>Sections</b><button class="sn-close" id="sideClose" aria-label="Close sections">×</button></div>
-    <nav><p class="sn-group">Overview</p><a href="#tiles" data-side="tiles">Summary</a><a href="#timelineCard" data-side="timelineCard">Listening by month</a><a href="#topLists" data-side="topLists">Top artists & songs</a><a href="#spreadCard" data-side="spreadCard">Every artist</a><p class="sn-group">Trends</p><a href="#topCard" data-side="topCard">Top over time</a><a href="#newCard" data-side="newCard">New vs. familiar</a><p class="sn-group">Habits</p><a href="#skipCard" data-side="skipCard">Skips</a><a href="#distCards" data-side="distCards">Daily listening & plays</a><a href="#distCards2" data-side="distCards2">How much you hear</a><a href="#howCard" data-side="howCard">How you listen</a><p class="sn-group">When</p><a href="#clockCard" data-side="clockCard">Time of day</a><a href="#calCard" data-side="calCard">Calendar</a><a href="#retCard" data-side="retCard">Retention</a><p class="sn-group">Library</p><a href="#library" data-side="library">Your library</a></nav>
+    <nav><p class="sn-group">Overview</p><a href="#tiles" data-side="tiles">Summary</a><a href="#timelineCard" data-side="timelineCard">Listening by month</a><a href="#topLists" data-side="topLists">Top artists & songs</a><a href="#agoCard" data-side="agoCard">This month in past years</a><a href="#spreadCard" data-side="spreadCard">Every artist</a><p class="sn-group">Trends</p><a href="#topCard" data-side="topCard">Top over time</a><a href="#newCard" data-side="newCard">New vs. familiar</a><p class="sn-group">Habits</p><a href="#skipCard" data-side="skipCard">Skips</a><a href="#distCards" data-side="distCards">Daily listening & plays</a><a href="#distCards2" data-side="distCards2">How much you hear</a><a href="#howCard" data-side="howCard">How you listen</a><p class="sn-group">When</p><a href="#clockCard" data-side="clockCard">Time of day</a><a href="#calCard" data-side="calCard">Calendar</a><a href="#retCard" data-side="retCard">Retention</a><p class="sn-group">Stories</p><a href="#obsCard" data-side="obsCard">Obsessions</a><a href="#driftCard" data-side="driftCard">Taste drift</a><a href="#discCard" data-side="discCard">Discovery</a><a href="#streakCard" data-side="streakCard">Streaks & song length</a><a href="#loyalCard" data-side="loyalCard">Deep cuts & grew on you</a><a href="#pickCard" data-side="pickCard">How each artist gets played</a><p class="sn-group">Library</p><a href="#library" data-side="library">Your library</a></nav>
   </aside>
   <main>
     <div class="sourcebar" id="sourceBar" hidden></div>
@@ -34,7 +34,7 @@
       <b class="jb-title">Spotify Stats</b>
       <span class="jb-period" id="jbPeriod"></span>
       <span class="jb-links">
-        <a href="#tiles" data-jump="tiles">Overview</a><a href="#topCard" data-jump="topCard">Trends</a><a href="#skipCard" data-jump="skipCard">Skips</a><a href="#distCards" data-jump="distCards">Habits</a><a href="#clockCard" data-jump="clockCard">When</a><a href="#library" data-jump="library">Library</a>
+        <a href="#tiles" data-jump="tiles">Overview</a><a href="#topCard" data-jump="topCard">Trends</a><a href="#skipCard" data-jump="skipCard">Skips</a><a href="#distCards" data-jump="distCards">Habits</a><a href="#clockCard" data-jump="clockCard">When</a><a href="#obsCard" data-jump="obsCard">Stories</a><a href="#library" data-jump="library">Library</a>
       </span>
       <button class="ghost jb-play" id="jbPlay" type="button" hidden></button>
       <button class="ghost jb-reset" id="jbReset" hidden>All time</button>
@@ -63,6 +63,12 @@
         <ol class="toplist" id="topSongs"></ol>
       </section>
     </div>
+
+    <section class="card" id="agoCard" hidden>
+      <h2>This month in past years</h2>
+      <p class="muted small ago-sub"></p>
+      <div class="ago-cols"></div>
+    </section>
 
     <section class="card" id="spreadCard">
       <div class="top-head">
@@ -207,6 +213,64 @@
       <p class="muted small">Share of song time you actually heard: total time heard ÷ total length of the songs you started. Hours listened set the weight, so a light week can't swing it; hollow dots are light weeks or months.</p>
       <p class="muted small" id="retNote"></p>
       <svg class="ret" id="retChart" width="100%" height="260" role="img" aria-label="Retention over time"></svg>
+    </section>
+
+    <section class="card" id="obsCard" hidden>
+      <h2>Obsessions <span class="period muted"></span></h2>
+      <p class="muted small">Songs you binged: the most plays packed into one to three months, compared with the song's whole history.</p>
+      <ol class="obs-list"></ol>
+    </section>
+
+    <section class="card" id="driftCard" hidden>
+      <h2>Taste drift</h2>
+      <p class="muted small">How much of each year's listening went to the previous year's top 50 artists. Pick a year to see who came and went from your top 10.</p>
+      <div class="drift-bars"></div>
+      <div class="drift-detail"></div>
+    </section>
+
+    <section class="card" id="discCard" hidden>
+      <h2>Discovery <span class="period muted"></span></h2>
+      <p class="disc-sum"></p>
+      <div class="disc-chart"><div class="disc-bars"></div><div class="disc-axis"></div></div>
+      <div class="two-col disc-two">
+        <div><h3>Best finds</h3><ol class="st-list disc-best"></ol></div>
+        <div><h3>Do you keep what you find?</h3><p class="muted small">Share of each year's new artists you still played in the last 12 months.</p><div class="disc-keep"></div></div>
+      </div>
+    </section>
+
+    <div class="two-col">
+      <section class="card" id="streakCard" hidden>
+        <h2>Streaks <span class="period muted"></span></h2>
+        <div class="streak-tiles"></div>
+        <h3>Longest streaks</h3>
+        <ol class="streak-list"></ol>
+      </section>
+      <section class="card" id="lenCard" hidden>
+        <h2>Song length <span class="period muted"></span></h2>
+        <div class="len-body"></div>
+      </section>
+    </div>
+
+    <div class="two-col">
+      <section class="card" id="loyalCard" hidden>
+        <h2>Deep cuts vs. one-song artists <span class="period muted"></span></h2>
+        <p class="loyal-sum"></p>
+        <h3>Most songs played</h3><ol class="st-list loyal-deep"></ol>
+        <h3>The one song you play by them</h3><ol class="st-list loyal-one"></ol>
+      </section>
+      <section class="card" id="grewCard" hidden>
+        <h2>Grew on you, wore out</h2>
+        <p class="muted small grew-note"></p>
+        <h3>Grew on you</h3><ol class="st-list grew-up"></ol>
+        <h3>Wore out</h3><ol class="st-list grew-down"></ol>
+      </section>
+    </div>
+
+    <section class="card" id="pickCard" hidden>
+      <h2>How each artist gets played <span class="muted small">All time</span></h2>
+      <p class="pick-sum"></p>
+      <div class="pick-key"></div>
+      <div class="pick-rows"></div>
     </section>
 
     <section class="card" id="library">

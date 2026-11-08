@@ -315,7 +315,14 @@ tr.e input.ch { border-color: var(--edit); }
     const chunks = [];
     for (let i = 0; i < rows.length; i += W) if (!drop.has(i)) chunks.push(rows.slice(i, i + W));
     chunks.sort((a, b) => a[1] - b[1]); // stable: keeps rows in month order
-    return { ...data, rows: chunks.flat() };
+    const out = { ...data, rows: chunks.flat() };
+    if (data.artHow) { // "how each artist gets played" counts scale with the artist's plays
+      const plays = (rs) => { const m = new Map(); for (let i = 0; i < rs.length; i += W) { const a = data.songs[rs[i]][1]; m.set(a, (m.get(a) || 0) + rs[i + 2]); } return m; };
+      const before = plays(data.rows), after = plays(out.rows), ah = data.artHow.slice();
+      for (const [a, p0] of before) { const p1 = after.get(a) || 0; if (p1 !== p0 && p0) for (let k = 0; k < 6; k++) ah[a * 6 + k] = rnd(ah[a * 6 + k] * p1 / p0); }
+      out.artHow = ah;
+    }
+    return out;
   }
   window.__applyEdits = (data, list) => { const save = edits; edits = new Map(list); try { return applyEdits(data); } finally { edits = save; } }; // for tests
   async function save() {
@@ -332,7 +339,7 @@ tr.e input.ch { border-color: var(--edit); }
           const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
           setTimeout(() => URL.revokeObjectURL(a.href), 2000);
         }
-        status('Downloaded both files. Put the .js in web/ and the .json in edits/.');
+        status('Downloaded `th files. Put the .js in web/ and the .json in edits/.');
       }
       // what's saved is now the file's content
       load(js, fileName, ej);

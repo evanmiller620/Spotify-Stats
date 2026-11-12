@@ -70,7 +70,7 @@ window.SpotifyStore = (() => {
       window.SPOTIFY = { ...got.data, name: got.name };
       window.SPOTIFY_SOURCE = { kind: 'shared', id: got.id, name: got.name, updated: got.updated };
       window.SpotifyCloud.addFriend(got.id, got.name);
-      await load('app.js'); await load('stories.js'); await load('import.js'); await load('playlists.js'); await load('friends.js');
+      await load('app.js'); await load('stories.js'); await load('import.js'); await load('playlists.js'); await load('friends.js'); await load('english.js'); await load('guess.js');
       return;
     }
     let mine = null;
@@ -87,6 +87,8 @@ window.SpotifyStore = (() => {
     await load('import.js');
     await load('playlists.js');
     await load('friends.js');
+    await load('english.js');
+    await load('guess.js');
   })().catch((e) => {
     document.body.classList.remove('booting');
     const back = shared ? ` <a href="${location.pathname}">Go to the main page</a>` : '';

@@ -17,7 +17,7 @@
   </button>
   <aside class="sidenav" id="sidenav" aria-label="Sections" hidden>
     <div class="sn-head"><b>Sections</b><button class="sn-close" id="sideClose" aria-label="Close sections">×</button></div>
-    <nav><p class="sn-group">Overview</p><a href="#tiles" data-side="tiles">Summary</a><a href="#timelineCard" data-side="timelineCard">Listening by month</a><a href="#topLists" data-side="topLists">Top artists & songs</a><a href="#agoCard" data-side="agoCard">This month in past years</a><a href="#spreadCard" data-side="spreadCard">Every artist</a><p class="sn-group">Trends</p><a href="#topCard" data-side="topCard">Top over time</a><a href="#newCard" data-side="newCard">New vs. familiar</a><p class="sn-group">Habits</p><a href="#skipCard" data-side="skipCard">Skips</a><a href="#distCards" data-side="distCards">Daily listening & plays</a><a href="#distCards2" data-side="distCards2">How much you hear</a><a href="#howCard" data-side="howCard">How you listen</a><p class="sn-group">When</p><a href="#clockCard" data-side="clockCard">Time of day</a><a href="#calCard" data-side="calCard">Calendar</a><a href="#retCard" data-side="retCard">Retention</a><p class="sn-group">Stories</p><a href="#obsCard" data-side="obsCard">Obsessions</a><a href="#driftCard" data-side="driftCard">Taste drift</a><a href="#discCard" data-side="discCard">Discovery</a><a href="#streakCard" data-side="streakCard">Streaks & song length</a><a href="#loyalCard" data-side="loyalCard">Deep cuts & grew on you</a><a href="#pickCard" data-side="pickCard">How each artist gets played</a><p class="sn-group">Library</p><a href="#library" data-side="library">Your library</a></nav>
+    <nav id="sideLinks"></nav>
   </aside>
   <main>
     <div class="sourcebar" id="sourceBar" hidden></div>
@@ -29,20 +29,26 @@
       <nav id="years" aria-label="Choose a year"></nav>
     </header>
 
+    <div id="barAnchor"></div>
     <nav class="jumpbar" id="jumpbar" aria-label="Sections">
-      <button class="ghost jb-menu" id="jbMenu" aria-controls="sidenav" title="Sections"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 10h12M4 15h12"/></svg></button>
-      <b class="jb-title">Spotify Stats</b>
-      <span class="jb-period" id="jbPeriod"></span>
-      <span class="jb-links">
-        <a href="#tiles" data-jump="tiles">Overview</a><a href="#topCard" data-jump="topCard">Trends</a><a href="#skipCard" data-jump="skipCard">Skips</a><a href="#distCards" data-jump="distCards">Habits</a><a href="#clockCard" data-jump="clockCard">When</a><a href="#obsCard" data-jump="obsCard">Stories</a><a href="#library" data-jump="library">Library</a>
-      </span>
-      <button class="ghost jb-play" id="jbPlay" type="button" hidden></button>
-      <button class="ghost jb-reset" id="jbReset" hidden>All time</button>
+      <div class="jb-row">
+        <button class="ghost jb-menu" id="jbMenu" aria-controls="sidenav" title="All sections"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 10h12M4 15h12"/></svg></button>
+        <b class="jb-title">Spotify Stats</b>
+        <span class="jb-links" id="tabs" role="tablist" aria-label="Pages"></span>
+        <button class="ghost jb-play" id="jbPlay" type="button" hidden></button>
+        <span class="jb-period" role="group" aria-label="Period">
+          <button class="ghost jb-step" id="perPrev" type="button" title="Earlier period ( [ )" aria-label="Earlier period">‹</button>
+          <select id="jbPeriod" class="period-pick" aria-label="Period"></select>
+          <button class="ghost jb-step" id="perNext" type="button" title="Later period ( ] )" aria-label="Later period">›</button>
+        </span>
+      </div>
+      <div class="jb-sub" id="subnav" hidden></div>
     </nav>
 
-    <section class="tiles" id="tiles"></section>
+    <div class="pane" data-pane="overview" data-label="Overview">
+    <section class="tiles" id="tiles" data-nav="Summary"></section>
 
-    <section class="card" id="timelineCard">
+    <section class="card" id="timelineCard" data-nav="Listening by month">
       <div class="sel-head">
         <div>
           <h2>Listening time by month</h2>
@@ -53,7 +59,7 @@
       <div class="timeline" id="timeline" tabindex="0" role="group" aria-label="Monthly listening. Arrow keys move the selected period, Shift+arrows change its length, Esc selects all time."></div>
     </section>
 
-    <div class="two-col" id="topLists">
+    <div class="two-col" id="topLists" data-nav="Top artists &amp; songs">
       <section class="card">
         <div class="cardhead"><h2>Top artists <span class="period muted"></span></h2><button class="seeall" data-seeall="artists">See all →</button></div>
         <ol class="toplist" id="topArtists"></ol>
@@ -64,13 +70,22 @@
       </section>
     </div>
 
-    <section class="card" id="agoCard" hidden>
+    <section class="card" id="recCard" data-nav="Records &amp; milestones" hidden>
+      <h2>Records &amp; milestones <span class="period muted"></span></h2>
+      <p class="muted small">The biggest moments in this period. Click one to see it.</p>
+      <div class="rec-grid">
+        <div class="rec-tiles"></div>
+        <div><h3>Milestones</h3><ol class="rec-miles"></ol></div>
+      </div>
+    </section>
+
+    <section class="card" id="agoCard" data-nav="This month in past years" hidden>
       <h2>This month in past years</h2>
       <p class="muted small ago-sub"></p>
       <div class="ago-cols"></div>
     </section>
 
-    <section class="card" id="spreadCard">
+    <section class="card" id="spreadCard" data-nav="Every artist">
       <div class="top-head">
         <div>
           <h2><span id="spreadTitle">Every artist, by listening time</span> <span class="period muted"></span></h2>
@@ -89,7 +104,16 @@
       <p class="muted small" id="spreadEmpty" hidden>Nothing to show with these settings.</p>
     </section>
 
-    <section class="card" id="topCard">
+    </div>
+
+    <div class="pane" data-pane="trends" data-label="Trends" hidden>
+    <section class="card" id="yearsCard" data-nav="Year by year" hidden>
+      <h2>Year by year</h2>
+      <p class="muted small" id="yearsNote"></p>
+      <div class="yr-wrap"><table class="yr"><thead></thead><tbody></tbody></table></div>
+    </section>
+
+    <section class="card" id="topCard" data-nav="Top over time">
       <div class="top-head">
         <div>
           <h2><span id="topTitle">Top artists by listening time</span> <span class="period muted"></span></h2>
@@ -119,7 +143,7 @@
       <div class="rank" id="rankChart" hidden></div>
     </section>
 
-    <section class="card" id="newCard">
+    <section class="card" id="newCard" data-nav="New vs. familiar">
       <div class="sel-head">
         <div>
           <h2>New vs. familiar <span class="period muted"></span></h2>
@@ -130,7 +154,10 @@
       <div class="newv" id="newChart"></div>
     </section>
 
-    <div class="two-col" id="skipCard" hidden>
+    </div>
+
+    <div class="pane" data-pane="habits" data-label="Habits" hidden>
+    <div class="two-col" id="skipCard" data-nav="Skips" hidden>
       <section class="card">
         <h2>Where you skip <span class="period muted"></span></h2>
         <p class="muted small" id="skipNote"></p>
@@ -144,7 +171,7 @@
       </section>
     </div>
 
-    <div class="two-col" id="distCards" hidden>
+    <div class="two-col" id="distCards" data-nav="Daily listening &amp; plays" hidden>
       <section class="card">
         <h2>Daily listening <span class="period muted"></span></h2>
         <p class="muted small" id="distDaysNote"></p>
@@ -158,7 +185,7 @@
         <p class="muted small axis-note">How many times you played each song</p>
       </section>
     </div>
-    <div class="two-col" id="distCards2" hidden>
+    <div class="two-col" id="distCards2" data-nav="How much you hear" hidden>
       <section class="card">
         <h2>How much you hear <span class="period muted"></span></h2>
         <p class="muted small" id="distHeardNote"></p>
@@ -173,7 +200,7 @@
       </section>
     </div>
 
-    <section class="card" id="howCard" hidden>
+    <section class="card" id="howCard" data-nav="Devices &amp; how songs start" hidden>
       <h2>How you listen <span class="period muted"></span></h2>
       <p class="muted small" id="howNote"></p>
       <div class="how-grid">
@@ -182,7 +209,10 @@
       </div>
     </section>
 
-    <section class="card" id="clockCard" hidden>
+    </div>
+
+    <div class="pane" data-pane="when" data-label="When" hidden>
+    <section class="card" id="clockCard" data-nav="Time of day" hidden>
       <div class="sel-head">
         <div>
           <h2>When you listen <span class="period muted"></span></h2>
@@ -197,7 +227,19 @@
       </div>
     </section>
 
-    <section class="card" id="calCard" hidden>
+    <section class="card" id="rhythmCard" data-nav="Your week" hidden>
+      <div class="sel-head">
+        <div>
+          <h2>Your week <span class="period muted"></span></h2>
+          <p class="muted small" id="rhythmNote"></p>
+        </div>
+        <div class="legend" aria-hidden="true"><span>less</span><i></i><span id="rhythmMax"></span></div>
+      </div>
+      <div class="rhythm" id="rhythm" role="img" aria-label="Average listening by day of the week and hour"></div>
+      <p class="muted small axis-note">Average minutes listened in each hour, by day of the week</p>
+    </section>
+
+    <section class="card" id="calCard" data-nav="Calendar" hidden>
       <div class="sel-head">
         <div>
           <h2>Listening calendar <span class="period muted"></span></h2>
@@ -208,27 +250,30 @@
       <div class="calendar" id="calendar"></div>
     </section>
 
-    <section class="card" id="retCard" hidden>
+    <section class="card" id="retCard" data-nav="Retention" hidden>
       <h2>Retention over time <span class="period muted"></span></h2>
       <p class="muted small">Share of song time you actually heard: total time heard ÷ total length of the songs you started. Hours listened set the weight, so a light week can't swing it; hollow dots are light weeks or months.</p>
       <p class="muted small" id="retNote"></p>
       <svg class="ret" id="retChart" width="100%" height="260" role="img" aria-label="Retention over time"></svg>
     </section>
 
-    <section class="card" id="obsCard" hidden>
+    </div>
+
+    <div class="pane" data-pane="stories" data-label="Stories" hidden>
+    <section class="card" id="obsCard" data-nav="Obsessions" hidden>
       <h2>Obsessions <span class="period muted"></span></h2>
       <p class="muted small">Songs you binged: the most plays packed into one to three months, compared with the song's whole history.</p>
       <ol class="obs-list"></ol>
     </section>
 
-    <section class="card" id="driftCard" hidden>
+    <section class="card" id="driftCard" data-nav="Taste drift" hidden>
       <h2>Taste drift</h2>
       <p class="muted small">How much of each year's listening went to the previous year's top 50 artists. Pick a year to see who came and went from your top 10.</p>
       <div class="drift-bars"></div>
       <div class="drift-detail"></div>
     </section>
 
-    <section class="card" id="discCard" hidden>
+    <section class="card" id="discCard" data-nav="Discovery" hidden>
       <h2>Discovery <span class="period muted"></span></h2>
       <p class="disc-sum"></p>
       <div class="disc-chart"><div class="disc-bars"></div><div class="disc-axis"></div></div>
@@ -238,7 +283,7 @@
       </div>
     </section>
 
-    <div class="two-col">
+    <div class="two-col" id="streakRow" data-nav="Streaks &amp; song length">
       <section class="card" id="streakCard" hidden>
         <h2>Streaks <span class="period muted"></span></h2>
         <div class="streak-tiles"></div>
@@ -251,7 +296,7 @@
       </section>
     </div>
 
-    <div class="two-col">
+    <div class="two-col" id="loyalRow" data-nav="Deep cuts &amp; grew on you">
       <section class="card" id="loyalCard" hidden>
         <h2>Deep cuts vs. one-song artists <span class="period muted"></span></h2>
         <p class="loyal-sum"></p>
@@ -266,13 +311,29 @@
       </section>
     </div>
 
-    <section class="card" id="pickCard" hidden>
+    <div class="two-col" id="backRow" data-nav="Comebacks &amp; forgotten">
+      <section class="card" id="backCard" hidden>
+        <h2>Comebacks <span class="period muted"></span></h2>
+        <p class="muted small">Songs you came back to in this period after a year or more without playing them.</p>
+        <ol class="st-list back-list"></ol>
+      </section>
+      <section class="card" id="lostCard" hidden>
+        <h2>Forgotten favorites <span class="period muted"></span></h2>
+        <p class="muted small lost-note"></p>
+        <ol class="st-list lost-list"></ol>
+      </section>
+    </div>
+
+    <section class="card" id="pickCard" data-nav="How each artist gets played" hidden>
       <h2>How each artist gets played <span class="muted small">All time</span></h2>
       <p class="pick-sum"></p>
       <div class="pick-key"></div>
       <div class="pick-rows"></div>
     </section>
 
+    </div>
+
+    <div class="pane" data-pane="library" data-label="Library" hidden>
     <section class="card" id="library">
       <div class="lib-head">
         <div>
@@ -317,10 +378,23 @@
       </div>
       <div class="lib-foot">
         <span class="muted small" id="count"></span>
-        <span class="keys muted small" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search · <kbd>F</kbd> full screen · <kbd>Esc</kbd> close</span>
+        <span class="keys muted small" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>/</kbd> search · <kbd>F</kbd> full screen · <kbd>Esc</kbd> close · <kbd>1</kbd>–<kbd>7</kbd> pages</span>
         <button class="ghost" id="toTop" hidden>↑ Top</button>
       </div>
     </section>
+    </div>
+
+    <div class="pane" data-pane="guess" data-label="Guess" hidden>
+    <section class="card gg" id="guessCard" data-nav="Guess the song">
+      <div id="guessBody"></div>
+      <!-- the player sits under a cover until the answer is shown -->
+      <div class="gg-stage" id="ggStage" hidden>
+        <div class="gg-embed"><div id="ggFrame"></div></div>
+        <div class="gg-cover" id="ggCover"></div>
+      </div>
+      <div id="guessFoot"></div>
+    </section>
+    </div>
   </main>
 
   <div class="tip" id="tip" hidden></div>

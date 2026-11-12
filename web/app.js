@@ -216,8 +216,7 @@ function renderSelection() {
   $('selLabel').textContent = isAll() ? `All time · ${monthsCount(state.range)}` : `${rangeLabel(state.range)} · ${monthsCount(state.range)}`;
   $('selReset').hidden = isAll();
   for (const el of document.querySelectorAll('.period')) el.textContent = rangeLabel(state.range);
-  $('jbPeriod').textContent = isAll() ? `All time · ${monthsCount(state.range)}` : `${rangeLabel(state.range)} · ${monthsCount(state.range)}`;
-  $('jbReset').hidden = isAll();
+  renderPeriodPicker();
 }
 
 // Drag across the chart to pick months; a plain click picks one month.
@@ -833,16 +832,23 @@ tooltip($('retChart'), '.hit', (el) => {
   return `<b>${esc(b.label)}</b><br>` + (b.ret === null ? 'No length data' : `${pct(b.ret)} of song time heard`) + `<br>${hours(b.sec)} listened`;
 });
 
-// Re-draw the canvas/SVG charts when their width changes.
+// Charts that are drawn to a measured width, per page. They're redrawn when the page is shown
+// (a hidden page has no width) and when the window changes width.
+const REDRAW = {
+  overview: () => { declutter($('timeline').querySelectorAll('.bar b')); renderSpread(); },
+  trends: () => { if (TOP.view === 'lines') renderRank(); else drawRace(TOP.t, true); renderNew(); },
+  when: () => { renderClock(); renderCalendar(); renderRetention(); },
+};
 if (window.ResizeObserver) {
   let rz = 0, lastW = 0;
+  const main = document.querySelector('main');
   new ResizeObserver(() => {
-    const w = $('clockPlot').clientWidth;
-    if (w === lastW) return;
+    const w = main.clientWidth;
+    if (!w || w === lastW) return;
     lastW = w;
     cancelAnimationFrame(rz);
-    rz = requestAnimationFrame(() => { declutter($('timeline').querySelectorAll('.bar b')); renderClock(); renderRetention(); if (TOP.view === 'lines') renderRank(); else drawRace(TOP.t, true); renderNew(); renderCalendar(); renderSpread(); });
-  }).observe($('clockPlot'));
+    rz = requestAnimationFrame(() => REDRAW[tab]?.());
+  }).observe(main);
 }
 // Colors come from CSS, so redraw the canvas when the light/dark theme flips.
 window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => { renderClock(); drawSpread(); });
@@ -2011,15 +2017,32 @@ function setCursor(i) {
   tr.scrollIntoView({ block: 'nearest' });
 }
 
-// Period picker inside the library (handy in full screen, where the chart isn't visible).
+// Period pickers: one in the top bar (always in reach), one inside the library (handy in full screen).
+const LAST12 = N > 12 ? [N - 12, N - 1] : null;
 function renderPeriodPicker() {
-  const sel = $('libPeriod'), r = state.range;
-  const opts = [['all', 'All time'], ...years.map((y) => [y, y])];
-  const match = isAll() ? 'all' : years.find((y) => sameRange(r, yearRange(y)));
-  sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('') +
+  const r = state.range;
+  const opts = [['all', 'All time'], ...(LAST12 ? [['l12', 'Last 12 months']] : []), ...years.map((y) => [y, y]).reverse()];
+  const match = isAll() ? 'all' : years.find((y) => sameRange(r, yearRange(y))) || (LAST12 && sameRange(r, LAST12) ? 'l12' : null);
+  const html = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('') +
     (match ? '' : `<option value="custom">${esc(rangeLabel(r))}</option>`);
-  sel.value = match || 'custom';
+  for (const id of ['libPeriod', 'jbPeriod']) { $(id).innerHTML = html; $(id).value = match || 'custom'; }
+  $('perPrev').disabled = !stepRange(-1);
+  $('perNext').disabled = !stepRange(1);
 }
+function pickPeriod(v) {
+  if (v !== 'custom') setRange(v === 'all' ? [0, N - 1] : v === 'l12' ? LAST12 : yearRange(v));
+}
+// The period before / after the selected one: the neighbouring year, or the same number of months along.
+function stepRange(dir) {
+  const [a, b] = state.range;
+  if (isAll()) return null;
+  const y = monthYear[a];
+  if (sameRange([a, b], yearRange(y))) { const next = years[years.indexOf(y) + dir]; return next ? yearRange(next) : null; }
+  const len = b - a + 1;
+  const na = Math.max(0, Math.min(N - len, a + dir * len));
+  return na === a ? null : [na, na + len - 1];
+}
+function stepPeriod(dir) { const r = stepRange(dir); if (r) setRange(r); }
 
 // Full screen: the library fills the screen; header and filters stay put, the table scrolls.
 function setFocusMode(on) {
@@ -2030,6 +2053,7 @@ function setFocusMode(on) {
   $('libFull').querySelector('span').textContent = on ? 'Exit full screen' : 'Full screen';
   const lib = $('library');
   // the whole page goes full screen (the library fills it), so the mini player can stay on top
+  if (on) showTab('library', { scroll: false });
   if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
   if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
   if (on) $('tableWrap').focus({ preventScroll: true });
@@ -2042,7 +2066,11 @@ function setLib(patch) {
   renderTable();
   if ('view' in patch && panel.classList.contains('open')) renderPanel();
 }
-function libraryFocus() { if (!document.body.classList.contains('lib-focus')) $('library').scrollIntoView({ behavior: 'smooth' }); }
+function libraryFocus() {
+  if (document.body.classList.contains('lib-focus')) return;
+  if (tab !== 'library') showTab('library'); // from another page: Back returns to where you were
+  else $('library').scrollIntoView({ behavior: 'smooth' });
+}
 // Jumps from elsewhere on the page clear the library filters, so the thing you clicked is always shown.
 function librarySearch(text) { $('search').value = text; setLib({ q: text, view: 'songs', artist: null, album: null, f: blankFilters() }); libraryFocus(); }
 function libraryArtistFresh(a) { $('search').value = ''; setLib({ artist: a, album: null, q: '', view: 'songs', f: blankFilters() }); libraryFocus(); }
@@ -2063,7 +2091,7 @@ $('search').addEventListener('input', (e) => {
 });
 $('search').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.target.value = ''; setLib({ q: '' }); e.target.blur(); } });
 document.addEventListener('keydown', (e) => {
-  if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $('search').focus(); }
+  if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); showTab('library'); $('search').focus(); }
 });
 $('library').addEventListener('click', (e) => {
   if (e.target.closest('a[href]')) return; // real links (Spotify) just open
@@ -2109,10 +2137,10 @@ new IntersectionObserver((entries) => {
 $('tableWrap').addEventListener('scroll', () => { $('toTop').hidden = $('tableWrap').scrollTop < 600; }, { passive: true });
 $('toTop').addEventListener('click', () => $('tableWrap').scrollTo({ top: 0, behavior: $('tableWrap').scrollTop > 3000 ? 'instant' : 'smooth' }));
 $('libFull').addEventListener('click', () => setFocusMode(!document.body.classList.contains('lib-focus')));
-$('libPeriod').addEventListener('change', (e) => {
-  const v = e.target.value;
-  if (v !== 'custom') setRange(v === 'all' ? [0, N - 1] : yearRange(v));
-});
+$('libPeriod').addEventListener('change', (e) => pickPeriod(e.target.value));
+$('jbPeriod').addEventListener('change', (e) => { pickPeriod(e.target.value); e.target.blur(); });
+$('perPrev').addEventListener('click', () => stepPeriod(-1));
+$('perNext').addEventListener('click', () => stepPeriod(1));
 
 // Keyboard: up/down (or j/k) move · Enter opens · Esc closes / leaves full screen · F full screen · / search
 document.addEventListener('keydown', (e) => {
@@ -2184,34 +2212,84 @@ document.addEventListener('pointerdown', (e) => {
 // a real scroll (not the nudge a tap can cause) dismisses it
 window.addEventListener('scroll', () => { if (tipTouched && Math.abs(scrollY - tipScrollY) > 40) { $('tip').hidden = true; tipTouched = false; } }, { passive: true });
 
-// ---------- sticky section bar ----------
-new IntersectionObserver(([e]) => $('jumpbar').classList.toggle('stuck', !e.isIntersecting), { rootMargin: '-1px 0px 0px 0px' })
-  .observe(document.querySelector('header'));
-$('jumpbar').addEventListener('click', (e) => {
-  const a = e.target.closest('[data-jump]');
-  if (!a) return;
-  e.preventDefault(); // keep the # for the library's filters
-  $(a.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' });
-});
-$('jbReset').addEventListener('click', () => setRange([0, N - 1]));
-// highlight the section you're in
-function currentSection(ids) {
-  let cur = ids[0];
-  for (const id of ids) { const el = $(id); if (el && !el.hidden && el.getBoundingClientRect().top <= 140) cur = id; }
-  return cur;
+// ---------- pages ----------
+// The cards are grouped into pages (Overview, Trends, …); the bar at the top switches between them
+// and stays in reach while you scroll. Under it: the sections of the page you're on.
+// Both, and the sidebar, are built from the page itself: .pane[data-pane][data-label] > [data-nav].
+const PANES = [...document.querySelectorAll('.pane')];
+const TABS = PANES.map((p) => p.dataset.pane);
+let tab = TABS[0];
+const paneOf = (t) => PANES[TABS.indexOf(t)];
+const navEls = (pane) => [...pane.querySelectorAll('[data-nav]')];
+// a section this data doesn't have is hidden (for a pair of cards: both are)
+const navShown = (el) => !el.hidden && (!el.classList.contains('two-col') || [...el.children].some((c) => !c.hidden));
+
+$('tabs').innerHTML = PANES.map((p, i) =>
+  `<button type="button" role="tab" data-tab="${p.dataset.pane}" title="${p.dataset.label} (press ${i + 1})">${p.dataset.label}</button>`).join('');
+$('sideLinks').innerHTML = PANES.map((p) => `<p class="sn-group"><a href="#" data-tab="${p.dataset.pane}">${p.dataset.label}</a></p>` +
+  navEls(p).map((el) => `<a href="#${el.id}" data-side="${el.id}">${el.dataset.nav}</a>`).join('')).join('');
+
+function renderSubnav() {
+  const els = navEls(paneOf(tab)).filter(navShown);
+  $('subnav').hidden = els.length < 2;
+  $('subnav').innerHTML = els.map((el) => `<a href="#${el.id}" data-side="${el.id}">${el.dataset.nav}</a>`).join('');
+  updateHere();
+}
+function showTab(t, { scroll = true, redraw = true } = {}) {
+  if (!TABS.includes(t) || paneOf(t).dataset.empty) return;
+  const changed = t !== tab;
+  tab = t;
+  document.body.dataset.page = t;
+  PANES.forEach((p) => { p.hidden = p.dataset.pane !== t; });
+  document.querySelectorAll('#tabs [data-tab]').forEach((b) => {
+    const on = b.dataset.tab === t;
+    b.classList.toggle('here', on); b.setAttribute('aria-selected', on);
+    if (on && changed) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  });
+  if (changed && t !== 'trends') racePlay(false);
+  if (changed && redraw) REDRAW[t]?.();
+  renderSubnav();
+  if (changed && scroll) { // start the new page at its top, just under the bar
+    const top = $('barAnchor').getBoundingClientRect().top + scrollY;
+    if (scrollY > top) scrollTo(0, top);
+  }
+  if (changed) syncUrl();
+}
+// Go to a section, on whichever page it lives.
+function goSection(id) {
+  const el = $(id), pane = el?.closest('.pane');
+  if (!pane) return;
+  showTab(pane.dataset.pane, { scroll: false });
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// highlight the section you're looking at
+function updateHere() {
+  let cur = null;
+  for (const el of navEls(paneOf(tab))) if (navShown(el) && (cur === null || el.getBoundingClientRect().top <= 150)) cur = el.id;
+  document.querySelectorAll('#subnav a, #sideLinks a[data-side]').forEach((a) => a.classList.toggle('here', a.dataset.side === cur));
+  document.querySelectorAll('#sideLinks a[data-tab]').forEach((a) => a.classList.toggle('here', a.dataset.tab === tab));
 }
 {
-  const ids = ['tiles', 'topCard', 'skipCard', 'distCards', 'clockCard', 'obsCard', 'library'];
   let raf = 0;
-  const update = () => {
-    raf = 0;
-    const cur = currentSection(ids);
-    document.querySelectorAll('.jb-links a').forEach((a) => a.classList.toggle('here', a.dataset.jump === cur));
-    window.updateSideHere?.();
-  };
+  const update = () => { raf = 0; updateHere(); };
   addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
   addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(update); });
 }
+new IntersectionObserver(([e]) => $('jumpbar').classList.toggle('stuck', !e.isIntersecting), { rootMargin: '-1px 0px 0px 0px' })
+  .observe($('barAnchor'));
+$('jumpbar').addEventListener('click', (e) => {
+  const t = e.target.closest('a[data-tab], button[data-tab]'), a = e.target.closest('[data-side]');
+  if (t) showTab(t.dataset.tab);
+  else if (a) { e.preventDefault(); goSection(a.dataset.side); } // keep the # for the library's filters
+});
+// Keys: 1-6 switch pages, [ and ] step to the period before / after.
+document.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+  if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) || panel.classList.contains('open')) return;
+  if (document.body.classList.contains('lib-focus') || document.body.classList.contains('friends-mode')) return;
+  if (e.key >= '1' && e.key <= String(TABS.length)) { e.preventDefault(); showTab(TABS[+e.key - 1]); }
+  else if (e.key === '[' || e.key === ']') { e.preventDefault(); stepPeriod(e.key === '[' ? -1 : 1); }
+});
 // "See all" on the top lists opens the full list in the library
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-seeall]');
@@ -2221,12 +2299,12 @@ document.addEventListener('click', (e) => {
   libraryFocus();
 });
 
-// ---------- sidebar: every section, toggled from the tab on the left or the top bar ----------
+// ---------- sidebar: every section of every page, toggled from the tab on the left or the top bar ----------
 const SIDE_KEY = 'spotifyStats.sidebar';
 const sideDocked = () => matchMedia('(min-width: 1480px)').matches; // wide screens: sits in the margin
 function setSide(open, remember = true) {
   $('sidenav').hidden = !open;
-  if (open) window.updateSideHere?.();
+  if (open) updateHere();
   document.body.classList.toggle('side-open', open);
   $('sideTab').setAttribute('aria-expanded', open);
   $('jbMenu').setAttribute('aria-expanded', open);
@@ -2236,10 +2314,10 @@ $('sideTab').addEventListener('click', () => setSide($('sidenav').hidden));
 $('jbMenu').addEventListener('click', () => setSide($('sidenav').hidden));
 $('sideClose').addEventListener('click', () => setSide(false));
 $('sidenav').addEventListener('click', (e) => {
-  const a = e.target.closest('[data-side]');
-  if (!a) return;
+  const t = e.target.closest('a[data-tab], button[data-tab]'), a = e.target.closest('[data-side]');
+  if (!t && !a) return;
   e.preventDefault(); // keep the # for the library's filters
-  $(a.dataset.side).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (t) showTab(t.dataset.tab); else goSection(a.dataset.side);
   if (!sideDocked()) setSide(false, false); // on smaller screens get out of the way
 });
 document.addEventListener('keydown', (e) => {
@@ -2252,14 +2330,19 @@ document.addEventListener('pointerdown', (e) => { // tap outside closes it when 
   let saved = null;
   try { saved = localStorage.getItem(SIDE_KEY); } catch { /* storage off */ }
   if (saved === '1' && sideDocked()) setSide(true, false); // reopen on wide screens only
-  // highlight the section you're looking at; hide links to sections this data doesn't have
-  const links = [...document.querySelectorAll('#sidenav [data-side]')];
-  window.updateSideHere = () => {
-    if ($('sidenav').hidden) return;
-    const cur = currentSection(links.map((a) => a.dataset.side));
-    links.forEach((a) => a.classList.toggle('here', a.dataset.side === cur));
+  // hide links to sections this data doesn't have
+  const links = [...document.querySelectorAll('#sideLinks [data-side]')];
+  window.refreshSideLinks = () => {
+    links.forEach((a) => { const el = $(a.dataset.side); a.hidden = !el || !navShown(el); });
+    // a page with nothing on it for this data (e.g. no day-by-day history) drops out of the bar
+    if (window.renderStories) PANES.forEach((p) => { // (once stories.js has drawn its cards)
+      const els = navEls(p), empty = els.length > 0 && !els.some(navShown);
+      p.dataset.empty = empty ? '1' : '';
+      document.querySelectorAll(`[data-tab="${p.dataset.pane}"]`).forEach((b) => { (b.closest('.sn-group') || b).hidden = empty; });
+    });
+    if (paneOf(tab).dataset.empty) showTab(TABS[0]);
+    renderSubnav();
   };
-  window.refreshSideLinks = () => links.forEach((a) => { const el = $(a.dataset.side); a.hidden = !el || el.hidden; });
 }
 
 // ---------- address bar: every filter change becomes a history step ----------
@@ -2269,6 +2352,7 @@ document.addEventListener('pointerdown', (e) => { // tap outside closes it when 
 const URL_TEXT = { songText: 'st', artistText: 'at', albumText: 'alt', exclude: 'x' };
 function stateToHash() {
   const P = new URLSearchParams();
+  if (tab !== TABS[0]) P.set('t', tab);
   if (!isAll()) P.set('p', `${D.months[state.range[0]]}~${D.months[state.range[1]]}`);
   if (L.view !== 'songs') P.set('v', L.view);
   if (L.q) P.set('q', L.q);
@@ -2312,7 +2396,7 @@ function hashToState(hash) {
   const sortKey = sortRaw.replace(/-$/, '');
   const view = ['songs', 'artists', 'albums'].includes(P.get('v')) ? P.get('v') : 'songs';
   return {
-    range,
+    range, tab: TABS.includes(P.get('t')) ? P.get('t') : TABS[0],
     lib: {
       view, q: P.get('q') || '', f,
       artist: ar, album: alba !== null && P.has('alb') ? `${alba}|${P.get('alb')}` : null,
@@ -2323,7 +2407,7 @@ function hashToState(hash) {
 }
 
 let urlTimer = 0, restoringUrl = false;
-// Called after every library render. Waits until you pause (typing, sliders) so one change = one Back step.
+// Called after every library render and page switch. Waits until you pause (typing, sliders) so one change = one Back step.
 function syncUrl() {
   if (restoringUrl) return;
   clearTimeout(urlTimer);
@@ -2334,10 +2418,11 @@ function syncUrl() {
   }, 450);
 }
 function applyHash() {
-  const { range, lib } = hashToState(location.hash);
+  const { range, lib, tab: t } = hashToState(location.hash);
   restoringUrl = true;
   Object.assign(L, lib, { open: null });
   $('search').value = L.q;
+  showTab(t, { scroll: false, redraw: false }); // setRange draws everything, with this page visible
   setRange(range);
   if (panel.classList.contains('open')) renderPanel();
   restoringUrl = false;

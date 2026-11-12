@@ -58,15 +58,34 @@ Saving needs a (free) Spotify developer app, and the site has to be opened from 
 People sign in with Spotify the first time they save; after that it saves straight away. Playlists are
 created as private.
 
+## Getting around
+
+The stats are split into six pages: **Overview, Trends, Habits, When, Stories, Library**. The bar at the
+top stays in reach while you scroll and holds:
+
+- the pages (or press `1`–`6`), and under them the sections of the page you're on (click to jump;
+  the one you're looking at is highlighted);
+- the period: a picker (all time, last 12 months, any year) and ‹ › to step to the period before or
+  after (or press `[` and `]`). Every page follows it.
+
+☰ opens the list of every section on every page. The page you're on is kept in the address, so Back and
+Forward move between pages, and clicking a song or artist anywhere opens it in the Library (Back returns).
+
 ## What's on the page
 
 - Listening time per month: drag across it to pick any period; everything below follows.
 - Top artists and songs; top artists over time (rank lines per year / quarter / month).
+- Records & milestones: biggest day, longest sitting (quarter-hours in a row that were at least half music),
+  biggest month, the most-replayed song in one month, an artist's biggest month, and the dates you passed
+  round numbers of hours and plays (plus when the next one is due at your last 12 months' pace).
+- Year by year: each year's listening, hours a day, top artist and song, songs, new artists,
+  how much went to the year's 10 biggest artists, and skip rate. Click a year to select it.
 - New vs. familiar: each month's listening split into songs new to you and songs you already knew.
 - Skips: where in a song you skip, most-skipped songs.
 - Distributions: daily listening, plays per song, how much of each song you hear, song lengths.
 - How you listen: devices, how songs started (picked / autoplayed / skipped to), shuffle, offline, private sessions.
 - When you listen: every day of the period against time of day, in 15-minute blocks.
+- Your week: average minutes listened in each hour of each day of the week.
 - Listening calendar: day-by-day grid per year, streaks, biggest day.
 - Retention over time: share of song time actually heard, weighted by hours listened.
 - This month in past years: your top songs in this month 1, 3 and 5 years ago.
@@ -78,6 +97,8 @@ created as private.
   - Song length: share of plays by song length, and how often you skip songs of each length.
   - Deep cuts vs. one-song artists: artists you've played the most songs by, and the one song you play by others.
   - Grew on you / wore out: songs whose skip rate fell or rose a lot between their early and later plays.
+  - Comebacks: songs you returned to after a year or more away (8+ plays before, 10+ in the six months after).
+    Forgotten favorites: your most-played songs of the period with no plays in the last 12 months.
   - How each artist gets played: picked, autoplayed or skipped to, and how much on shuffle (all time).
 - Your library: search, a filter panel (ranges for plays, time, skip rate, avg heard, dates…),
   saved presets, songs / artists / albums views, CSV export, full screen, keyboard navigation.
@@ -126,8 +147,9 @@ don't change. In other browsers the editor opens a single file and Save download
 | `tools/editor.html` | Edit plays / time / skips in a data file; saves the file and `edits/<file>.json` |
 | `edits/` | Hand edits, re-applied with `build.py --edits` |
 | `web/index.html`, `web/style.css` | The page |
+| `web/stories.js` | Stories, plus records & milestones, year by year, your week |
 | `web/loader.js` | Uses data loaded in this browser if there is any, otherwise `data.js`; then starts the app |
-| `web/app.js` | All charts, the library table and filters |
+| `web/app.js` | The pages and top bar, all charts, the library table and filters |
 | `web/import.js` | Load-your-own-data: unzip + process in the browser, store it locally |
 | `web/cloud.js` | Sharing: uploads/downloads shared stats through the Supabase functions |
 | `web/friends.js` | The Friends view (share link, friends, group compare) and the top of a friend's shared page |

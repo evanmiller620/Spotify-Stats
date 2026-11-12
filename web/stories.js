@@ -1,5 +1,6 @@
 // Stories: extra views of the same data. Obsessions, taste drift, discovery, streaks, song length,
-// loyalty, songs that grew on you, how each artist gets played, and this month in past years.
+// loyalty, songs that grew on you, comebacks, how each artist gets played, this month in past years,
+// and the cards that sit on other pages: records & milestones, year by year, your week.
 // Uses app.js's data and helpers (D, R, W, N, agg, state, …); renderStories() runs with renderAll().
 (() => {
   const S = {}; // cached all-time work
@@ -299,8 +300,230 @@
       <span class="pick-s" title="Plays on shuffle">${pct(r.shuf)} <small class="muted">shuffle</small></span></div>`).join('');
   }
 
+  // ---------- records & milestones ----------
+  const HOUR_MARKS = [100, 500, 1000, 2500, 5000, 7500, 10000, 15000, 20000, 30000, 50000];
+  const PLAY_MARKS = [10000, 50000, 100000, 250000, 500000, 1000000];
+  // when each round number was passed: [{ at: day index, label, when }], all time
+  function milestones() {
+    if (S.miles) return S.miles;
+    const out = [];
+    let acc = 0, k = 0;
+    if (DD) {
+      for (let d = 0; d < NDAYS && k < HOUR_MARKS.length; d++) {
+        acc += DD.sec[d];
+        while (k < HOUR_MARKS.length && acc >= HOUR_MARKS[k] * 3600) out.push({ at: d, label: `${num(HOUR_MARKS[k++])} hours`, when: fmtDay(d) });
+      }
+    } else {
+      for (let m = 0; m < N && k < HOUR_MARKS.length; m++) {
+        acc += monthTotals[m].sec;
+        while (k < HOUR_MARKS.length && acc >= HOUR_MARKS[k] * 3600) out.push({ at: monthDay[m + 1] - 1, label: `${num(HOUR_MARKS[k++])} hours`, when: mLab(m) });
+      }
+    }
+    const totalSec = monthTotals.reduce((t, x) => t + x.sec, 0);
+    const nextHours = HOUR_MARKS.find((h) => h * 3600 > totalSec);
+    acc = 0; k = 0;
+    for (let m = 0; m < N && k < PLAY_MARKS.length; m++) {
+      acc += monthTotals[m].plays;
+      while (k < PLAY_MARKS.length && acc >= PLAY_MARKS[k]) out.push({ at: monthDay[m + 1] - 1.5, label: `${num(PLAY_MARKS[k++])} plays`, when: mLab(m) });
+    }
+    out.sort((x, y) => x.at - y.at);
+    // the next one, at the pace of the last 12 months
+    let next = null;
+    const pace = monthTotals.slice(-12).reduce((t, x) => t + x.sec, 0) / Math.min(12, N);
+    if (nextHours && pace > 0) {
+      const months = Math.ceil((nextHours * 3600 - totalSec) / pace);
+      if (months <= 120) {
+        const [y, mo] = D.months[N - 1].split('-').map(Number), t = y * 12 + (mo - 1) + months;
+        next = { label: `${num(nextHours)} hours`, when: `around ${MONTHS[t % 12]} ${Math.floor(t / 12)}` };
+      }
+    }
+    return (S.miles = { list: out, next });
+  }
+  function renderRecords() {
+    const [a, b] = state.range, card = show('recCard', true);
+    const tiles = []; // [label, value, sub, action]
+    // one song in one month, one artist in one month
+    let bestRow = -1;
+    const artMonth = new Map();
+    for (let i = 0; i < R.length; i += W) {
+      const m = R[i + 1];
+      if (m < a || m > b) continue;
+      if (bestRow < 0 || R[i + 2] > R[bestRow + 2]) bestRow = i;
+      const key = artistOf(R[i]) * N + m;
+      artMonth.set(key, (artMonth.get(key) || 0) + R[i + 3]);
+    }
+    if (DD) {
+      const [d0, d1] = dayRange(state.range);
+      if (d1 >= d0) {
+        let big = d0;
+        for (let d = d0; d <= d1; d++) if (DD.sec[d] > DD.sec[big]) big = d;
+        tiles.push(['Biggest day', hm(DD.sec[big]), fmtDay(big, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }), 'go:calCard']);
+        // longest sitting: quarter-hours in a row that were at least half music
+        const half = DD.slotMin / 2;
+        let run = 0, mins = 0, best = { mins: 0, start: 0 };
+        for (let j = d0 * SLOTS, end = (d1 + 1) * SLOTS; j <= end; j++) {
+          const v = j < end ? slotMin[j] : 0;
+          if (v >= half) { run++; mins += v; } else { if (mins > best.mins) best = { mins, start: j - run }; run = 0; mins = 0; }
+        }
+        if (best.mins >= 30) {
+          const d = Math.floor(best.start / SLOTS);
+          tiles.push(['Longest sitting', hm(best.mins * 60), `${fmtDay(d)}, from ${clockLabel((best.start % SLOTS) * DD.slotMin)}`, 'go:clockCard']);
+        }
+      }
+    }
+    if (b > a) {
+      let m = a;
+      for (let i = a; i <= b; i++) if (monthTotals[i].sec > monthTotals[m].sec) m = i;
+      tiles.push(['Biggest month', hours(monthTotals[m].sec), mLab(m), `month:${m}`]);
+    }
+    if (bestRow >= 0) {
+      const sng = R[bestRow];
+      tiles.push(['Most replayed in a month', D.songs[sng][0], `${plural(R[bestRow + 2], 'play')} in ${mLab(R[bestRow + 1])} · ${D.artists[artistOf(sng)]}`, `song:${sng}`]);
+    }
+    let am = null;
+    for (const [key, sec] of artMonth) if (!am || sec > am[1]) am = [key, sec];
+    if (am) {
+      const ar = Math.floor(am[0] / N), m = am[0] % N;
+      tiles.push(['Biggest month for one artist', D.artists[ar], `${hours(am[1])} in ${mLab(m)}`, `artist:${ar}`]);
+    }
+    const perMonth = new Array(N).fill(0);
+    artistFirst.forEach((m) => { if (m < N) perMonth[m]++; });
+    let nm = -1;
+    for (let m = Math.max(a, 1); m <= b; m++) if (nm < 0 || perMonth[m] > perMonth[nm]) nm = m; // month 0 is everything you'd heard before
+    if (nm >= 0 && perMonth[nm] > 0 && b > a) tiles.push(['Most new artists in a month', plural(perMonth[nm], 'new artist'), mLab(nm), `month:${nm}`]);
+    card.querySelector('.rec-tiles').innerHTML = tiles.map(([l, v, sub, act]) =>
+      `<button type="button" data-rec="${act}"><span>${l}</span><b>${esc(v)}</b><small>${esc(sub)}</small></button>`).join('');
+    // milestones passed in this period
+    const { list, next } = milestones();
+    const lo = monthDay[a], hi = monthDay[b + 1] - 1;
+    const mine = list.filter((x) => x.at >= lo && x.at <= hi).slice(-8);
+    card.querySelector('.rec-miles').innerHTML = (mine.map((x) => `<li><b>${x.label}</b><small class="muted">${x.when}</small></li>`).join('')
+      + (next && b === N - 1 ? `<li class="next" title="At the pace of your last 12 months"><span>${next.label}</span><small>${next.when}</small></li>` : ''))
+      || '<li class="next"><span>No round numbers passed in this period.</span></li>';
+  }
+
+  // ---------- year by year ----------
+  function yearTable() {
+    if (S.ytab) return S.ytab;
+    const by = new Map(years.map((y) => [y, { y, sec: 0, plays: 0, skips: 0, tp: 0, songs: new Map(), fresh: 0 }]));
+    for (let i = 0; i < R.length; i += W) {
+      const m = R[i + 1], e = by.get(monthYear[m]);
+      e.sec += R[i + 3]; e.plays += R[i + 2];
+      if (tracked[m]) { e.tp += R[i + 2]; e.skips += R[i + 4] || 0; }
+      e.songs.set(R[i], (e.songs.get(R[i]) || 0) + R[i + 3]);
+    }
+    artistFirst.forEach((m) => { if (m > 0 && m < N) by.get(monthYear[m]).fresh++; });
+    const YA = new Map(yearArtists().map((Y) => [Y.y, Y]));
+    const out = years.map((y) => {
+      const e = by.get(y), Y = YA.get(y), [a, b] = yearRange(y);
+      let topSong = -1, best = 0;
+      for (const [sng, sec] of e.songs) if (sec > best) { best = sec; topSong = sng; }
+      const days = monthDay[b + 1] - monthDay[a];
+      return {
+        y, a, b, sec: e.sec, plays: e.plays, perDay: e.sec / days, part: b - a + 1 < 12, fresh: a === 0 ? null : e.fresh,
+        skip: e.tp ? e.skips / e.tp : null, nSongs: e.songs.size, topSong,
+        topArtist: Y?.top[0] ?? -1, topShare: Y && Y.top.length ? Y.m.get(Y.top[0]) / Y.total : 0,
+        top10: Y ? Y.top.reduce((t, ar) => t + Y.m.get(ar), 0) / Y.total : 0,
+      };
+    });
+    return (S.ytab = out.reverse());
+  }
+  function renderYearTable() {
+    const card = show('yearsCard', years.length > 1);
+    if (years.length < 2) return;
+    const rows = yearTable(), max = Math.max(...rows.map((r) => r.sec), 1);
+    const span = (r) => (r.part ? `<small class="muted">${mShort(r.a)}–${mShort(r.b)}</small>` : '');
+    card.querySelector('thead').innerHTML = `<tr><th>Year</th><th>Listening</th><th class="num">A day</th><th>Top artist</th><th>Top song</th>
+      <th class="num" title="Different songs played">Songs</th><th class="num" title="Artists you played for the first time">New artists</th>
+      <th class="num" title="Share of the year's listening that went to its 10 biggest artists">Top 10 share</th><th class="num">Skipped</th></tr>`;
+    card.querySelector('tbody').innerHTML = rows.map((r) => `<tr data-year="${r.y}" class="${r.part ? 'part' : ''}${sameRange(state.range, [r.a, r.b]) ? ' on' : ''}" tabindex="0">
+      <td class="yr-y">${r.y}${span(r)}</td>
+      <td class="yr-h"><span>${hours(r.sec)}</span><i style="width:${((r.sec / max) * 90).toFixed(1)}px"></i></td>
+      <td class="num">${hm(r.perDay)}</td>
+      <td>${r.topArtist >= 0 ? `${esc(D.artists[r.topArtist])} <small>${pct(r.topShare)}</small>` : '—'}</td>
+      <td>${r.topSong >= 0 ? `${esc(D.songs[r.topSong][0])} <small>${esc(D.artists[artistOf(r.topSong)])}</small>` : '—'}</td>
+      <td class="num">${num(r.nSongs)}</td>
+      <td class="num">${r.fresh === null ? '—' : num(r.fresh)}</td>
+      <td class="num">${pct(r.top10)}</td>
+      <td class="num">${r.skip === null ? '—' : pct(r.skip)}</td></tr>`).join('');
+    $('yearsNote').textContent = `Each year side by side. Click a year to look at just that year, on every page${rows.some((r) => r.part) ? '; lighter bars are part years' : ''}.`;
+  }
+
+  // ---------- your week: day of week x hour ----------
+  const DAY_NAMES = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
+  function renderRhythm() {
+    const card = show('rhythmCard', !!DD);
+    if (!DD) return;
+    const [d0, d1] = dayRange(state.range);
+    const acc = Array.from({ length: 7 }, () => new Float64Array(24)), wdN = new Array(7).fill(0), wdSec = new Array(7).fill(0);
+    for (let d = d0; d <= d1; d++) {
+      const w = (dayDate(d).getUTCDay() + 6) % 7; // Monday = 0
+      wdN[w]++; wdSec[w] += DD.sec[d];
+      for (let j = 0; j < SLOTS; j++) { const v = slotMin[d * SLOTS + j]; if (v) acc[w][Math.floor((j * DD.slotMin) / 60)] += v; }
+    }
+    let max = 0, peak = [0, 0], total = 0, night = 0;
+    const byHour = new Float64Array(24);
+    acc.forEach((row, w) => row.forEach((v, h) => {
+      const avg = wdN[w] ? v / wdN[w] : 0;
+      row[h] = avg; total += v; byHour[h] += v; if (h < 6) night += v;
+      if (avg > max) { max = avg; peak = [w, h]; }
+    }));
+    if (!(max > 0)) { card.hidden = true; return; }
+    const hourName = (h) => clockLabel(h * 60), hourSpan = (h) => `${hourName(h)}–${hourName((h + 1) % 24)}`;
+    let html = '<span></span>' + [0, 6, 12, 18].map((h) => `<span class="rh-h" style="grid-column: span 6">${hourName(h)}</span>`).join('');
+    acc.forEach((row, w) => {
+      html += `<span class="rh-d">${DAYS[w]}</span>`;
+      row.forEach((v, h) => {
+        html += `<i class="rh-c"${v >= 0.05 ? ` style="background:rgba(var(--heat), ${(0.1 + 0.9 * (v / max)).toFixed(3)})"` : ''} data-tip="${esc(`<b>${DAY_NAMES[w]}, ${hourSpan(h)}</b><br>${v >= 0.5 ? `${Math.round(v)} min on average` : v > 0 ? 'under a minute on average' : 'No listening'}`)}"></i>`;
+      });
+    });
+    $('rhythm').innerHTML = html;
+    $('rhythmMax').textContent = `${Math.round(max)} min an hour`;
+    const avgDay = (ws) => { const n = ws.reduce((t, w) => t + wdN[w], 0); return n ? ws.reduce((t, w) => t + wdSec[w], 0) / n : 0; };
+    let topHour = 0; byHour.forEach((v, h) => { if (v > byHour[topHour]) topHour = h; });
+    $('rhythmNote').innerHTML = `Busiest: <b>${DAY_NAMES[peak[0]]}, ${hourSpan(peak[1])}</b> · most listening overall around <b>${hourName(topHour)}</b>`
+      + ` · weekdays ${hm(avgDay([0, 1, 2, 3, 4]))} a day, weekends ${hm(avgDay([5, 6]))} · ${pct(night / total)} of it between midnight and 6am`;
+  }
+
+  // ---------- comebacks & forgotten favorites ----------
+  function comebacks() {
+    if (S.back) return S.back;
+    const out = [];
+    songRows().forEach((rows, s) => {
+      let before = 0, best = null;
+      for (let i = 0; i < rows.length; i++) {
+        const gap = i ? rows[i][0] - rows[i - 1][0] - 1 : 0;
+        if (gap >= 12 && before >= 8) {
+          let soon = 0, since = 0;
+          for (let j = i; j < rows.length; j++) { since += rows[j][1]; if (rows[j][0] - rows[i][0] < 6) soon += rows[j][1]; }
+          if (soon >= 10 && (!best || soon > best.soon)) best = { s, at: rows[i][0], gap, before, soon, since };
+        }
+        before += rows[i][1];
+      }
+      if (best) out.push(best);
+    });
+    return (S.back = out.sort((x, y) => y.soon - x.soon));
+  }
+  const away = (months) => (months < 24 ? `${months} months` : `${(months / 12).toFixed(1).replace(/\.0$/, '')} years`);
+  function renderComebacks() {
+    const [a, b] = state.range, long = N > 15;
+    const back = show('backCard', long), lost = show('lostCard', long);
+    if (!long) return;
+    const list = comebacks().filter((c) => c.at >= a && c.at <= b).slice(0, 7);
+    back.querySelector('.back-list').innerHTML = list.map((c) => `<li data-song="${c.s}"><span><span>${songName(c.s)}</span>
+        <span class="sub">back in ${mLab(c.at)} after ${away(c.gap)} away</span></span><small class="muted">${plural(c.since, 'play')} since</small></li>`).join('')
+      || '<li class="muted small">No comebacks in this period.</li>';
+    const gone = [];
+    for (const [s, v] of agg.songs) if (v[0] >= 15 && songLast[s] < N - 12) gone.push([s, v[0]]);
+    gone.sort((x, y) => y[1] - x[1]);
+    lost.querySelector('.lost-note').textContent = `Your most-played songs ${isAll() ? '' : 'of this period '}that you haven't played once in the last 12 months.`;
+    lost.querySelector('.lost-list').innerHTML = gone.slice(0, 7).map(([s, plays]) => `<li data-song="${s}"><span><span>${songName(s)}</span>
+        <span class="sub">last played ${mLab(songLast[s])}</span></span><small class="muted">${plural(plays, 'play')}</small></li>`).join('')
+      || '<li class="muted small">None: you still play your favorites from this period.</li>';
+  }
+
   // ---------- interactions ----------
-  const ids = ['agoCard', 'obsCard', 'driftCard', 'discCard', 'streakCard', 'lenCard', 'loyalCard', 'grewCard', 'pickCard'];
+  const ids = ['agoCard', 'obsCard', 'driftCard', 'discCard', 'streakCard', 'lenCard', 'loyalCard', 'grewCard', 'pickCard', 'recCard', 'yearsCard', 'rhythmCard', 'backCard', 'lostCard'];
   for (const id of ids) {
     const el = $(id);
     if (!el) continue;
@@ -308,13 +531,25 @@
     el.addEventListener('click', (e) => {
       const y = e.target.closest('[data-year]');
       if (y && id === 'driftCard') { driftYear = y.dataset.year; renderDrift(); return; }
+      if (y && id === 'yearsCard') { setRange(sameRange(state.range, yearRange(y.dataset.year)) ? [0, N - 1] : yearRange(y.dataset.year)); return; }
+      const rec = e.target.closest('[data-rec]');
+      if (rec) {
+        const [kind, v] = rec.dataset.rec.split(':');
+        if (kind === 'go') goSection(v);
+        else if (kind === 'month') setRange([+v, +v]);
+        else if (kind === 'song') librarySearch(D.songs[+v][0]);
+        else if (kind === 'artist') libraryArtistFresh(+v);
+        return;
+      }
       const s = e.target.closest('[data-song]'), a = e.target.closest('[data-artist]');
       if (s) librarySearch(D.songs[+s.dataset.song][0]);
       else if (a) libraryArtistFresh(+a.dataset.artist);
     });
   }
+  $('yearsCard').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('tr[data-year]')) e.target.click(); });
   window.renderStories = () => {
-    renderAgo(); renderObsessions(); renderDrift(); renderDiscovery(); renderStreaks(); renderLength(); renderLoyalty(); renderGrew(); renderPick();
+    renderRecords(); renderAgo(); renderYearTable(); renderRhythm();
+    renderObsessions(); renderDrift(); renderDiscovery(); renderStreaks(); renderLength(); renderLoyalty(); renderGrew(); renderComebacks(); renderPick();
   };
   window.renderStories();
   window.refreshSideLinks?.();

@@ -105,12 +105,18 @@ Forward move between pages, and clicking a song or artist anywhere opens it in t
   Open a song for its history; **Play** plays it in a mini player in the corner that keeps going while you browse.
 - Guess the song: pick a preset (Top 100, On repeat, Best of the latest year, New finds, Throwbacks, Forgotten favorites,
   One per artist, Deep cuts, Anything) or set filters (period, top N, plays, first / last played, artist, words to leave out,
-  songs per artist, or the Library's own search and filters), then Start. You get a shuffled queue from what matches; a clip
+  songs per artist, playlists, or the Library's own search and filters), then Start. You get a shuffled queue from what matches; a clip
   plays and you name the song in a box that completes titles as you type (arrow keys to move, Tab or Enter to fill in,
-  Enter to guess). Artist names on the answer and the results open that artist in the Library. Choose how many songs, the clip length (3–30 s),
+  Enter to guess). Keys during a game: Alt+M (Option on a Mac) more time, Alt+H show the artist, Alt+G give up,
+  Alt+P play / pause; press Esc to leave the guess box and M, H, G and Space work on their own (/ returns to the box).
+  Artist names on the answer and the results open that artist in the Library. Choose how many songs, the clip length (3–30 s),
   whether the clip starts at the beginning or at a random spot in the song, and guesses per song. **5 seconds only** mode
   plays five seconds and offers no extra time. A song is worth 100 points, less for each wrong guess, each extra 5 seconds (−10) and seeing the
   artist (−20). Filters can be saved as your own presets (this browser only).
+  Playlists: tick one or more and only songs on them are asked (the ones that are also in this listening history).
+  **Connect Spotify** lists your playlists (same setup as saving playlists, below; Spotify only shares the songs of
+  playlists you own or collaborate on, and anyone who signed in before this was added has to connect again).
+  Or **Load Playlist1.json** from a Spotify "Account data" export. Playlists are kept in this browser.
   Only songs with English titles are asked: titles in another script, romanized Japanese ("Gurenge") and Spanish / French /
   German titles are left out (`web/english.js`; names and made-up words pass). The clip is Spotify's embedded player kept
   under a cover until the answer; if that can't load, a 30-second preview from the iTunes catalogue is used.

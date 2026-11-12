@@ -15,13 +15,15 @@
   const plural = (n, w) => `${num(n)} ${w}${n === 1 ? '' : 's'}`;
   const shuffle = (list) => { const a = list.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const plain = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const ALT = /Mac|iPhone|iPad/.test(navigator.platform || '') ? '<kbd>⌥</kbd>' : '<kbd>Alt</kbd>+';
   const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
 
   // ---------- filters ----------
   // period: 'all' | 'l12' | a year. top: keep the N most-listened that match. pmin/pmax: plays in the period.
   // fy0/fy1: year first played. last: any | recent (played in the last 12 months) | old (not).
   // fresh: first played in the period. per: at most this many songs per artist. lib: use the Library's own filters.
-  const blank = () => ({ period: 'all', top: 0, pmin: null, pmax: null, fy0: '', fy1: '', last: 'any', fresh: false, artist: '', exclude: '', per: 0, lib: false });
+  // pls: ids of playlists (see "playlists" below); only songs on one of them.
+  const blank = () => ({ period: 'all', top: 0, pmin: null, pmax: null, fy0: '', fy1: '', last: 'any', fresh: false, artist: '', exclude: '', per: 0, lib: false, pls: [] });
   const lastYear = years.at(-1), hasL12 = typeof LAST12 !== 'undefined' && !!LAST12;
   const PRESETS = [
     ['★ Top 100', { top: 100 }, 'The 100 songs with the most listening time'],
@@ -43,6 +45,7 @@
     if (!['any', 'recent', 'old'].includes(o.last)) o.last = 'any';
     o.top = +o.top || 0; o.per = +o.per || 0; o.fresh = !!o.fresh; o.lib = !!o.lib;
     o.artist = String(o.artist || ''); o.exclude = String(o.exclude || '');
+    o.pls = Array.isArray(o.pls) ? o.pls.filter((id) => typeof id === 'string') : [];
     return o;
   }
   const stored = read(KEY, {});
@@ -63,6 +66,27 @@
   const aggFor = (p) => { if (!aggs.has(p)) aggs.set(p, aggregate(rangeOf(p))); return aggs.get(p); };
   const artistLc = D.artists.map((a) => a.toLowerCase());
 
+  // ---------- playlists ----------
+  // Which songs are on a playlist comes from Spotify (sign in) or from Playlist1.json in a Spotify data export.
+  // Each playlist is kept in this browser as its songs' Spotify ids plus "title|artist" tags, because the same
+  // song often has a different id in the listening history (single vs. album version).
+  const LISTS_KEY = 'spotifyStats.guessPlaylists';
+  const lists = read(LISTS_KEY, {}); // id -> { name, n, ids, tags }
+  const tagFor = (name, artist) => { const k = E.key(name); return k ? `${k}|${plain(artist).replace(/[^a-z0-9]/g, '')}` : ''; };
+  function keepList(id, name, songs) {
+    lists[id] = { name, n: songs.length, ids: songs.map((x) => x.id).filter(Boolean), tags: songs.map((x) => tagFor(x.name, x.artist)).filter(Boolean) };
+    write(LISTS_KEY, lists);
+  }
+  let songTags = null;
+  function onLists(pls) { // → a test for "is song s on one of these playlists", or null when none are picked
+    const picked = pls.filter((id) => lists[id]);
+    if (!picked.length) return null;
+    const ids = new Set(), tags = new Set();
+    for (const id of picked) { lists[id].ids.forEach((x) => ids.add(x)); lists[id].tags.forEach((x) => tags.add(x)); }
+    if (!songTags) songTags = D.songs.map(([name, a]) => tagFor(name, D.artists[a]));
+    return (s) => ids.has(D.songs[s][4]) || (songTags[s] !== '' && tags.has(songTags[s]));
+  }
+
   // The songs the filters leave, most-listened first: one entry per title + artist (other versions are folded in).
   function buildPool(f) {
     let rows = [];
@@ -74,7 +98,9 @@
       const [from] = rangeOf(f.period);
       const arts = f.artist.toLowerCase().split(',').map((t) => t.trim()).filter(Boolean);
       const outs = f.exclude.toLowerCase().split(/[\s,]+/).filter(Boolean);
+      const listed = onLists(f.pls);
       for (const [s, v] of aggFor(f.period).songs) {
+        if (listed && !listed(s)) continue;
         if (f.pmin !== null && v[0] < f.pmin) continue;
         if (f.pmax !== null && v[0] > f.pmax) continue;
         const fy = monthYear[songFirst[s]];
@@ -319,6 +345,7 @@
         <label class="wide">Artist <input type="text" data-f="artist" value="${esc(f.artist)}" placeholder="e.g. queen, eminem" autocomplete="off" spellcheck="false"></label>
         <label class="wide">Leave out <input type="text" data-f="exclude" value="${esc(f.exclude)}" placeholder="words in the title, artist or album: remix, live, op." autocomplete="off" spellcheck="false"></label>
         <label class="gg-check"><input type="checkbox" data-f="fresh"${f.fresh ? ' checked' : ''}> Only songs first played in this period</label>
+        <div class="gg-pl" id="ggPl"></div>
         <label class="gg-check"><input type="checkbox" data-f="lib"${f.lib ? ' checked' : ''}> Use the Library's search and filters instead</label>
       </div>
       <h3>Game</h3>
@@ -336,6 +363,7 @@
         <button type="button" class="linkish" data-act="reset">Reset</button>
       </div>`;
     refreshSetup();
+    if (!PLS.remote && window.SpotifyAuth?.canReadPlaylists()) loadRemote();
   }
   function refreshSetup() {
     const f = G.f, box = $('ggFilters');
@@ -359,8 +387,75 @@
       (n > 0 && n < 4 ? ' · widen the filters for a real game' : '');
     body.querySelector('[data-act="start"]').disabled = n < 1;
     $('ggPresets').innerHTML = presetsHtml();
+    renderLists();
     remember();
   }
+
+  // ----- the playlist picker on the setup screen -----
+  const PLS = { remote: null, busy: '', msg: '', bad: false };
+  const plSay = (msg, bad = false) => { PLS.msg = msg; PLS.bad = bad; renderLists(); };
+  function renderLists() {
+    const el = $('ggPl');
+    if (!el) return;
+    const sp = window.SpotifyAuth, f = G.f;
+    // everything known: what Spotify lists for you, then what's only kept in this browser (files, older downloads)
+    const known = new Map();
+    for (const p of PLS.remote || []) known.set(p.id, { name: p.name, n: lists[p.id]?.n ?? p.total });
+    for (const [id, l] of Object.entries(lists)) if (!known.has(id)) known.set(id, { name: l.name, n: l.n });
+    const chips = [...known].map(([id, p]) => `<button type="button" data-pl="${esc(id)}" aria-pressed="${f.pls.includes(id)}"${f.lib || PLS.busy ? ' disabled' : ''}>${esc(p.name)}${p.n !== null && p.n !== undefined ? ` <small>${num(p.n)}</small>` : ''}${PLS.busy === id ? ' …' : ''}</button>`).join('');
+    const connect = sp?.canReadPlaylists()
+      ? '<button type="button" class="linkish" data-act="plRefresh">Refresh from Spotify</button>'
+      : sp?.configured() && sp.canRedirect() ? '<button type="button" class="ghost" data-act="plConnect">Connect Spotify to pick playlists</button>' : '';
+    const why = connect ? '' : !sp?.configured() ? 'Connecting to Spotify isn\'t set up on this site yet (README → Saving playlists to Spotify).'
+      : 'Connecting to Spotify needs the site opened from its web address.';
+    el.classList.toggle('off', f.lib);
+    el.innerHTML = `<span class="gg-pl-label">Playlists</span>
+      <div class="gg-pl-body">
+        ${chips ? `<div class="presets gg-pl-chips">${chips}</div>` : ''}
+        <div class="gg-pl-act">${connect}<button type="button" class="linkish" data-act="plFile" title="Playlist1.json from a Spotify “Account data” export">Load Playlist1.json…</button>${f.pls.length ? '<button type="button" class="linkish" data-act="plNone">Clear</button>' : ''}
+          <input type="file" id="ggPlFile" accept=".json,application/json" multiple hidden></div>
+        <p class="muted small${PLS.bad ? ' bad' : ''}">${esc(PLS.msg || (chips ? 'Pick one or more: only songs on them are asked (and only ones in this listening history).' : why))}</p>
+      </div>`;
+  }
+  async function loadRemote() {
+    try { PLS.remote = await window.SpotifyAuth.playlists(); PLS.msg = ''; PLS.bad = false; } catch (e) { PLS.remote = PLS.remote || []; PLS.msg = e.message; PLS.bad = true; }
+    renderLists();
+  }
+  async function fetchList(id) { // download a playlist's songs from Spotify and keep them
+    const name = (PLS.remote || []).find((p) => p.id === id)?.name || lists[id]?.name || 'Playlist';
+    PLS.busy = id; renderLists();
+    try {
+      const songs = await window.SpotifyAuth.playlistSongs(id);
+      if (!songs.length) throw new Error(`Spotify didn't share any songs for “${name}”. It only does for playlists you own or collaborate on.`);
+      keepList(id, name, songs);
+      return true;
+    } catch (e) { PLS.busy = ''; plSay(e.message, true); return false; } finally { PLS.busy = ''; }
+  }
+  async function toggleList(id) {
+    const f = G.f;
+    if (f.pls.includes(id)) f.pls = f.pls.filter((x) => x !== id);
+    else {
+      if (!lists[id] && !(await fetchList(id))) return;
+      f.pls = [...f.pls, id];
+    }
+    PLS.msg = '';
+    refreshSetup();
+  }
+  async function readListFiles(files) { // Playlist1.json: { playlists: [{ name, items: [{ track: { trackName, artistName, trackUri } }] }] }
+    let n = 0;
+    for (const file of files) {
+      try {
+        const j = JSON.parse(await file.text());
+        for (const p of j.playlists || []) {
+          const songs = (p.items || []).map((it) => it.track).filter((t) => t?.trackName)
+            .map((t) => ({ id: String(t.trackUri || '').split(':')[2] || '', name: t.trackName, artist: t.artistName || '' }));
+          if (p.name && songs.length) { keepList(`file:${p.name}`, p.name, songs); n++; }
+        }
+      } catch { /* not that file */ }
+    }
+    plSay(n ? `Loaded ${plural(n, 'playlist')}.` : 'No playlists found in that file. It should be Playlist1.json from a Spotify “Account data” export.', !n);
+  }
+  { const err = window.SpotifyAuth?.takeSignInError?.(); if (err) { PLS.msg = err; PLS.bad = true; } }
 
   // ---------- a game ----------
   const P = { queue: [], spare: [], i: 0, score: 0, log: [], cur: null, tries: [], extra: 0, hinted: false, over: false, loading: false, pickKey: null, sugg: [], hi: 0 };
@@ -407,7 +502,7 @@
       </div>`;
     $('ggCover').innerHTML = `<button type="button" class="gg-play" id="ggPlay" data-act="play" aria-label="Play the clip">▶</button>
       <div class="gg-prog"><div class="gg-track"><i id="ggBar"></i></div><div class="gg-time"><span id="ggState">Loading…</span><span id="ggClock"></span></div></div>
-      <button type="button" class="ghost" id="ggMore" data-act="more" title="Hear 5 more seconds (costs 10 points)">+5 s</button>`;
+      <button type="button" class="ghost" id="ggMore" data-act="more" title="Hear 5 more seconds (costs 10 points) · M">+5 s</button>`;
     foot.innerHTML = `<div class="gg-guess">
         <div class="gg-box">
           <input id="ggInput" type="text" role="combobox" aria-expanded="false" aria-controls="ggList" aria-autocomplete="list" placeholder="Type the song title…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
@@ -420,7 +515,8 @@
       <div class="gg-actions">
         <button type="button" class="ghost" data-act="hint">Show the artist (−20)</button>
         <button type="button" class="ghost" data-act="skip">Give up</button>
-      </div>`;
+      </div>
+      <p class="gg-keyhelp muted small" aria-hidden="true">${ALT}<kbd>M</kbd> more time · ${ALT}<kbd>H</kbd> artist · ${ALT}<kbd>G</kbd> give up · ${ALT}<kbd>P</kbd> play / pause. <kbd>Esc</kbd> leaves the box: then <kbd>M</kbd> <kbd>H</kbd> <kbd>G</kbd> and <kbd>Space</kbd> work on their own, <kbd>/</kbd> goes back to it.</p>`;
     paint();
   }
 
@@ -554,12 +650,17 @@
     if (row) { librarySearch(D.songs[+row.dataset.gs][0]); return; }
     const b = e.target.closest('button');
     if (!b || b.disabled) return;
+    if (b.dataset.pl !== undefined) { toggleList(b.dataset.pl); return; }
     if (b.dataset.preset !== undefined) { G.f = clean(PRESETS[+b.dataset.preset][1]); renderSetup(); return; }
     if (b.dataset.saved !== undefined) { const p = savedPresets()[+b.dataset.saved]; if (p) { G.f = clean(p[1]); renderSetup(); } return; }
     if (b.dataset.del !== undefined) { const l = savedPresets(); l.splice(+b.dataset.del, 1); write(SAVED_KEY, l); refreshSetup(); return; }
     switch (b.dataset.act) {
       case 'start': case 'again': startGame(); break;
       case 'reset': G.f = blank(); renderSetup(); break;
+      case 'plConnect': window.SpotifyAuth.signIn().catch((e) => plSay(e.message, true)); break;
+      case 'plRefresh': (async () => { plSay('Checking Spotify…'); await loadRemote(); for (const id of G.f.pls) if (!id.startsWith('file:')) await fetchList(id); if (!PLS.bad) PLS.msg = ''; refreshSetup(); })(); break;
+      case 'plFile': $('ggPlFile').click(); break;
+      case 'plNone': G.f.pls = []; refreshSetup(); break;
       case 'save':
         $('ggSave').innerHTML = `<input type="text" id="ggSaveName" placeholder="Preset name" maxlength="40"> <button type="button" class="ghost" data-act="doSave">Save</button>`;
         $('ggSaveName').focus();
@@ -604,6 +705,7 @@
     else if (k === 'top' || k === 'per') f[k] = +el.value;
     else f[k] = el.value;
   }
+  card.addEventListener('change', (e) => { if (e.target.id === 'ggPlFile' && e.target.files.length) readListFiles([...e.target.files]); });
   let typing = 0;
   card.addEventListener('input', (e) => {
     const el = e.target;
@@ -632,8 +734,25 @@
     } else if (e.key === 'Escape' && open) {
       e.preventDefault(); e.stopPropagation();
       P.sugg = []; $('ggList').hidden = true; e.target.setAttribute('aria-expanded', 'false');
-    }
+    } else if (e.key === 'Escape') e.target.blur(); // out of the box, so the single keys below work
   });
+
+  // Keys during a game, so it can be played without the mouse. In the guess box letters are for typing, so there
+  // they need Alt (Option on a Mac); anywhere else on the page they work on their own.
+  const KEYS = { KeyM: 'more', KeyH: 'hint', KeyG: 'skip', KeyP: 'play', Space: 'play', KeyN: 'next' };
+  window.addEventListener('keydown', (e) => {
+    if (G.view !== 'play' || pane.hidden || e.metaKey || e.ctrlKey || e.repeat) return;
+    if (document.body.classList.contains('friends-mode') || document.querySelector('dialog[open]')) return;
+    const el = e.target, typing = /INPUT|SELECT|TEXTAREA/.test(el.tagName);
+    if (typing ? !e.altKey : e.altKey) return;
+    if (e.code === 'Slash' && !typing) { const box = $('ggInput'); if (box) { e.preventDefault(); e.stopPropagation(); box.focus(); } return; }
+    const act = KEYS[e.code];
+    if (!act || (e.code === 'Space' && (typing || el.tagName === 'BUTTON'))) return;
+    const b = card.querySelector(`button[data-act="${act}"]`);
+    if (!b || b.disabled || b.hidden || !b.offsetParent) return;
+    e.preventDefault(); e.stopPropagation();
+    b.click();
+  }, true);
   card.addEventListener('focusout', (e) => { // tabbing or clicking away closes the list
     if (e.target.id !== 'ggInput') return;
     setTimeout(() => { const ul = $('ggList'); if (ul && document.activeElement?.id !== 'ggInput') { ul.hidden = true; P.sugg = []; } }, 150);

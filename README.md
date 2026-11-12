@@ -60,10 +60,10 @@ created as private.
 
 ## Getting around
 
-The stats are split into six pages: **Overview, Trends, Habits, When, Stories, Library**. The bar at the
+The stats are split into six pages: **Overview, Trends, Habits, When, Stories, Library**, plus **Guess**, a song-guessing game. The bar at the
 top stays in reach while you scroll and holds:
 
-- the pages (or press `1`–`6`), and under them the sections of the page you're on (click to jump;
+- the pages (or press `1`–`7`), and under them the sections of the page you're on (click to jump;
   the one you're looking at is highlighted);
 - the period: a picker (all time, last 12 months, any year) and ‹ › to step to the period before or
   after (or press `[` and `]`). Every page follows it.
@@ -103,6 +103,17 @@ Forward move between pages, and clicking a song or artist anywhere opens it in t
 - Your library: search, a filter panel (ranges for plays, time, skip rate, avg heard, dates…),
   saved presets, songs / artists / albums views, CSV export, full screen, keyboard navigation.
   Open a song for its history; **Play** plays it in a mini player in the corner that keeps going while you browse.
+- Guess the song: pick a preset (Top 100, On repeat, Best of the latest year, New finds, Throwbacks, Forgotten favorites,
+  One per artist, Deep cuts, Anything) or set filters (period, top N, plays, first / last played, artist, words to leave out,
+  songs per artist, or the Library's own search and filters), then Start. You get a shuffled queue from what matches; a clip
+  plays and you name the song in a box that completes titles as you type (arrow keys to move, Tab or Enter to fill in,
+  Enter to guess). Artist names on the answer and the results open that artist in the Library. Choose how many songs, the clip length (3–30 s),
+  whether the clip starts at the beginning or at a random spot in the song, and guesses per song. **5 seconds only** mode
+  plays five seconds and offers no extra time. A song is worth 100 points, less for each wrong guess, each extra 5 seconds (−10) and seeing the
+  artist (−20). Filters can be saved as your own presets (this browser only).
+  Only songs with English titles are asked: titles in another script, romanized Japanese ("Gurenge") and Spanish / French /
+  German titles are left out (`web/english.js`; names and made-up words pass). The clip is Spotify's embedded player kept
+  under a cover until the answer; if that can't load, a 30-second preview from the iTunes catalogue is used.
 - The address bar keeps the library's filters, so Back/Forward step through them and views can be bookmarked.
 
 ## Getting Spotify data
@@ -154,6 +165,8 @@ don't change. In other browsers the editor opens a single file and Save download
 | `web/cloud.js` | Sharing: uploads/downloads shared stats through the Supabase functions |
 | `web/friends.js` | The Friends view (share link, friends, group compare) and the top of a friend's shared page |
 | `web/playlists.js` | Playlist maker |
+| `web/guess.js` | Guess the song: filters, presets, the queue, the clip player and the guess box |
+| `web/english.js` | Decides whether a song title is English (word list packed by `tools/build_english.js`, which needs `npm install wordlist-english`) |
 | `web/spotify.js` | Sign in with Spotify and save playlists (set `CLIENT_ID` here) |
 | `web/data.js` | My processed listening history (songs, counts and times only — no IP addresses or account details) |
 

@@ -50,9 +50,12 @@
   const G = {
     view: 'setup', f: clean(stored.f || PRESETS[0][1]),
     rounds: pick(stored.rounds, [5, 10, 20, 30, 50], 10), clip: pick(stored.clip, [3, 5, 10, 15, 30], 10), tries: pick(stored.tries, [1, 3, 5], 3),
+    mode: pick(stored.mode, ['normal', 'five'], 'normal'), start: pick(stored.start, ['begin', 'random'], 'begin'),
     pool: null,
   };
-  const remember = () => write(KEY, { f: G.f, rounds: G.rounds, clip: G.clip, tries: G.tries });
+  const remember = () => write(KEY, { f: G.f, rounds: G.rounds, clip: G.clip, tries: G.tries, mode: G.mode, start: G.start });
+  // 5-second mode: five seconds of the song and no more
+  const clipLen = () => (G.mode === 'five' ? 5 : G.clip);
   const same = (a, b) => JSON.stringify(clean(a)) === JSON.stringify(clean(b));
 
   const rangeOf = (p) => (p === 'all' ? [0, N - 1] : p === 'l12' ? LAST12 : yearRange(p));
@@ -94,10 +97,11 @@
       if (!key) continue; // nothing to type: "$$$", ". . ."
       const dup = seen.get(`${key}|${a}`);
       if (dup) { dup.plays += r.plays; dup.sec += r.sec; continue; }
-      const o = { s: r.s, key, title: E.core(name), a, artist: D.artists[a], album, id: id || '', plays: r.plays, sec: r.sec };
+      const o = { s: r.s, key, title: E.core(name), a, artist: D.artists[a], album, id: id || '', len: D.songs[r.s][3] || 0, plays: r.plays, sec: r.sec };
       seen.set(`${key}|${a}`, o);
       list.push(o);
     }
+    if (f.lib) return { list, foreign }; // the Library's view as it is
     if (f.per) { const c = new Map(); list = list.filter((o) => { const n = (c.get(o.a) || 0) + 1; c.set(o.a, n); return n <= f.per; }); }
     if (f.top) list = list.slice(0, f.top);
     return { list, foreign };
@@ -115,7 +119,7 @@
       const k = `${key}|${a}`, o = by.get(k);
       if (o) { o.w += songAllSec[s]; return; }
       const title = E.core(name);
-      by.set(k, { key, title, artist: D.artists[a], t: plain(title), lc: plain(`${title} ${D.artists[a]}`), w: songAllSec[s] });
+      by.set(k, { key, title, a, artist: D.artists[a], t: plain(title), lc: plain(`${title} ${D.artists[a]}`), w: songAllSec[s] });
     });
     return (titles = [...by.values()]);
   }
@@ -141,10 +145,33 @@
   // One interface over two sources. load(song) → true when it can be played; play(fromStart); pause();
   // limit = seconds to stop at (0 = no limit); onChange is called whenever position or state changes.
   const Clip = (() => {
-    const st = { mode: null, pos: 0, at: 0, paused: true, started: false, ended: false, stuck: false, limit: 0 };
-    let onChange = () => {}, cut = 0, stuck = 0, again = [];
+    // pos and limit count from start, the spot in the song where the clip begins (0, or a random one)
+    const st = { mode: null, pos: 0, at: 0, paused: true, started: false, ended: false, stuck: false, limit: 0, start: 0, dur: 0, random: false, rand: 0, base: 0 };
+    let onChange = () => {}, cut = 0, stuck = 0, again = [], jumped = 0;
+    // A random spot: past the first tenth of the song, with room left for the clip and a couple of +5s.
+    const startFor = (dur) => {
+      const room = dur - st.base - 12;
+      if (!st.random || room < 4) return 0;
+      const lo = Math.min(room, dur * 0.1);
+      return Math.round((lo + st.rand * (room - lo)) * 10) / 10;
+    };
     const now = () => performance.now();
-    function update(pos, paused) {
+    function update(abs, paused, dur) {
+      if (dur > 0 && Math.abs(dur - st.dur) > 1 && st.limit) { // the player's own idea of the length (a preview is 30 s) wins
+        const had = st.dur;
+        st.dur = dur;
+        if (!had || st.start + st.base > dur - 2) st.start = startFor(dur); // no length on file, or the spot we picked is past the end
+      }
+      // playing from before (or well past) the clip: put it where the clip starts, and don't count what leaked
+      if (st.mode === 'spotify' && st.limit && st.start > 0 && !paused && (abs < st.start - 0.7 || abs > st.start + st.limit + 2) && !st.ended) {
+        if (now() - jumped > 1200) {
+          jumped = now();
+          if (++st.jumps > 3) st.start = 0; // it won't go there: play it from wherever it is
+          else call('seek', st.start);
+        }
+        if (st.start) return;
+      }
+      const pos = Math.max(0, abs - st.start);
       Object.assign(st, { pos, paused, at: now() });
       if (!paused) { st.started = true; clearTimeout(stuck); again.forEach(clearTimeout); }
       clearTimeout(cut);
@@ -168,7 +195,7 @@
               api.createController($('ggFrame'), { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (c) => {
                 ctrl = c; track = id;
                 c.addListener('ready', () => { if (wantPlay) { wantPlay = false; call('play'); } });
-                c.addListener('playback_update', (e) => { if (st.mode === 'spotify') update((e.data.position || 0) / 1000, !!e.data.isPaused); });
+                c.addListener('playback_update', (e) => { if (st.mode === 'spotify') update((e.data.position || 0) / 1000, !!e.data.isPaused, (e.data.duration || 0) / 1000); });
                 clearTimeout(t); resolve(c);
               });
             } catch { clearTimeout(t); resolve(null); }
@@ -216,14 +243,15 @@
     return {
       st,
       set onChange(fn) { onChange = fn; },
-      async load(song) {
+      async load(song, random) {
         pause(); clearTimeout(stuck);
-        Object.assign(st, { pos: 0, at: now(), paused: true, started: false, ended: false, stuck: false });
+        Object.assign(st, { pos: 0, at: now(), paused: true, started: false, ended: false, stuck: false, start: 0, dur: 0, jumps: 0, random: !!random, rand: Math.random(), base: st.limit });
         if (song.id && !off) {
           const c = await spotify(song.id);
           if (c) {
             audio.pause(); st.mode = 'spotify';
-            if (track !== song.id) { track = song.id; call('loadUri', `spotify:track:${song.id}`); }
+            st.dur = song.len; st.start = song.len ? startFor(song.len) : 0;
+            if (track !== song.id) { track = song.id; call('loadUri', `spotify:track:${song.id}`, false, st.start); }
             return true;
           }
           off = true; // Spotify's player didn't load: previews from here on
@@ -231,6 +259,7 @@
         const url = await preview(song);
         if (!url) return false;
         st.mode = 'apple';
+        st.dur = 30; st.start = startFor(30);
         audio.src = url;
         return true;
       },
@@ -241,13 +270,14 @@
         st.stuck = false;
         if (st.mode === 'spotify') {
           if (fromStart || !st.started) {
+            if (st.started) call('seek', st.start); // again from where the clip starts
             wantPlay = true; call('play');
             // a song that was only just handed to the player can miss the first request
             again.forEach(clearTimeout);
             if (!st.started) again = [900, 2500].map((ms) => setTimeout(() => { if (!st.started && st.mode === 'spotify') call('play'); }, ms));
           } else if (!call('resume')) call('togglePlay');
         } else if (st.mode === 'apple') {
-          if (fromStart) audio.currentTime = 0;
+          if (fromStart) { try { audio.currentTime = st.start; } catch { /* not loaded yet */ } }
           audio.play().catch(() => { st.stuck = true; onChange(); });
         }
       },
@@ -255,6 +285,8 @@
       // where the clip is right now (the sources only report every so often)
       position() { const p = st.paused ? st.pos : st.pos + (now() - st.at) / 1000; return st.limit ? Math.min(p, st.limit) : p; },
       usePreviews() { off = true; },
+      // is there song left for 5 more seconds?
+      canExtend() { return !st.dur || st.start + st.limit + 5 <= st.dur; },
       get spotifyOff() { return off; },
     };
   })();
@@ -292,7 +324,9 @@
       <h3>Game</h3>
       <div class="gg-filters">
         <label>Songs ${sel('rounds', [5, 10, 20, 30, 50].map((n) => [n, n]), G.rounds)}</label>
+        <label>Mode ${sel('mode', [['normal', 'Normal'], ['five', '5 seconds only']], G.mode)}</label>
         <label>Clip length ${sel('clip', [3, 5, 10, 15, 30].map((n) => [n, `${n} seconds`]), G.clip)}</label>
+        <label>Clip starts ${sel('start', [['begin', 'at the beginning'], ['random', 'at a random spot']], G.start)}</label>
         <label>Guesses per song ${sel('tries', [[1, '1'], [3, '3'], [5, '5']], G.tries)}</label>
       </div>
       <p class="gg-pool" id="ggPool" aria-live="polite"></p>
@@ -314,6 +348,9 @@
       el.disabled = (f.lib && k !== 'lib') || (k === 'fresh' && f.period === 'all');
       el.closest('label').classList.toggle('off', el.disabled);
     });
+    const clipSel = body.querySelector('[data-f="clip"]'); // 5-second mode sets the length itself
+    clipSel.disabled = G.mode === 'five';
+    clipSel.closest('label').classList.toggle('off', clipSel.disabled);
     const rounds = Math.min(G.rounds, n);
     $('ggPool').innerHTML = (n ? `<b>${plural(n, 'song')}</b> to draw from` : 'No songs match these filters') +
       (f.lib ? ' (the Library\'s current view)' : '') +
@@ -343,9 +380,9 @@
   async function startRound() {
     const song = P.queue[P.i];
     Object.assign(P, { cur: song, tries: [], extra: 0, hinted: false, over: false, loading: true, pickKey: null, sugg: [], hi: 0 });
-    Clip.st.limit = G.clip;
+    Clip.st.limit = clipLen();
     renderRound();
-    const ok = await Clip.load(song);
+    const ok = await Clip.load(song, G.start === 'random');
     if (P.cur !== song || G.view !== 'play') return; // quit or moved on while it loaded
     if (!ok) { // no clip for this one: quietly use another song
       const sub = P.spare.shift();
@@ -400,7 +437,8 @@
     btn.textContent = playing ? '❚❚' : st.ended ? '↺' : '▶';
     btn.setAttribute('aria-label', playing ? 'Pause' : st.ended ? 'Play the clip again' : 'Play the clip');
     btn.disabled = P.loading;
-    $('ggMore').disabled = P.loading || P.over || !st.limit || st.limit >= 30;
+    $('ggMore').hidden = G.mode === 'five';
+    $('ggMore').disabled = P.loading || P.over || !st.limit || st.limit >= 30 || !Clip.canExtend();
     $('ggState').innerHTML = P.loading ? 'Loading…'
       : st.stuck && !st.started ? `It isn't starting. <button type="button" class="linkish" data-act="swap">Try another song</button>${Clip.spotifyOff ? '' : ' · <button type="button" class="linkish" data-act="previews">Use preview clips instead</button>'}`
         : playing ? 'Playing…' : st.ended ? 'That\'s the clip. Play it again?' : st.started ? 'Paused' : 'Press play';
@@ -416,14 +454,16 @@
     P.hi = Math.min(P.hi, Math.max(0, P.sugg.length - 1));
     ul.hidden = !P.sugg.length;
     input.setAttribute('aria-expanded', !ul.hidden);
-    ul.innerHTML = P.sugg.map((c, i) => `<li role="option" id="ggOpt${i}" data-i="${i}" aria-selected="${i === P.hi}"><span>${mark(c.title, input.value)}</span><small>${esc(c.artist)}</small></li>`).join('');
+    ul.innerHTML = P.sugg.map((c, i) => `<li role="option" id="ggOpt${i}" data-i="${i}" aria-selected="${i === P.hi}"><span>${mark(c.title, input.value)}</span><small>${esc(c.artist)}</small></li>`).join('') +
+      (P.sugg.length ? '<li class="gg-keys" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Tab</kbd> fill in · <kbd>Enter</kbd> guess</li>' : '');
     if (P.sugg.length) input.setAttribute('aria-activedescendant', `ggOpt${P.hi}`); else input.removeAttribute('aria-activedescendant');
   }
   function choose(i) { // put a suggestion in the box; Guess (or Enter) then submits it
     const c = P.sugg[i], input = $('ggInput');
     if (!c) return;
     input.value = c.title;
-    P.pickKey = c.key; P.pickArtist = c.artist;
+    say('Enter to guess it.');
+    P.pickKey = c.key; P.pickArtist = c.artist; P.pickA = c.a;
     showList();
     input.focus();
   }
@@ -432,18 +472,19 @@
     if (P.over || P.loading) return;
     const input = $('ggInput'), text = input.value.trim();
     if (!text) { say('Type part of the title, then pick the song from the list.'); input.focus(); return; }
-    let key = P.pickKey, artist = P.pickArtist, title = text;
+    let key = P.pickKey, artist = P.pickArtist, a = P.pickA, title = text;
     if (!key) { // typed out in full instead of picked
       const k = E.key(text), hit = k && allTitles().find((c) => c.key === k);
       if (!hit) {
         if (P.sugg.length) { choose(P.hi); return; }
         say('That isn\'t a song in this library. Pick one from the list.'); return;
       }
-      key = hit.key; title = hit.title; artist = P.cur.key === key ? P.cur.artist : hit.artist;
+      key = hit.key; title = hit.title;
+      ({ artist, a } = P.cur.key === key ? P.cur : hit);
     }
     if (P.tries.some((t) => t.key === key)) { say('You already tried that one.'); input.select(); return; }
     if (key === P.cur.key) return endRound('ok');
-    P.tries.push({ key, title, artist });
+    P.tries.push({ key, title, artist, a });
     if (P.tries.length >= G.tries) return endRound('miss');
     input.value = ''; P.pickKey = null; showList();
     const left = G.tries - P.tries.length;
@@ -452,7 +493,9 @@
     $('ggWorth').textContent = points();
     input.focus();
   }
-  const triesHtml = () => P.tries.map((t) => `<li><span class="x" aria-hidden="true">✕</span> ${esc(t.title)} <small class="muted">${esc(t.artist || '')}</small></li>`).join('');
+  // an artist's name, as a link to that artist in the Library
+  const artistLink = (a, name) => `<button type="button" class="gg-artist" data-ga="${a}" title="Show ${esc(name)} in the Library">${esc(name)}</button>`;
+  const triesHtml = (links) => P.tries.map((t) => `<li><span class="x" aria-hidden="true">✕</span> ${esc(t.title)} <small class="muted">${links ? artistLink(t.a, t.artist) : esc(t.artist || '')}</small></li>`).join('');
 
   // ----- answer, next, results -----
   function endRound(result) {
@@ -469,9 +512,9 @@
     foot.innerHTML = `<div class="gg-answer ${result}">
         <p class="gg-verdict">${result === 'ok' ? `Correct! <b>+${pts}</b>` : result === 'skip' ? 'It was' : 'Out of guesses. It was'}</p>
         <p class="gg-title">${esc(song.title)}</p>
-        <p class="gg-by">${esc(song.artist)}${song.album ? ` <span class="muted">· ${esc(song.album)}</span>` : ''}</p>
+        <p class="gg-by">${artistLink(song.a, song.artist)}${song.album ? ` <span class="muted">· ${esc(song.album)}</span>` : ''}</p>
         <p class="muted small">Played ${plural(songAllPlays[s], 'time')} (${hours(songAllSec[s])}) · first in ${first}</p>
-        ${P.tries.length ? `<ol class="gg-tries">${triesHtml()}</ol>` : ''}
+        ${P.tries.length ? `<ol class="gg-tries">${triesHtml(true)}</ol>` : ''}
       </div>
       <div class="gg-actions">
         <button type="button" class="primary" data-act="next" id="ggNext">${last ? 'See your score →' : 'Next song →'}</button>
@@ -493,7 +536,7 @@
         <div class="gg-big">${num(P.score)}<small>points</small></div>
         <p><b>${right}</b> of ${n} right${firstTry ? ` · ${firstTry} on the first guess` : ''}. ${line}</p>
       </div>
-      <ol class="st-list gg-log">${P.log.map((l) => `<li data-gs="${l.song.s}" title="Open in the Library"><span><i class="${l.result === 'ok' ? 'ok' : 'no'}" aria-hidden="true">${l.result === 'ok' ? '✓' : '✕'}</i> <b>${esc(l.song.title)}</b> <span class="muted">${esc(l.song.artist)}</span></span><small class="muted">${l.result === 'ok' ? `+${l.pts}${l.wrong ? ` · guess ${l.wrong + 1}` : ''}` : l.result === 'skip' ? 'gave up' : 'missed'}</small></li>`).join('')}</ol>
+      <ol class="st-list gg-log">${P.log.map((l) => `<li data-gs="${l.song.s}" title="Open in the Library"><span><i class="${l.result === 'ok' ? 'ok' : 'no'}" aria-hidden="true">${l.result === 'ok' ? '✓' : '✕'}</i> <b>${esc(l.song.title)}</b> <span class="muted">${artistLink(l.song.a, l.song.artist)}</span></span><small class="muted">${l.result === 'ok' ? `+${l.pts}${l.wrong ? ` · guess ${l.wrong + 1}` : ''}` : l.result === 'skip' ? 'gave up' : 'missed'}</small></li>`).join('')}</ol>
       <div class="gg-actions">
         <button type="button" class="primary" data-act="again">Play again</button>
         <button type="button" class="ghost" data-act="setup">Change the filters</button>
@@ -505,6 +548,8 @@
   card.addEventListener('click', (e) => {
     const li = e.target.closest('#ggList li');
     if (li) { choose(+li.dataset.i); return; }
+    const who = e.target.closest('[data-ga]');
+    if (who) { libraryArtistFresh(+who.dataset.ga); return; }
     const row = e.target.closest('.gg-log li[data-gs]');
     if (row) { librarySearch(D.songs[+row.dataset.gs][0]); return; }
     const b = e.target.closest('button');
@@ -552,6 +597,7 @@
   function readFilter(el) {
     const k = el.dataset.f;
     if (k === 'rounds' || k === 'clip' || k === 'tries') { G[k] = +el.value; return; }
+    if (k === 'mode' || k === 'start') { G[k] = el.value; return; }
     const f = G.f;
     if (el.type === 'checkbox') f[k] = el.checked;
     else if (k === 'pmin' || k === 'pmax') f[k] = el.value === '' || !(+el.value >= 0) ? null : Math.floor(+el.value);
@@ -577,6 +623,9 @@
       P.hi = (P.hi + (e.key === 'ArrowDown' ? 1 : -1) + P.sugg.length) % P.sugg.length;
       showList();
       $(`ggOpt${P.hi}`)?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Tab' && open && !e.shiftKey) { // complete it and stay in the box
+      e.preventDefault();
+      choose(P.hi);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (open) choose(P.hi); else submitGuess();

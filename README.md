@@ -117,6 +117,13 @@ Forward move between pages, and clicking a song or artist anywhere opens it in t
   **Connect Spotify** lists your playlists (same setup as saving playlists, below; Spotify only shares the songs of
   playlists you own or collaborate on, and anyone who signed in before this was added has to connect again).
   Or **Load Playlist1.json** from a Spotify "Account data" export. Playlists are kept in this browser.
+  **∞ Endless** starts a game with no set length: songs keep coming until you press **Stop**, which shows your score.
+  In any game, **Filters** opens the presets and filters without leaving it; changes apply from the next song.
+  **♥ Survival** is endless with three lives: a miss, a give-up or running out of time costs one.
+  Game options also include **Answer by picking from four** (four titles to choose from, keys 1–4, one pick per song)
+  and **Time to answer** (10–30 s, counted from when the clip starts; a fast answer is worth up to double a last-second one).
+  Records are kept in this browser: the best score for each setup (preset, kind of game, how you answer, time limit),
+  your longest run of right answers and the share you get right. They show under the Start buttons.
   Only songs with English titles are asked: titles in another script, romanized Japanese ("Gurenge") and Spanish / French /
   German titles are left out (`web/english.js`; names and made-up words pass). The clip is Spotify's embedded player kept
   under a cover until the answer; if that can't load, a 30-second preview from the iTunes catalogue is used.

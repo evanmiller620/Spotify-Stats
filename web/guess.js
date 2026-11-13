@@ -11,7 +11,7 @@
 
   const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
   const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage off */ } };
-  const KEY = 'spotifyStats.guess', SAVED_KEY = 'spotifyStats.guessPresets';
+  const KEY = 'spotifyStats.guess', SAVED_KEY = 'spotifyStats.guessPresets', OPEN_KEY = 'spotifyStats.guessOpen';
   const plural = (n, w) => `${num(n)} ${w}${n === 1 ? '' : 's'}`;
   const shuffle = (list) => { const a = list.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const plain = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -26,15 +26,15 @@
   const blank = () => ({ period: 'all', top: 0, pmin: null, pmax: null, fy0: '', fy1: '', last: 'any', fresh: false, artist: '', exclude: '', per: 0, lib: false, pls: [] });
   const lastYear = years.at(-1), hasL12 = typeof LAST12 !== 'undefined' && !!LAST12;
   const PRESETS = [
-    ['★ Top 100', { top: 100 }, 'The 100 songs with the most listening time'],
-    ['🔁 On repeat', { pmin: 30 }, 'Songs played 30 times or more'],
-    [`📅 Best of ${lastYear}`, { period: lastYear, top: 100 }, `The 100 most-listened songs of ${lastYear}`],
-    hasL12 && ['🌱 New finds', { period: 'l12', fresh: true, pmin: 3 }, 'First played in the last 12 months, 3+ plays'],
-    years.length > 5 && ['⏪ Throwbacks', { fy1: String(+lastYear - 5), pmin: 5 }, `First played in ${+lastYear - 5} or earlier, 5+ plays`],
-    N > 24 && ['🕸 Forgotten favorites', { pmin: 10, last: 'old' }, '10+ plays, none in the last 12 months'],
-    ['🎭 One per artist', { top: 300, per: 1 }, 'The top song of each of the 300 biggest artists'],
-    ['💎 Deep cuts', { pmin: 2, pmax: 5 }, 'Played only 2 to 5 times. Hard.'],
-    ['🎲 Anything', {}, 'Every song'],
+    ['Top 100', { top: 100 }, 'The 100 songs with the most listening time'],
+    ['On repeat', { pmin: 30 }, 'Songs played 30 times or more'],
+    [`Best of ${lastYear}`, { period: lastYear, top: 100 }, `The 100 most-listened songs of ${lastYear}`],
+    hasL12 && ['New finds', { period: 'l12', fresh: true, pmin: 3 }, 'First played in the last 12 months, 3+ plays'],
+    years.length > 5 && ['Throwbacks', { fy1: String(+lastYear - 5), pmin: 5 }, `First played in ${+lastYear - 5} or earlier, 5+ plays`],
+    N > 24 && ['Forgotten favorites', { pmin: 10, last: 'old' }, '10+ plays, none in the last 12 months'],
+    ['One per artist', { top: 300, per: 1 }, 'The top song of each of the 300 biggest artists'],
+    ['Deep cuts', { pmin: 2, pmax: 5 }, 'Played only 2 to 5 times. Hard.'],
+    ['Anything', {}, 'Every song'],
   ].filter(Boolean);
 
   function clean(f) { // settings saved from other data may name years this data doesn't have
@@ -54,9 +54,10 @@
     view: 'setup', f: clean(stored.f || PRESETS[0][1]),
     rounds: pick(stored.rounds, [5, 10, 20, 30, 50], 10), clip: pick(stored.clip, [3, 5, 10, 15, 30], 10), tries: pick(stored.tries, [1, 3, 5], 3),
     mode: pick(stored.mode, ['normal', 'five'], 'normal'), start: pick(stored.start, ['begin', 'random'], 'begin'),
+    answer: pick(stored.answer, ['type', 'choice'], 'type'), timer: pick(stored.timer, [0, 10, 15, 20, 30], 0),
     pool: null,
   };
-  const remember = () => write(KEY, { f: G.f, rounds: G.rounds, clip: G.clip, tries: G.tries, mode: G.mode, start: G.start });
+  const remember = () => write(KEY, { f: G.f, rounds: G.rounds, clip: G.clip, tries: G.tries, mode: G.mode, start: G.start, answer: G.answer, timer: G.timer });
   // 5-second mode: five seconds of the song and no more
   const clipLen = () => (G.mode === 'five' ? 5 : G.clip);
   const same = (a, b) => JSON.stringify(clean(a)) === JSON.stringify(clean(b));
@@ -188,14 +189,26 @@
         st.dur = dur;
         if (!had || st.start + st.base > dur - 2) st.start = startFor(dur); // no length on file, or the spot we picked is past the end
       }
-      // playing from before (or well past) the clip: put it where the clip starts, and don't count what leaked
-      if (st.mode === 'spotify' && st.limit && st.start > 0 && !paused && (abs < st.start - 0.7 || abs > st.start + st.limit + 2) && !st.ended) {
-        if (now() - jumped > 1200) {
-          jumped = now();
-          if (++st.jumps > 3) st.start = 0; // it won't go there: play it from wherever it is
-          else call('seek', st.start);
+      // Spotify's player answers late: after "go to the start of the clip" it can still report the old spot for a
+      // moment (which looked like the clip had already run out), or start from the top of the song. So after every
+      // jump, wait until it reports a position at the clip's start before counting anything, asking again if needed.
+      if (st.mode === 'spotify' && st.limit) {
+        const off = abs - st.start;
+        if (!paused) st.live = true;
+        if (st.seeking && !paused && off > -0.7 && off < 1.5) st.seeking = false; // it's there
+        else if (!st.seeking && !paused && !st.ended && (off < -0.7 || off > st.limit + 2)) { st.seeking = true; st.jumps = 0; jumped = 0; }
+        if (st.seeking) {
+          if (!paused && now() - jumped > 700) {
+            jumped = now();
+            if (++st.jumps > 6) { st.start = Math.max(0, abs); st.seeking = false; } // it won't go there: the clip is from wherever it is now
+            else call('seek', st.start);
+          }
+          if (st.seeking) {
+            if (!paused) again.forEach(clearTimeout);
+            if (paused !== st.paused) { Object.assign(st, { paused, pos: 0, at: now() }); onChange(); }
+            return;
+          }
         }
-        if (st.start) return;
       }
       const pos = Math.max(0, abs - st.start);
       Object.assign(st, { pos, paused, at: now() });
@@ -271,7 +284,7 @@
       set onChange(fn) { onChange = fn; },
       async load(song, random) {
         pause(); clearTimeout(stuck);
-        Object.assign(st, { pos: 0, at: now(), paused: true, started: false, ended: false, stuck: false, start: 0, dur: 0, jumps: 0, random: !!random, rand: Math.random(), base: st.limit });
+        Object.assign(st, { pos: 0, at: now(), paused: true, started: false, ended: false, stuck: false, start: 0, dur: 0, jumps: 0, seeking: true, live: false, random: !!random, rand: Math.random(), base: st.limit });
         if (song.id && !off) {
           const c = await spotify(song.id);
           if (c) {
@@ -297,10 +310,12 @@
         if (st.mode === 'spotify') {
           if (fromStart || !st.started) {
             if (st.started) call('seek', st.start); // again from where the clip starts
+            Object.assign(st, { seeking: true, jumps: 0, live: false, pos: 0, at: now() });
+            jumped = now();
             wantPlay = true; call('play');
             // a song that was only just handed to the player can miss the first request
             again.forEach(clearTimeout);
-            if (!st.started) again = [900, 2500].map((ms) => setTimeout(() => { if (!st.started && st.mode === 'spotify') call('play'); }, ms));
+            again = [900, 2500].map((ms) => setTimeout(() => { if (!st.live && st.mode === 'spotify') call('play'); }, ms));
           } else if (!call('resume')) call('togglePlay');
         } else if (st.mode === 'apple') {
           if (fromStart) { try { audio.currentTime = st.start; } catch { /* not loaded yet */ } }
@@ -324,21 +339,15 @@
     return PRESETS.map(([name, f, tip], i) => `<button type="button" data-preset="${i}" title="${esc(tip)}" aria-pressed="${same(f, G.f)}">${name}</button>`).join('') +
       savedPresets().map(([name, f], i) => `<span class="saved"><button type="button" data-saved="${i}" aria-pressed="${same(f, G.f)}">${esc(name)}</button><button type="button" class="del" data-del="${i}" aria-label="Delete preset ${esc(name)}">×</button></span>`).join('');
   }
-  function renderSetup() {
-    G.view = 'setup';
-    stage.hidden = true; foot.innerHTML = '';
-    const f = G.f, whose = window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : 'this';
-    const yearOpts = [['', 'Any'], ...years.map((y) => [y, y])];
-    body.innerHTML = `
-      <h2>Guess the song</h2>
-      <p class="muted small">A clip plays, you name the song. Pick a preset or set your own filters; the songs come from ${whose} listening history, in a random order. Only songs with English titles are asked.</p>
-      <h3>Presets</h3>
+  function filtersHtml() {
+    const f = G.f, yearOpts = [['', 'Any'], ...years.map((y) => [y, y])];
+    return `      <h3>Presets</h3>
       <div class="presets gg-presets" id="ggPresets">${presetsHtml()}</div>
       <h3>Filters</h3>
       <div class="gg-filters" id="ggFilters">
         <label>Period ${sel('period', [['all', 'All time'], ...(hasL12 ? [['l12', 'Last 12 months']] : []), ...years.map((y) => [y, y]).reverse()], f.period)}</label>
         <label>Keep the ${sel('top', [[0, 'whole list'], [25, 'top 25'], [50, 'top 50'], [100, 'top 100'], [250, 'top 250'], [500, 'top 500'], [1000, 'top 1,000']], f.top)}</label>
-        <label>Plays <input type="number" min="0" inputmode="numeric" data-f="pmin" value="${f.pmin ?? ''}" placeholder="min"><span class="to">to</span><input type="number" min="0" inputmode="numeric" data-f="pmax" value="${f.pmax ?? ''}" placeholder="max"></label>
+        <label>Plays <input type="number" min="0" inputmode="numeric" data-f="pmin" value="${f.pmin ?? ''}" placeholder="min" aria-label="Fewest plays"><span class="to">to</span><input type="number" min="0" inputmode="numeric" data-f="pmax" value="${f.pmax ?? ''}" placeholder="max" aria-label="Most plays"></label>
         <label>First played ${sel('fy0', yearOpts, f.fy0)}<span class="to">to</span>${sel('fy1', yearOpts, f.fy1)}</label>
         <label>Last played ${sel('last', [['any', 'any time'], ['recent', 'in the last 12 months'], ['old', 'not in the last 12 months']], f.last)}</label>
         <label>Per artist ${sel('per', [[0, 'any number'], [1, '1 song'], [2, 'up to 2'], [3, 'up to 3'], [5, 'up to 5']], f.per)}</label>
@@ -347,21 +356,44 @@
         <label class="gg-check"><input type="checkbox" data-f="fresh"${f.fresh ? ' checked' : ''}> Only songs first played in this period</label>
         <div class="gg-pl" id="ggPl"></div>
         <label class="gg-check"><input type="checkbox" data-f="lib"${f.lib ? ' checked' : ''}> Use the Library's search and filters instead</label>
+      </div>`;
+  }
+  function renderSetup() {
+    G.view = 'setup'; chrome();
+    stage.hidden = true; foot.innerHTML = '';
+    const whose = window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : 'this';
+    const open = read(OPEN_KEY, {});
+    const custom = !PRESETS.some(([, f]) => same(f, G.f)); // filters of your own: show them
+    const [presets, filters] = filtersHtml().split('<h3>Filters</h3>');
+    body.innerHTML = `
+      <h2>Guess the song</h2>
+      <p class="muted small">A clip plays, you name the song. Songs come from ${whose} listening history in a random order. Pick a preset and press Start.</p>
+${presets}
+      <details class="gg-more" data-more="f"${open.f || custom ? ' open' : ''}><summary><span class="gg-more-t">Filters</span><span class="muted" id="ggSumF"></span></summary>
+${filters}
+      <div class="gg-go gg-go-f">
+        <span id="ggSave"><button type="button" class="linkish" data-act="save">Save these filters as a preset…</button></span>
+        <button type="button" class="linkish" data-act="reset">Reset filters</button>
       </div>
-      <h3>Game</h3>
+      </details>
+      <details class="gg-more" data-more="g"${open.g ? ' open' : ''}><summary><span class="gg-more-t">Game options</span><span class="muted" id="ggSumG"></span></summary>
       <div class="gg-filters">
         <label>Songs ${sel('rounds', [5, 10, 20, 30, 50].map((n) => [n, n]), G.rounds)}</label>
         <label>Mode ${sel('mode', [['normal', 'Normal'], ['five', '5 seconds only']], G.mode)}</label>
         <label>Clip length ${sel('clip', [3, 5, 10, 15, 30].map((n) => [n, `${n} seconds`]), G.clip)}</label>
         <label>Clip starts ${sel('start', [['begin', 'at the beginning'], ['random', 'at a random spot']], G.start)}</label>
+        <label>Answer by ${sel('answer', [['type', 'typing the title'], ['choice', 'picking from four']], G.answer)}</label>
         <label>Guesses per song ${sel('tries', [[1, '1'], [3, '3'], [5, '5']], G.tries)}</label>
+        <label>Time to answer ${sel('timer', [[0, 'no limit'], [10, '10 seconds'], [15, '15 seconds'], [20, '20 seconds'], [30, '30 seconds']], G.timer)}</label>
       </div>
+      </details>
       <p class="gg-pool" id="ggPool" aria-live="polite"></p>
       <div class="gg-go">
-        <button type="button" class="primary gg-start" data-act="start">▶ Start</button>
-        <span id="ggSave"><button type="button" class="linkish" data-act="save">Save these filters as a preset…</button></span>
-        <button type="button" class="linkish" data-act="reset">Reset</button>
-      </div>`;
+        <button type="button" class="primary gg-start" data-act="start">Start</button>
+        <button type="button" class="ghost gg-start" data-act="endless" title="No set number of songs: keep going until you stop">Endless</button>
+        <button type="button" class="ghost gg-start" data-act="survival" title="Endless with three lives: a miss, a give-up or running out of time costs one">Survival</button>
+      </div>
+      <p class="gg-records muted small" id="ggRecords"></p>`;
     refreshSetup();
     if (!PLS.remote && window.SpotifyAuth?.canReadPlaylists()) loadRemote();
   }
@@ -377,18 +409,24 @@
       el.closest('label').classList.toggle('off', el.disabled);
     });
     const clipSel = body.querySelector('[data-f="clip"]'); // 5-second mode sets the length itself
-    clipSel.disabled = G.mode === 'five';
-    clipSel.closest('label').classList.toggle('off', clipSel.disabled);
+    if (clipSel) { clipSel.disabled = G.mode === 'five'; clipSel.closest('label').classList.toggle('off', clipSel.disabled); }
     const rounds = Math.min(G.rounds, n);
     $('ggPool').innerHTML = (n ? `<b>${plural(n, 'song')}</b> to draw from` : 'No songs match these filters') +
       (f.lib ? ' (the Library\'s current view)' : '') +
       (out ? ` · ${plural(out, 'song')} left out because the title isn't in English` : '') +
-      (n && n < G.rounds ? ` · the game will be ${plural(rounds, 'song')} long` : '') +
-      (n > 0 && n < 4 ? ' · widen the filters for a real game' : '');
-    body.querySelector('[data-act="start"]').disabled = n < 1;
+      (G.view === 'play' ? (n ? ' · used from the next song on' : ': keeping the songs already lined up')
+        : (n && n < G.rounds ? ` · a ${G.rounds}-song game will be ${plural(rounds, 'song')} long` : '') + (n > 0 && n < 4 ? ' · widen the filters for a real game' : ''));
+    body.querySelectorAll('[data-act="start"], [data-act="endless"], [data-act="survival"]').forEach((b) => { b.disabled = n < 1; });
+    const triesSel = body.querySelector('[data-f="tries"]'); // picking from four is one pick per song
+    if (triesSel) { triesSel.disabled = G.answer === 'choice'; triesSel.closest('label').classList.toggle('off', triesSel.disabled); }
+    const sumF = $('ggSumF'), sumG = $('ggSumG');
+    if (sumF) sumF.textContent = `· ${setupName()}`;
+    if (sumG) sumG.textContent = `· ${G.rounds} songs · ${G.mode === 'five' ? 5 : G.clip} s clips${G.start === 'random' ? ' from a random spot' : ''} · ${G.answer === 'choice' ? 'pick from four' : 'typing'}${G.timer ? ` · ${G.timer} s to answer` : ''}`;
+    renderRecords();
     $('ggPresets').innerHTML = presetsHtml();
     renderLists();
     remember();
+    if (G.view === 'play') requeue();
   }
 
   // ----- the playlist picker on the setup screen -----
@@ -406,13 +444,13 @@
     const connect = sp?.canReadPlaylists()
       ? '<button type="button" class="linkish" data-act="plRefresh">Refresh from Spotify</button>'
       : sp?.configured() && sp.canRedirect() ? '<button type="button" class="ghost" data-act="plConnect">Connect Spotify to pick playlists</button>' : '';
-    const why = connect ? '' : !sp?.configured() ? 'Connecting to Spotify isn\'t set up on this site yet (README → Saving playlists to Spotify).'
+    const why = connect ? '' : !sp?.configured() ? 'Import your playlists from a Spotify “Account data” export (the Playlist1.json file in it).'
       : 'Connecting to Spotify needs the site opened from its web address.';
     el.classList.toggle('off', f.lib);
     el.innerHTML = `<span class="gg-pl-label">Playlists</span>
       <div class="gg-pl-body">
         ${chips ? `<div class="presets gg-pl-chips">${chips}</div>` : ''}
-        <div class="gg-pl-act">${connect}<button type="button" class="linkish" data-act="plFile" title="Playlist1.json from a Spotify “Account data” export">Load Playlist1.json…</button>${f.pls.length ? '<button type="button" class="linkish" data-act="plNone">Clear</button>' : ''}
+        <div class="gg-pl-act">${connect}<button type="button" class="linkish" data-act="plFile" title="Playlist1.json from a Spotify “Account data” export">Import from a Spotify export…</button>${f.pls.length ? '<button type="button" class="linkish" data-act="plNone">Clear</button>' : ''}
           <input type="file" id="ggPlFile" accept=".json,application/json" multiple hidden></div>
         <p class="muted small${PLS.bad ? ' bad' : ''}">${esc(PLS.msg || (chips ? 'Pick one or more: only songs on them are asked (and only ones in this listening history).' : why))}</p>
       </div>`;
@@ -459,14 +497,98 @@
 
   // ---------- a game ----------
   const P = { queue: [], spare: [], i: 0, score: 0, log: [], cur: null, tries: [], extra: 0, hinted: false, over: false, loading: false, pickKey: null, sugg: [], hi: 0 };
-  const points = () => Math.max(10, Math.round((100 * (G.tries - P.tries.length)) / G.tries) - 10 * P.extra - (P.hinted ? 20 : 0));
+  // With a time limit, answering fast is worth more: the full value at the start, half of it at the buzzer.
+  const timeLeft = () => (!G.timer ? 1 : !P.deadline ? 1 : Math.max(0, Math.min(1, (P.deadline - performance.now()) / (G.timer * 1000))));
+  const triesAllowed = () => (G.answer === 'choice' ? 1 : G.tries);
+  const points = () => Math.max(10, Math.round(((100 * (triesAllowed() - P.tries.length)) / triesAllowed()) * (G.timer ? 0.5 + 0.5 * timeLeft() : 1)) - 10 * P.extra - (P.hinted ? 20 : 0));
 
-  function startGame() {
+  // ----- records (this browser only): best score per setup, longest streak, how many you get right -----
+  const STATS_KEY = 'spotifyStats.guessStats';
+  const stats = Object.assign({ games: 0, songs: 0, right: 0, streak: 0, best: {} }, read(STATS_KEY, {}));
+  if (!stats.best || typeof stats.best !== 'object') stats.best = {};
+  const setupName = () => (PRESETS.find(([, f]) => same(f, G.f)) || savedPresets().find(([, f]) => same(f, G.f)) || ['Custom filters'])[0];
+  // scores only compare within the same setup: preset, kind of game, how you answer, time limit, 5-second mode
+  const recordKey = (kind) => [setupName(), kind === 'normal' ? `${G.rounds} songs` : kind, G.answer === 'choice' ? 'pick from four' : '', G.timer ? `${G.timer} s limit` : '', G.mode === 'five' ? '5-second clips' : ''].filter(Boolean).join(' · ');
+  function renderRecords() {
+    const el = $('ggRecords');
+    if (!el) return;
+    const bits = [['normal', `${G.rounds} songs`], ['endless', 'endless'], ['survival', 'survival']]
+      .map(([kind, label]) => [label, stats.best[recordKey(kind)]]).filter(([, b]) => b).map(([label, b]) => `${label} <b>${num(b.score)}</b>`);
+    const all = stats.songs ? `${pct(stats.right / stats.songs)} right over ${plural(stats.songs, 'song')} · longest streak <b>${num(stats.streak)}</b>` : '';
+    el.innerHTML = !stats.songs ? '' : `${bits.length ? `Best with this setup: ${bits.join(' · ')}. ` : 'No score yet with this setup. '}Overall: ${all}. <button type="button" class="linkish" data-act="statsReset">Reset records</button>`;
+  }
+
+  // ----- picking from four: the answer and three other songs (one by the same artist when there is one) -----
+  function choicesFor(song) {
+    const seen = new Set([song.key]), out = [];
+    const take = (o) => { if (out.length < 3 && !seen.has(o.key)) { seen.add(o.key); out.push({ key: o.key, title: o.title, artist: o.artist, a: o.a }); } };
+    const mate = shuffle(P.pool.filter((o) => o.a === song.a && o.key !== song.key))[0];
+    if (mate) take(mate);
+    for (const o of shuffle(P.pool)) { if (out.length >= 3) break; take(o); }
+    if (out.length < 3) for (const c of shuffle(allTitles())) { if (out.length >= 3) break; take(c); } // a tiny pool: borrow from the rest of the library
+    return shuffle([{ key: song.key, title: song.title, artist: song.artist, a: song.a }, ...out]);
+  }
+
+  // ----- the countdown -----
+  let ticker = 0;
+  function tick() {
+    if (G.view !== 'play' || P.over) { clearInterval(ticker); return; }
+    if (!G.timer || P.loading) return;
+    if (!P.deadline) { if (!Clip.st.started) return; P.deadline = performance.now() + G.timer * 1000; } // starts with the clip
+    const left = timeLeft() * G.timer, el = $('ggTimer');
+    if (el) {
+      el.hidden = false;
+      el.classList.toggle('low', left <= 5);
+      el.querySelector('i').style.width = `${(left / G.timer) * 100}%`;
+      el.querySelector('span').textContent = `${Math.ceil(left)} s`;
+    }
+    if ($('ggWorth')) $('ggWorth').textContent = points();
+    if (left <= 0) endRound('time');
+  }
+  const isLast = () => (!P.endless && P.i + 1 >= P.queue.length) || P.lives === 0;
+
+  // Endless: no set length. Songs keep coming (the pool is reshuffled when it runs out) until you press Stop.
+  function refill() {
+    const l = shuffle(P.pool);
+    if (l.length > 1 && l[0].s === P.cur?.s) l.push(l.shift()); // not the same song twice in a row
+    P.spare = l;
+  }
+  // The filters changed mid-game: what's still to come is drawn again from the new pool.
+  function requeue() {
+    const fkey = JSON.stringify(G.f);
+    if (fkey === P.fkey || !G.pool?.list.length) return;
+    P.fkey = fkey;
+    P.pool = G.pool.list;
+    const list = shuffle(P.pool.filter((o) => o.s !== P.cur?.s));
+    const left = P.endless ? 0 : P.total - (P.i + 1);
+    P.queue = [...P.queue.slice(0, P.i + 1), ...list.slice(0, left)];
+    P.spare = list.slice(left);
+    if ($('ggOf')) $('ggOf').textContent = P.queue.length;
+    const next = $('ggNext');
+    if (next) next.textContent = isLast() ? 'See your score →' : 'Next song →';
+  }
+  // the filters panel during a game
+  function renderMid() {
+    const el = $('ggMid');
+    if (!el) return;
+    el.hidden = !P.mid;
+    body.querySelector('[data-act="mid"]')?.setAttribute('aria-expanded', !!P.mid);
+    el.innerHTML = P.mid ? `${filtersHtml()}<p class="gg-pool" id="ggPool" aria-live="polite"></p>` : '';
+    if (!P.mid) return;
+    refreshSetup();
+    if (!PLS.remote && window.SpotifyAuth?.canReadPlaylists()) loadRemote();
+  }
+  const refilter = () => (G.view === 'play' ? renderMid() : renderSetup());
+
+  function startGame(kind) { // 'normal' | 'endless' | 'survival' (endless with three lives)
+    const endless = kind !== 'normal';
     const list = shuffle(buildPool(G.f).list);
     if (!list.length) return;
     try { if (PL.mode === 'dock') plStop(); } catch { /* the corner player isn't up */ }
-    Object.assign(P, { queue: list.slice(0, G.rounds), spare: list.slice(G.rounds), i: 0, score: 0, log: [] });
-    G.view = 'play';
+    const n = endless ? 1 : G.rounds;
+    Object.assign(P, { queue: list.slice(0, n), spare: list.slice(n), i: 0, score: 0, log: [], endless, kind, lives: kind === 'survival' ? 3 : null, streak: 0, record: recordKey(kind), saved: false, total: G.rounds, pool: list, fkey: JSON.stringify(G.f), mid: false, fails: 0 });
+    G.view = 'play'; chrome();
+    if (matchMedia('(max-width: 760px)').matches) card.scrollIntoView({ block: 'start' });
     stage.hidden = false;
     allTitles();
     startRound();
@@ -474,49 +596,67 @@
 
   async function startRound() {
     const song = P.queue[P.i];
-    Object.assign(P, { cur: song, tries: [], extra: 0, hinted: false, over: false, loading: true, pickKey: null, sugg: [], hi: 0 });
+    Object.assign(P, { cur: song, tries: [], extra: 0, hinted: false, over: false, loading: true, pickKey: null, sugg: [], hi: 0, deadline: 0 });
+    P.choices = G.answer === 'choice' ? choicesFor(song) : null;
+    clearInterval(ticker);
+    if (G.timer) ticker = setInterval(tick, 100);
     Clip.st.limit = clipLen();
     renderRound();
     const ok = await Clip.load(song, G.start === 'random');
     if (P.cur !== song || G.view !== 'play') return; // quit or moved on while it loaded
     if (!ok) { // no clip for this one: quietly use another song
+      if (++P.fails > 8) return renderDone(); // nothing will play (offline?)
+      if (!P.spare.length && P.endless) refill();
       const sub = P.spare.shift();
       if (sub) { P.queue[P.i] = sub; return startRound(); }
       P.queue.splice(P.i, 1);
       if (P.i >= P.queue.length) return renderDone();
       return startRound();
     }
-    P.loading = false;
+    P.loading = false; P.fails = 0;
     stage.classList.toggle('previews', Clip.st.mode === 'apple');
     Clip.play(true);
     paint();
-    $('ggInput')?.focus({ preventScroll: true });
+    if ($('ggInput')) $('ggInput').focus({ preventScroll: true });
+    else document.activeElement?.blur?.(); // picking from four: keys work from anywhere
   }
 
   function renderRound() {
     stage.classList.remove('open');
     body.innerHTML = `<div class="gg-head">
-        <div><h2>Guess the song</h2><p class="muted small">Song <b>${P.i + 1}</b> of ${P.queue.length} · worth <b id="ggWorth">${points()}</b> points</p></div>
+        <div><h2>Guess the song</h2><p class="muted small">Song <b>${P.i + 1}</b>${P.endless ? ` · ${P.kind}` : ` of <span id="ggOf">${P.queue.length}</span>`}<span id="ggWorthWrap"> · worth <b id="ggWorth">${points()}</b> points</span></p></div>
+        ${P.lives !== null ? `<div class="gg-lives" id="ggLives" title="Lives left" aria-label="${P.lives} lives left">${'♥'.repeat(P.lives)}<i>${'♥'.repeat(3 - P.lives)}</i></div>` : ''}
+        <div class="gg-streak" id="ggStreak" title="Right in a row"${P.streak > 1 ? '' : ' hidden'}>${P.streak} in a row</div>
         <div class="gg-score"><span class="muted small">Score</span><b>${num(P.score)}</b></div>
-        <button type="button" class="ghost" data-act="quit">Quit</button>
-      </div>`;
+        <button type="button" class="ghost" data-act="mid" aria-expanded="false" title="Change the filters: they apply from the next song">Filters</button>
+        <button type="button" class="ghost" data-act="stop" title="End the game and see your score">Stop</button>
+      </div>
+      <div class="gg-mid" id="ggMid" hidden></div>`;
+    if (P.mid) renderMid();
     $('ggCover').innerHTML = `<button type="button" class="gg-play" id="ggPlay" data-act="play" aria-label="Play the clip">▶</button>
       <div class="gg-prog"><div class="gg-track"><i id="ggBar"></i></div><div class="gg-time"><span id="ggState">Loading…</span><span id="ggClock"></span></div></div>
       <button type="button" class="ghost" id="ggMore" data-act="more" title="Hear 5 more seconds (costs 10 points) · M">+5 s</button>`;
-    foot.innerHTML = `<div class="gg-guess">
+    const timerBar = '<div class="gg-timer" id="ggTimer" hidden><div><i></i></div><span></span></div>';
+    const answerBox = P.choices
+      ? `<div class="gg-choices">${P.choices.map((c, i) => `<button type="button" class="gg-choice" data-choice="${i}"><kbd>${i + 1}</kbd><span>${esc(c.title)}</span></button>`).join('')}</div>`
+      : `<div class="gg-guess">
         <div class="gg-box">
           <input id="ggInput" type="text" role="combobox" aria-expanded="false" aria-controls="ggList" aria-autocomplete="list" placeholder="Type the song title…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
           <ul class="gg-list" id="ggList" role="listbox" hidden></ul>
         </div>
         <button type="button" class="primary" data-act="guess">Guess</button>
-      </div>
+      </div>`;
+    const keys = P.choices
+      ? '<kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>M</kbd> more time · <kbd>H</kbd> artist · <kbd>G</kbd> give up · <kbd>Space</kbd> play / pause'
+      : `${ALT}<kbd>M</kbd> more time · ${ALT}<kbd>H</kbd> artist · ${ALT}<kbd>G</kbd> give up · ${ALT}<kbd>P</kbd> play / pause · after <kbd>Esc</kbd>, the same keys on their own`;
+    foot.innerHTML = `${timerBar}${answerBox}
       <p class="gg-msg" id="ggMsg" aria-live="polite"></p>
       <ol class="gg-tries" id="ggTries"></ol>
       <div class="gg-actions">
         <button type="button" class="ghost" data-act="hint">Show the artist (−20)</button>
         <button type="button" class="ghost" data-act="skip">Give up</button>
       </div>
-      <p class="gg-keyhelp muted small" aria-hidden="true">${ALT}<kbd>M</kbd> more time · ${ALT}<kbd>H</kbd> artist · ${ALT}<kbd>G</kbd> give up · ${ALT}<kbd>P</kbd> play / pause. <kbd>Esc</kbd> leaves the box: then <kbd>M</kbd> <kbd>H</kbd> <kbd>G</kbd> and <kbd>Space</kbd> work on their own, <kbd>/</kbd> goes back to it.</p>`;
+      <p class="gg-keyhelp muted small" aria-hidden="true">${keys}</p>`;
     paint();
   }
 
@@ -597,16 +737,28 @@
   function endRound(result) {
     const song = P.cur, pts = result === 'ok' ? points() : 0;
     P.over = true;
+    clearInterval(ticker);
     P.score += pts;
     P.log.push({ song, result, pts, wrong: P.tries.length });
+    P.streak = result === 'ok' ? P.streak + 1 : 0;
+    if (result !== 'ok' && P.lives !== null) P.lives = Math.max(0, P.lives - 1);
+    stats.songs++; if (result === 'ok') stats.right++;
+    stats.streak = Math.max(stats.streak, P.streak);
+    write(STATS_KEY, stats);
+    const lv = $('ggLives'), sk = $('ggStreak');
+    if (lv) lv.innerHTML = `${'♥'.repeat(P.lives)}<i>${'♥'.repeat(3 - P.lives)}</i>`;
+    if (sk) { sk.hidden = P.streak < 2; sk.textContent = `${P.streak} in a row`; }
+    if ($('ggTimer')) $('ggTimer').hidden = true;
+    if ($('ggWorthWrap')) $('ggWorthWrap').hidden = true;
     Clip.st.limit = 0; // let the song play on
     if (!Clip.st.started || Clip.st.paused) Clip.play(!Clip.st.started);
     stage.classList.add('open');
     body.querySelector('.gg-score b').textContent = num(P.score);
-    const last = P.i + 1 >= P.queue.length;
+    const last = isLast();
+    const lost = result === 'ok' || P.lives === null ? '' : P.lives ? ` <span class="muted">· ${P.lives} ${P.lives === 1 ? 'life' : 'lives'} left</span>` : ' <span class="muted">· no lives left</span>';
     const s = song.s, first = monthLabel(D.months[songFirst[s]]);
     foot.innerHTML = `<div class="gg-answer ${result}">
-        <p class="gg-verdict">${result === 'ok' ? `Correct! <b>+${pts}</b>` : result === 'skip' ? 'It was' : 'Out of guesses. It was'}</p>
+        <p class="gg-verdict">${result === 'ok' ? `Correct! <b>+${pts}</b>${P.streak > 1 ? ` · ${P.streak} in a row` : ''}` : `${result === 'skip' ? 'It was' : result === 'time' ? 'Time\'s up. It was' : P.choices ? 'Not that one. It was' : 'Out of guesses. It was'}${lost}`}</p>
         <p class="gg-title">${esc(song.title)}</p>
         <p class="gg-by">${artistLink(song.a, song.artist)}${song.album ? ` <span class="muted">· ${esc(song.album)}</span>` : ''}</p>
         <p class="muted small">Played ${plural(songAllPlays[s], 'time')} (${hours(songAllSec[s])}) · first in ${first}</p>
@@ -621,18 +773,32 @@
   }
 
   function renderDone() {
-    G.view = 'done';
+    G.view = 'done'; chrome();
     Clip.pause();
     stage.hidden = true; stage.classList.remove('open');
     foot.innerHTML = '';
+    clearInterval(ticker);
+    let best = '';
+    if (P.log.length && !P.saved) { // keep the record
+      P.saved = true;
+      stats.games++;
+      const old = stats.best[P.record];
+      if (!old || P.score > old.score) {
+        stats.best[P.record] = { score: P.score, n: P.log.length, at: Date.now() };
+        best = old ? `New best for ${esc(P.record)} (was ${num(old.score)}).` : `First score for ${esc(P.record)}.`;
+      } else best = `Best for ${esc(P.record)}: ${num(old.score)}.`;
+      write(STATS_KEY, stats);
+    }
+    let run = 0, longest = 0;
+    for (const l of P.log) { run = l.result === 'ok' ? run + 1 : 0; longest = Math.max(longest, run); }
     const n = P.log.length, right = P.log.filter((l) => l.result === 'ok').length, firstTry = P.log.filter((l) => l.result === 'ok' && !l.wrong).length;
-    const line = !n ? 'No clips could be played for these songs.' : right === n ? 'A perfect game.' : right >= n * 0.7 ? 'You know these well.' : right >= n * 0.4 ? 'Not bad.' : 'Tough crowd.';
+    const line = !n ? 'No clips could be played for these songs.' : right === n ? 'A perfect game.' : right >= n * 0.7 ? 'You know these well.' : right >= n * 0.4 ? 'Not bad.' : 'A tough set. Try an easier preset or a longer clip.';
     body.innerHTML = `<h2>Guess the song</h2>
       <div class="gg-result">
         <div class="gg-big">${num(P.score)}<small>points</small></div>
-        <p><b>${right}</b> of ${n} right${firstTry ? ` · ${firstTry} on the first guess` : ''}. ${line}</p>
+        <p>${P.kind === 'survival' ? 'Survival · ' : P.endless ? 'Endless · ' : ''}<b>${right}</b> of ${n} right${firstTry && !P.choices ? ` · ${firstTry} on the first guess` : ''}${longest > 1 ? ` · ${longest} in a row` : ''}. ${line}${best ? `<br><span class="muted small">${best}</span>` : ''}</p>
       </div>
-      <ol class="st-list gg-log">${P.log.map((l) => `<li data-gs="${l.song.s}" title="Open in the Library"><span><i class="${l.result === 'ok' ? 'ok' : 'no'}" aria-hidden="true">${l.result === 'ok' ? '✓' : '✕'}</i> <b>${esc(l.song.title)}</b> <span class="muted">${artistLink(l.song.a, l.song.artist)}</span></span><small class="muted">${l.result === 'ok' ? `+${l.pts}${l.wrong ? ` · guess ${l.wrong + 1}` : ''}` : l.result === 'skip' ? 'gave up' : 'missed'}</small></li>`).join('')}</ol>
+      <ol class="st-list gg-log">${P.log.map((l) => `<li data-gs="${l.song.s}" title="Open in the Library"><span><i class="${l.result === 'ok' ? 'ok' : 'no'}" aria-hidden="true">${l.result === 'ok' ? '✓' : '✕'}</i> <b>${esc(l.song.title)}</b> <span class="muted">${artistLink(l.song.a, l.song.artist)}</span></span><small class="muted">${l.result === 'ok' ? `+${l.pts}${l.wrong ? ` · guess ${l.wrong + 1}` : ''}` : l.result === 'skip' ? 'gave up' : l.result === 'time' ? 'out of time' : 'missed'}</small></li>`).join('')}</ol>
       <div class="gg-actions">
         <button type="button" class="primary" data-act="again">Play again</button>
         <button type="button" class="ghost" data-act="setup">Change the filters</button>
@@ -651,12 +817,27 @@
     const b = e.target.closest('button');
     if (!b || b.disabled) return;
     if (b.dataset.pl !== undefined) { toggleList(b.dataset.pl); return; }
-    if (b.dataset.preset !== undefined) { G.f = clean(PRESETS[+b.dataset.preset][1]); renderSetup(); return; }
-    if (b.dataset.saved !== undefined) { const p = savedPresets()[+b.dataset.saved]; if (p) { G.f = clean(p[1]); renderSetup(); } return; }
+    if (b.dataset.choice !== undefined) { // picking from four: one pick
+      if (P.over || P.loading || !P.choices) return;
+      const c = P.choices[+b.dataset.choice];
+      if (c.key !== P.cur.key) P.tries.push(c);
+      endRound(c.key === P.cur.key ? 'ok' : 'miss');
+      return;
+    }
+    if (b.dataset.preset !== undefined) { G.f = clean(PRESETS[+b.dataset.preset][1]); refilter(); return; }
+    if (b.dataset.saved !== undefined) { const p = savedPresets()[+b.dataset.saved]; if (p) { G.f = clean(p[1]); refilter(); } return; }
     if (b.dataset.del !== undefined) { const l = savedPresets(); l.splice(+b.dataset.del, 1); write(SAVED_KEY, l); refreshSetup(); return; }
     switch (b.dataset.act) {
-      case 'start': case 'again': startGame(); break;
-      case 'reset': G.f = blank(); renderSetup(); break;
+      case 'start': startGame('normal'); break;
+      case 'endless': startGame('endless'); break;
+      case 'survival': startGame('survival'); break;
+      case 'again': startGame(P.kind); break;
+      case 'statsReset':
+        if (b.dataset.sure) { Object.assign(stats, { games: 0, songs: 0, right: 0, streak: 0, best: {} }); write(STATS_KEY, stats); renderRecords(); } else { b.dataset.sure = '1'; b.textContent = 'Really reset? Click again'; }
+        break;
+      case 'reset': G.f = blank(); refilter(); break;
+      case 'mid': P.mid = !P.mid; renderMid(); break;
+      case 'stop': Clip.pause(); if (P.log.length) renderDone(); else renderSetup(); break;
       case 'plConnect': window.SpotifyAuth.signIn().catch((e) => plSay(e.message, true)); break;
       case 'plRefresh': (async () => { plSay('Checking Spotify…'); await loadRemote(); for (const id of G.f.pls) if (!id.startsWith('file:')) await fetchList(id); if (!PLS.bad) PLS.msg = ''; refreshSetup(); })(); break;
       case 'plFile': $('ggPlFile').click(); break;
@@ -682,15 +863,20 @@
         Clip.play(false);
         break;
       case 'previews': Clip.usePreviews(); startRound(); break;
-      case 'swap': { const sub = P.spare.shift(); if (sub) P.queue[P.i] = sub; else P.queue.splice(P.i, 1); if (P.i >= P.queue.length) renderDone(); else startRound(); break; }
+      case 'swap': { if (!P.spare.length && P.endless) refill(); const sub = P.spare.shift(); if (sub) P.queue[P.i] = sub; else P.queue.splice(P.i, 1); if (P.i >= P.queue.length) renderDone(); else startRound(); break; }
       case 'guess': submitGuess(); break;
       case 'hint':
         P.hinted = true; b.disabled = true; b.textContent = `Artist: ${P.cur.artist}`;
         $('ggWorth').textContent = points();
-        $('ggInput').focus();
+        $('ggInput')?.focus();
         break;
       case 'skip': endRound('skip'); break;
-      case 'next': P.i++; if (P.i >= P.queue.length) renderDone(); else startRound(); break;
+      case 'next':
+        if (P.lives === 0) { renderDone(); break; }
+        P.i++;
+        if (P.i >= P.queue.length && P.endless) { if (!P.spare.length) refill(); if (P.spare.length) P.queue.push(P.spare.shift()); }
+        if (P.i >= P.queue.length) renderDone(); else startRound();
+        break;
       case 'open': librarySearch(D.songs[P.cur.s][0]); break;
       default:
     }
@@ -698,7 +884,8 @@
   function readFilter(el) {
     const k = el.dataset.f;
     if (k === 'rounds' || k === 'clip' || k === 'tries') { G[k] = +el.value; return; }
-    if (k === 'mode' || k === 'start') { G[k] = el.value; return; }
+    if (k === 'mode' || k === 'start' || k === 'answer') { G[k] = el.value; return; }
+    if (k === 'timer') { G[k] = +el.value; return; }
     const f = G.f;
     if (el.type === 'checkbox') f[k] = el.checked;
     else if (k === 'pmin' || k === 'pmax') f[k] = el.value === '' || !(+el.value >= 0) ? null : Math.floor(+el.value);
@@ -746,6 +933,8 @@
     const el = e.target, typing = /INPUT|SELECT|TEXTAREA/.test(el.tagName);
     if (typing ? !e.altKey : e.altKey) return;
     if (e.code === 'Slash' && !typing) { const box = $('ggInput'); if (box) { e.preventDefault(); e.stopPropagation(); box.focus(); } return; }
+    const pickN = /^(Digit|Numpad)[1-4]$/.test(e.code) && !typing ? card.querySelector(`button[data-choice="${+e.code.slice(-1) - 1}"]`) : null;
+    if (pickN && pickN.offsetParent) { e.preventDefault(); e.stopPropagation(); pickN.click(); return; }
     const act = KEYS[e.code];
     if (!act || (e.code === 'Space' && (typing || el.tagName === 'BUTTON'))) return;
     const b = card.querySelector(`button[data-act="${act}"]`);
@@ -762,7 +951,9 @@
 
   // leaving the page stops the clip; coming back to the setup screen recounts (the Library's filters may have changed)
   const pane = card.closest('.pane');
-  new MutationObserver(() => { if (pane.hidden && G.view === 'play') Clip.pause(); }).observe(pane, { attributes: true, attributeFilter: ['hidden'] });
+  const chrome = () => document.body.classList.toggle('gg-on', G.view === 'play' && !pane.hidden);
+  new MutationObserver(() => { if (pane.hidden && G.view === 'play') Clip.pause(); chrome(); }).observe(pane, { attributes: true, attributeFilter: ['hidden'] });
+  card.addEventListener('toggle', (e) => { const k = e.target.dataset?.more; if (k) write(OPEN_KEY, { ...read(OPEN_KEY, {}), [k]: e.target.open }); }, true);
   REDRAW.guess = () => { if (G.view === 'setup') refreshSetup(); };
 
   renderSetup();

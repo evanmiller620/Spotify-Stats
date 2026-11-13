@@ -5,13 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spotify Stats</title>
   <meta name="description" content="Charts and stats from a Spotify streaming history: top artists and songs, skips, listening habits, and a searchable library.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Spotify Stats">
+  <meta property="og:description" content="Charts, habits and a guessing game from a Spotify listening history. Load your own export: it stays in your browser.">
+  <meta name="twitter:card" content="summary">
   <meta name="theme-color" content="#f4f4f2" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M8 23v-6M13 23V10M18 23v-9M23 23V7' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="booting">
-  <p class="boot" aria-live="polite">Loading listening history…</p>
+  <p class="boot" aria-live="polite"><span class="boot-spin" aria-hidden="true"></span>Loading listening history…</p>
   <button class="side-tab" id="sideTab" aria-controls="sidenav" aria-expanded="false" title="Sections">
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 10h12M4 15h12"/></svg><span>Sections</span>
   </button>
@@ -24,6 +28,7 @@
     <header>
       <div>
         <h1>Spotify Stats</h1>
+        <p class="tagline">Charts, habits and a guessing game from a Spotify listening history.</p>
         <p class="muted" id="range"></p>
       </div>
       <nav id="years" aria-label="Choose a year"></nav>
@@ -395,7 +400,29 @@
       <div id="guessFoot"></div>
     </section>
     </div>
+
+    <footer class="site-foot">
+      <p><b>Private by default.</b> A Spotify export you load is read in your browser and saved only there.
+        <button type="button" class="linkish" onclick="document.getElementById('privacyDlg').showModal()">What leaves your device</button></p>
+      <p class="muted small">Not affiliated with or endorsed by Spotify. Spotify is a trademark of Spotify AB.</p>
+    </footer>
   </main>
+
+  <dialog class="imp" id="privacyDlg" aria-labelledby="privacyTitle">
+    <div class="imp-body priv">
+      <h2 id="privacyTitle">Privacy</h2>
+      <p>This site has no accounts, ads, analytics or tracking cookies.</p>
+      <h3>Your Spotify export</h3>
+      <p>The file you load is unzipped and processed in your browser. The result is saved in this browser only; <b>Remove my data</b> deletes it.</p>
+      <h3>What can leave your device, and when</h3>
+      <ul>
+        <li><b>Friends.</b> Opening Friends with your own data loaded uploads a summary (the songs, artists, play counts and listening times behind the charts, not your raw files) so people you give your link to can see it. <b>Stop sharing</b> removes it and the link stops working.</li>
+        <li><b>Playing a song.</b> Songs play in Spotify's embedded player, which loads from Spotify. If it can't, the guessing game looks up a 30-second preview in Apple's iTunes catalogue by sending the song's title and artist.</li>
+        <li><b>Signing in with Spotify</b> (optional, to save a playlist or pick playlists for the guessing game). The sign-in is kept in this browser and used only for those two things.</li>
+      </ul>
+      <p class="imp-foot"><button type="button" class="primary" onclick="this.closest('dialog').close()">Close</button></p>
+    </div>
+  </dialog>
 
   <div class="tip" id="tip" hidden></div>
 

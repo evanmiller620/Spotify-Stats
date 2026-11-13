@@ -62,7 +62,7 @@ window.SpotifyAuth = (() => {
   }
   // Leave for Spotify's sign-in page; loader.js calls finish() when it sends you back.
   async function leave(pending) {
-    if (!CLIENT_ID) throw new Error("Spotify sign-in isn't set up on this site yet (README → Saving playlists to Spotify).");
+    if (!CLIENT_ID) throw new Error("Signing in with Spotify isn't available on this site.");
     if (!canRedirect()) throw new Error('Spotify sign-in only works when the site is opened from its web address (https://…), not from a file on your computer.');
     const verifier = randomString(64), state = randomString(16);
     write(sessionStorage, PENDING, { ...pending, verifier, state, back: location.href });

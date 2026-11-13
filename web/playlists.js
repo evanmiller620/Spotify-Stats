@@ -140,12 +140,12 @@ window.Playlists = (() => {
             <span class="pl-t"><b>${esc(g.title)}</b><span class="muted"> · ${esc(g.artist)}</span></span><span class="pl-why muted small">${esc(g.why)}</span></li>`).join('')}</ol>`
           : '<p class="muted small pl-empty">No songs fit this one. Try another kind, person or period.</p>'}
         <div class="pl-actions">
-          <button class="primary" type="button" data-pl="save"${st.list.length ? '' : ' disabled'}>${spotifyIcon()} Save to Spotify</button>
-          <button class="ghost" type="button" data-pl="copy"${st.list.length ? '' : ' disabled'}>Copy song links</button>
+          ${sp?.configured() ? `<button class="primary" type="button" data-pl="save"${st.list.length ? '' : ' disabled'}>${spotifyIcon()} Save to Spotify</button>` : ''}
+          <button class="${sp?.configured() ? 'ghost' : 'primary'}" type="button" data-pl="copy"${st.list.length ? '' : ' disabled'}>Copy song links</button>
           <span class="muted small">${st.list.length} song${st.list.length === 1 ? '' : 's'}</span>
         </div>
         <p class="pl-status small" role="status"></p>
-        ${!sp?.configured() ? '<p class="muted small">Saving to Spotify isn\'t set up on this site yet. Copy song links and paste them into a new playlist in the Spotify desktop app (⌘V / Ctrl+V).</p>'
+        ${!sp?.configured() ? '<p class="muted small">Copy the song links, then paste them into a new playlist in the Spotify desktop app (⌘V / Ctrl+V).</p>'
           : !sp.canRedirect() && !sp.signedIn() ? '<p class="muted small">Spotify sign-in works when the site is opened from its web address. From a file, copy the song links and paste them into a Spotify playlist on desktop.</p>' : ''}`;
     }
     const say = (t, bad) => { const s = el.querySelector('.pl-status'); if (s) { s.textContent = t; s.classList.toggle('bad', !!bad); } };

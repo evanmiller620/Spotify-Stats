@@ -175,7 +175,7 @@ function renderTiles() {
     agg.skipRate != null ? ['Skip rate', pct(agg.skipRate), agg.skipPoint != null ? `skips come ${pct(agg.skipPoint)} into a song` : `${num(agg.skips)} skips`]
       : ['Skip rate', '—', NO_SKIP_DATA.replace('No skip data', 'not recorded')],
     agg.retention != null ? ['Retention', pct(agg.retention), 'of each song heard, on average']
-      : ['Retention', '—', HAS_RET ? 'not in the data for this period' : 'run build.py to add this'],
+      : ['Retention', '—', HAS_RET ? 'not in the data for this period' : 'not in this data'],
   ];
   $('tiles').innerHTML = tiles.map(([l, v, s]) =>
     `<div class="tile"><div class="label">${l}</div><div class="value">${v}</div><div class="sub">${s}</div></div>`).join('');
@@ -1421,12 +1421,12 @@ const TEXTS = [
   { k: 'exclude', label: 'Leave out', get: null },
 ];
 const PRESETS = [
-  ['✦ New this period', { newOnly: true }],
-  ['♥ Loved', { plays: [3, null], heard: [90, null] }],
-  ['💎 Hidden gems', { plays: [2, 6], heard: [90, null] }],
-  ['⤼ Often skipped', { plays: [3, null], skip: [40, null] }],
-  ['🔁 On repeat', { plays: [30, null] }],
-  ['① Played once', { plays: [1, 1] }],
+  ['New this period', { newOnly: true }],
+  ['Loved', { plays: [3, null], heard: [90, null] }],
+  ['Hidden gems', { plays: [2, 6], heard: [90, null] }],
+  ['Often skipped', { plays: [3, null], skip: [40, null] }],
+  ['On repeat', { plays: [30, null] }],
+  ['Played once', { plays: [1, 1] }],
 ];
 const rangeOn = (v) => v[0] !== null || v[1] !== null;
 const fieldVisible = (f) => (!f.views || f.views.includes(L.view)) && (!f.needsRet || HAS_RET);
@@ -1525,7 +1525,7 @@ function renderPanel() {
       <section><h3>Presets</h3><div class="presets">
         ${PRESETS.map(([name], i) => {
           const why = i === 0 && state.range[0] === 0 ? 'Pick a period on the chart first'
-            : 'heard' in PRESETS[i][1] && !HAS_RET ? 'Needs retention data (run build.py)' : '';
+            : 'heard' in PRESETS[i][1] && !HAS_RET ? 'This data has no detail on how much of each song was heard' : '';
           return `<button data-preset="${i}" aria-pressed="${same(PRESETS[i][1])}" ${why ? `disabled title="${why}"` : ''}>${name}</button>`;
         }).join('')}
         ${saved.map((p, i) => `<span class="saved"><button data-saved="${i}" aria-pressed="${same(p.f)}">★ ${esc(p.name)}</button><button class="del" data-del="${i}" aria-label="Delete ${esc(p.name)}">×</button></span>`).join('')}
@@ -2448,6 +2448,6 @@ function renderAll() {
   renderTable();
   window.refreshSideLinks?.();
 }
-$('range').textContent = `${monthLabel(D.months[0])} – ${monthLabel(D.months.at(-1))} · ${window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : D.name && !/^default$/i.test(D.name) ? `${D.name}'s` : 'the default'} Spotify streaming history`;
+$('range').textContent = `${monthLabel(D.months[0])} – ${monthLabel(D.months.at(-1))} · ${window.SPOTIFY_SOURCE?.kind === 'mine' ? 'your' : D.name && !/^default$/i.test(D.name) ? `${D.name}'s` : 'sample'} Spotify streaming history`;
 applyHash(); // start from the address (a bookmarked or reloaded view), or the default
 document.body.classList.remove('booting');

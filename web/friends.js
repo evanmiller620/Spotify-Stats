@@ -170,7 +170,7 @@
     sec.innerHTML = `
       <div class="fr-head">
         <div><h2 class="fr-title">Friends</h2><p class="muted small">Pick friends to compare, see who listens to what, and make playlists together.</p></div>
-        <button class="ghost" data-fr="back">← Back to my stats</button>
+        <button class="ghost" data-fr="back">← Back to stats</button>
       </div>
       <div id="frTop"></div>
       <section class="card" id="frPeople"></section>
@@ -193,7 +193,7 @@
   function shareCard(me) {
     if (!canShare) {
       return `<p class="muted small">To share your stats and compare with friends, load your own Spotify data first.</p>
-        <div class="fr-row"><button class="primary" data-fr="pick">⬆ Load your own Spotify data</button></div>`;
+        <div class="fr-row"><button class="primary" data-fr="pick"><svg class="ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V4M6 7.5 10 3.5l4 4M4 13.5v2.5h12v-2.5"/></svg> Load your own data</button></div>`;
     }
     if (me?.at && !st.progress) {
       return `<p class="muted small">Your stats are shared${me.fp === C.fingerprint(ME) ? '' : ' (an older copy: updating…)'} · ${fmtDate(me.at)}. Anyone with this link can see them.</p>

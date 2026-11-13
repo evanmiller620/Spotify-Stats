@@ -233,8 +233,8 @@
   bar.innerHTML = src.kind === 'mine'
     ? `<span><b>Your data</b> · loaded ${fmtDate(src.savedAt)} · ${src.basic ? 'last-year export · ' : ''}stays in this browser only</span>
        <span class="sb-actions"><button class="ghost" data-act="pick">Load newer data</button><button class="ghost" data-act="remove">Remove my data</button></span>`
-    : `<span>You're looking at ${D.name && !/^default$/i.test(D.name) ? `<b>${String(D.name).replace(/[&<>"]/g, '')}'s</b>` : 'the default'} Spotify history.</span>
-       <span class="sb-actions"><button class="primary" data-act="pick">⬆ Load your own Spotify data</button></span>`;
+    : `<span>${D.name && !/^default$/i.test(D.name) ? `You're looking at <b>${String(D.name).replace(/[&<>"]/g, '')}'s</b> Spotify history.` : 'You\'re looking at <b>sample data</b>.'} <span class="sb-more">Load your Spotify export to see your own: it stays in your browser.</span></span>
+       <span class="sb-actions"><button class="primary" data-act="pick"><svg class="ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V4M6 7.5 10 3.5l4 4M4 13.5v2.5h12v-2.5"/></svg> Load your own data</button></span>`;
   bar.hidden = false;
 
   const dlg = document.getElementById('importDlg');
@@ -285,7 +285,7 @@
     if (act === 'close') dlg.close();
     if (act === 'reload') reloadClean();
     if (act === 'remove') {
-      if (!confirm('Remove your data from this browser and go back to the example?')) return;
+      if (!confirm('Remove your data from this browser and go back to the sample data?')) return;
       await window.SpotifyStore.remove();
       reloadClean();
     }
